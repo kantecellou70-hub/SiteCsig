@@ -1,0 +1,1194 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Modifier l'article - {{ form.instance.title }}
+    {% else %}
+        Nouvel article
+    {% endif %}
+    - Gestion de contenu CSIG
+{% endblock %}
+
+{% block page_title %}
+    {% if form.instance.pk %}
+        <i class="fas fa-edit me-2"></i>Modifier l'article
+    {% else %}
+        <i class="fas fa-plus me-2"></i>Nouvel article
+    {% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">
+        {% if form.instance.pk %}
+            Modifiez les informations de l'article "{{ form.instance.title }}"
+        {% else %}
+            Créez un nouvel article pour enrichir votre contenu
+        {% endif %}
+    </p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'content_management:article_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+        <button type="submit" form="articleForm" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>
+            {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %}
+        </button>
+        {% if form.instance.pk %}
+            <a href="{% url 'content_management:article_detail' form.instance.pk %}" class="btn btn-outline-info">
+                <i class="fas fa-eye me-2"></i>Aperçu
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form id="articleForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Colonne principale -->
+            <div class="col-lg-8">
+                <!-- Informations de base -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-info-circle me-2"></i>Informations de base</h3>
+                    </div>
+                    <div class="section-body">
+                        <!-- Titre -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                <i class="fas fa-heading me-2"></i>Titre de l'article <span class="text-danger">*</span>
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.title.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Choisissez un titre accrocheur et descriptif
+                            </div>
+                        </div>
+
+                        <!-- Titre en anglais -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.title_en.id_for_label }}" class="form-label">
+                                <i class="fas fa-language me-2"></i>Titre en anglais <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.title_en }}
+                            {% if form.title_en.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.title_en.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Titre de l'article en anglais (optionnel)
+                            </div>
+                        </div>
+
+                        <!-- Extrait -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.excerpt.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Extrait <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.excerpt }}
+                            {% if form.excerpt.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.excerpt.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Résumé court de l'article (affiché dans les listes)
+                            </div>
+                        </div>
+
+                        <!-- Extrait en anglais -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.excerpt_en.id_for_label }}" class="form-label">
+                                <i class="fas fa-language me-2"></i>Extrait en anglais <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.excerpt_en }}
+                            {% if form.excerpt_en.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.excerpt_en.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu de l'article avec éditeur riche -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-edit me-2"></i>Contenu de l'article <span class="text-danger">*</span></h3>
+                        <div class="header-actions">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleEditor">
+                                <i class="fas fa-code me-1"></i>Mode HTML
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <!-- Barre d'outils de formatage -->
+                        <div class="formatting-toolbar mb-3" id="formattingToolbar">
+                            <div class="btn-group me-2" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="bold" title="Gras (Ctrl+B)">
+                                    <i class="fas fa-bold"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="italic" title="Italique (Ctrl+I)">
+                                    <i class="fas fa-italic"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="underline" title="Souligné (Ctrl+U)">
+                                    <i class="fas fa-underline"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="btn-group me-2" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="insertUnorderedList" title="Liste à puces">
+                                    <i class="fas fa-list-ul"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="insertOrderedList" title="Liste numérotée">
+                                    <i class="fas fa-list-ol"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="btn-group me-2" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="justifyLeft" title="Aligner à gauche">
+                                    <i class="fas fa-align-left"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="justifyCenter" title="Centrer">
+                                    <i class="fas fa-align-center"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="justifyRight" title="Aligner à droite">
+                                    <i class="fas fa-align-right"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="justifyFull" title="Justifier">
+                                    <i class="fas fa-align-justify"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="btn-group me-2" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="createLink" title="Insérer un lien">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="unlink" title="Supprimer le lien">
+                                    <i class="fas fa-unlink"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="btn-group me-2" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="insertImage" title="Insérer une image">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="insertTable" title="Insérer un tableau">
+                                    <i class="fas fa-table"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="btn-group me-2" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="undo" title="Annuler (Ctrl+Z)">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-command="redo" title="Rétablir (Ctrl+Y)">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Éditeur de contenu -->
+                        <div class="editor-container">
+                            <div class="content-editor" id="contentEditor" contenteditable="true" data-placeholder="Commencez à rédiger votre article ici...">
+                                {% if form.content.value %}
+                                    {{ form.content.value|safe }}
+                                {% endif %}
+                            </div>
+                            <textarea name="{{ form.content.name }}" id="{{ form.content.id_for_label }}" style="display: none;">
+                                {% if form.content.value %}{{ form.content.value }}{% endif %}
+                            </textarea>
+                            {% if form.content.errors %}
+                                <div class="invalid-feedback d-block mt-2">
+                                    {% for error in form.content.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Compteur de caractères -->
+                        <div class="editor-stats mt-2">
+                            <small class="text-muted">
+                                <span id="charCount">0</span> caractères | 
+                                <span id="wordCount">0</span> mots | 
+                                <span id="lineCount">0</span> lignes
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu en anglais -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-language me-2"></i>Contenu en anglais <span class="text-muted">(optionnel)</span></h3>
+                    </div>
+                    <div class="section-body">
+                        <div class="editor-container">
+                            <div class="content-editor" id="contentEnEditor" contenteditable="true" data-placeholder="Write your article content in English here...">
+                                {% if form.content_en.value %}
+                                    {{ form.content_en.value|safe }}
+                                {% endif %}
+                            </div>
+                            <textarea name="{{ form.content_en.name }}" id="{{ form.content_en.id_for_label }}" style="display: none;">
+                                {% if form.content_en.value %}{{ form.content_en.value }}{% endif %}
+                            </textarea>
+                            {% if form.content_en.errors %}
+                                <div class="invalid-feedback d-block mt-2">
+                                    {% for error in form.content_en.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Médias -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-images me-2"></i>Médias</h3>
+                    </div>
+                    <div class="section-body">
+                        <!-- Image principale -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.featured_image.id_for_label }}" class="form-label">
+                                <i class="fas fa-image me-2"></i>Image principale <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.featured_image }}
+                            {% if form.featured_image.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.featured_image.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Image de couverture de l'article (recommandé: 1200x630px)
+                            </div>
+                        </div>
+
+                        <!-- Images supplémentaires -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.images.id_for_label }}" class="form-label">
+                                <i class="fas fa-images me-2"></i>Images supplémentaires <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.images }}
+                            {% if form.images.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.images.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Vous pouvez sélectionner plusieurs images
+                            </div>
+                        </div>
+
+                        <!-- Vidéo -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.video_url.id_for_label }}" class="form-label">
+                                <i class="fas fa-video me-2"></i>URL de la vidéo <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.video_url }}
+                            {% if form.video_url.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.video_url.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Lien vers YouTube, Vimeo ou autre plateforme vidéo
+                            </div>
+                        </div>
+
+                        <!-- Audio -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.audio_file.id_for_label }}" class="form-label">
+                                <i class="fas fa-music me-2"></i>Fichier audio <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.audio_file }}
+                            {% if form.audio_file.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.audio_file.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Fichier audio associé à l'article (MP3, WAV, etc.)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Paramètres de publication -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-cog me-2"></i>Paramètres</h3>
+                    </div>
+                    <div class="section-body">
+                        <!-- Catégorie -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">
+                                <i class="fas fa-folder me-2"></i>Catégorie <span class="text-muted">(optionnel)</span>
+                            </label>
+                            
+                           
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.category.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Auteur (automatique) -->
+                        <div class="form-group mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-user me-2"></i>Auteur
+                            </label>
+                            <div class="form-control-plaintext">
+                                <i class="fas fa-user-check me-2 text-success"></i>
+                                {{ request.user.get_full_name|default:request.user.username }}
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    L'auteur est automatiquement défini comme l'utilisateur connecté
+                                </small>
+                            </div>
+                            {{ form.author }}
+                        </div>
+
+                        <!-- Date de publication -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.published_at.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Date de publication
+                            </label>
+                            {{ form.published_at }}
+                            {% if form.published_at.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.published_at.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Statut -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                <i class="fas fa-toggle-on me-2"></i>Statut
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.status.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Mise en avant -->
+                        <div class="form-group mb-4">
+                            <div class="form-check">
+                                {{ form.is_featured }}
+                                <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">
+                                    <i class="fas fa-star me-2 text-warning"></i>Mettre cet article à la une
+                                </label>
+                            </div>
+                            {% if form.is_featured.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.is_featured.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Les articles mis à la une seront affichés en priorité sur votre site
+                            </div>
+                        </div>
+
+                        <!-- Mots-clés -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.tags.id_for_label }}" class="form-label">
+                                <i class="fas fa-tags me-2"></i>Mots-clés
+                            </label>
+                            {{ form.tags }}
+                            {% if form.tags.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.tags.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Séparez les mots-clés par des virgules
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-search me-2"></i>SEO</h3>
+                    </div>
+                    <div class="section-body">
+                        <!-- Slug -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.slug.id_for_label }}" class="form-label">
+                                <i class="fas fa-link me-2"></i>Slug
+                            </label>
+                            {{ form.slug }}
+                            {% if form.slug.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.slug.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                URL de l'article (généré automatiquement)
+                            </div>
+                        </div>
+
+                        <!-- Meta titre -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.meta_title.id_for_label }}" class="form-label">
+                                <i class="fas fa-heading me-2"></i>Meta titre
+                            </label>
+                            {{ form.meta_title }}
+                            {% if form.meta_title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.meta_title.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Meta description -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.meta_description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Meta description
+                            </label>
+                            {{ form.meta_description }}
+                            {% if form.meta_description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.meta_description.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aperçu de l'article -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-eye me-2"></i>Aperçu</h3>
+                    </div>
+                    <div class="section-body">
+                        <div class="article-preview" id="articlePreview">
+                            <div class="preview-header">
+                                <h5 id="previewTitle">Titre de l'article</h5>
+                                <span class="status-badge status-draft" id="previewStatus">Brouillon</span>
+                            </div>
+                            <div class="preview-meta">
+                                <span class="meta-item">
+                                    <i class="fas fa-user me-1"></i>
+                                    <span id="previewAuthor">Auteur</span>
+                                </span>
+                                <span class="meta-item">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <span id="previewDate">Date</span>
+                                </span>
+                                <span class="meta-item">
+                                    <i class="fas fa-tag me-1"></i>
+                                    <span id="previewCategory">Catégorie</span>
+                                </span>
+                            </div>
+                            <div class="preview-excerpt" id="previewExcerpt">
+                                Extrait de l'article...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="form-actions">
+            <div class="d-flex gap-2 justify-content-between">
+                <div>
+                    <a href="{% url 'content_management:article_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                </div>
+                <div class="d-flex gap-2">
+                    {% if form.instance.pk %}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Mettre à jour
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Créer l'article
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles pour l'éditeur de contenu */
+.editor-container {
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.content-editor {
+    min-height: 400px;
+    padding: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #495057;
+    background: #fff;
+    outline: none;
+    overflow-y: auto;
+}
+
+.content-editor:empty:before {
+    content: attr(data-placeholder);
+    color: #6c757d;
+    font-style: italic;
+}
+
+.content-editor:focus {
+    border-color: #0d4786;
+    box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+}
+
+/* Barre d'outils de formatage */
+.formatting-toolbar {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px 8px 0 0;
+    padding: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.formatting-toolbar .btn {
+    border-radius: 4px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.formatting-toolbar .btn:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.formatting-toolbar .btn.active {
+    background-color: #0d4786;
+    border-color: #0d4786;
+    color: white;
+}
+
+/* Statistiques de l'éditeur */
+.editor-stats {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0 0 8px 8px;
+    padding: 0.5rem 1rem;
+    border-top: none;
+}
+
+/* Aperçu de l'article */
+.article-preview {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.preview-header h5 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-draft {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-published {
+    background: #d4edda;
+    color: #155724;
+}
+
+.preview-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.preview-excerpt {
+    color: #495057;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .formatting-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .formatting-toolbar .btn-group {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .formatting-toolbar .btn {
+        flex: 1;
+        min-width: 60px;
+        margin: 0.125rem;
+    }
+    
+    .content-editor {
+        min-height: 300px;
+        font-size: 16px; /* Évite le zoom sur iOS */
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .section-header h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+    
+    .header-actions {
+        width: 100%;
+    }
+    
+    .header-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-actions .d-flex {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .preview-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .meta-item {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 576px) {
+    .content-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-body {
+        padding: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .formatting-toolbar {
+        padding: 0.5rem;
+    }
+    
+    .formatting-toolbar .btn {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des champs
+    initializeFormFields();
+    
+    // Initialisation de l'éditeur de contenu
+    initializeContentEditor();
+    
+    // Mise à jour en temps réel de l'aperçu
+    setupLivePreview();
+    
+    // Validation du formulaire
+    setupFormValidation();
+    
+    // Gestion des images
+    setupImageHandling();
+});
+
+function initializeFormFields() {
+    // Initialiser Select2 pour la catégorie - TEMPORAIREMENT DÉSACTIVÉ POUR DEBUG
+    /*
+    if (typeof $ !== 'undefined' && $.fn.select2) {
+        $('#{{ form.category.id_for_label }}').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Sélectionner une catégorie...',
+            allowClear: true
+        });
+    }
+    */
+    
+    // Initialiser les tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+}
+
+function initializeContentEditor() {
+    const contentEditor = document.getElementById('contentEditor');
+    const contentEnEditor = document.getElementById('contentEnEditor');
+    const contentField = document.getElementById('{{ form.content.id_for_label }}');
+    const contentEnField = document.getElementById('{{ form.content_en.id_for_label }}');
+    
+    // Initialiser la barre d'outils
+    setupFormattingToolbar();
+    
+    // Synchroniser le contenu avec le champ caché
+    [contentEditor, contentEnEditor].forEach((editor, index) => {
+        if (editor) {
+            const field = index === 0 ? contentField : contentEnField;
+            
+            editor.addEventListener('input', function() {
+                field.value = this.innerHTML;
+                updateEditorStats(this);
+            });
+            
+            editor.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text');
+                document.execCommand('insertHTML', false, text);
+            });
+            
+            // Initialiser les statistiques
+            updateEditorStats(editor);
+        }
+    });
+    
+    // Gestion des raccourcis clavier
+    setupKeyboardShortcuts();
+}
+
+function setupFormattingToolbar() {
+    const toolbar = document.getElementById('formattingToolbar');
+    if (!toolbar) return;
+    
+    toolbar.addEventListener('click', function(e) {
+        if (e.target.tagName === 'BUTTON') {
+            e.preventDefault();
+            const command = e.target.dataset.command;
+            const activeEditor = getActiveEditor();
+            
+            if (activeEditor && command) {
+                executeCommand(command, activeEditor);
+                updateToolbarState();
+            }
+        }
+    });
+}
+
+function executeCommand(command, editor) {
+    switch (command) {
+        case 'createLink':
+            const url = prompt('Entrez l\'URL du lien:');
+            if (url) {
+                document.execCommand('createLink', false, url);
+            }
+            break;
+        case 'insertImage':
+            const imageUrl = prompt('Entrez l\'URL de l\'image:');
+            if (imageUrl) {
+                document.execCommand('insertImage', false, imageUrl);
+            }
+            break;
+        case 'insertTable':
+            insertTable(editor);
+            break;
+        default:
+            document.execCommand(command, false, null);
+    }
+    
+    editor.focus();
+}
+
+function insertTable(editor) {
+    const rows = prompt('Nombre de lignes:', '3');
+    const cols = prompt('Nombre de colonnes:', '3');
+    
+    if (rows && cols) {
+        let table = '<table border="1" style="border-collapse: collapse; width: 100%;">';
+        for (let i = 0; i < rows; i++) {
+            table += '<tr>';
+            for (let j = 0; j < cols; j++) {
+                table += '<td style="padding: 8px; border: 1px solid #ddd;">Cellule</td>';
+            }
+            table += '</tr>';
+        }
+        table += '</table>';
+        
+        document.execCommand('insertHTML', false, table);
+    }
+}
+
+function getActiveEditor() {
+    const contentEditor = document.getElementById('contentEditor');
+    const contentEnEditor = document.getElementById('contentEnEditor');
+    
+    if (document.activeElement === contentEditor) return contentEditor;
+    if (document.activeElement === contentEnEditor) return contentEnEditor;
+    
+    // Retourner l'éditeur principal par défaut
+    return contentEditor;
+}
+
+function updateToolbarState() {
+    const activeEditor = getActiveEditor();
+    if (!activeEditor) return;
+    
+    const buttons = document.querySelectorAll('[data-command]');
+    buttons.forEach(button => {
+        const command = button.dataset.command;
+        if (['bold', 'italic', 'underline'].includes(command)) {
+            if (document.queryCommandState(command)) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        }
+    });
+}
+
+function updateEditorStats(editor) {
+    const text = editor.textContent || '';
+    const charCount = text.length;
+    const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const lineCount = text.split('\n').length;
+    
+    const statsContainer = editor.closest('.editor-container').querySelector('.editor-stats');
+    if (statsContainer) {
+        const charSpan = statsContainer.querySelector('#charCount');
+        const wordSpan = statsContainer.querySelector('#wordCount');
+        const lineSpan = statsContainer.querySelector('#lineCount');
+        
+        if (charSpan) charSpan.textContent = charCount;
+        if (wordSpan) wordSpan.textContent = wordCount;
+        if (lineSpan) lineSpan.textContent = lineCount;
+    }
+}
+
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', function(e) {
+        const activeEditor = getActiveEditor();
+        if (!activeEditor || !activeEditor.contains(document.activeElement)) return;
+        
+        // Ctrl/Cmd + B pour gras
+        if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+            e.preventDefault();
+            document.execCommand('bold', false, null);
+        }
+        
+        // Ctrl/Cmd + I pour italique
+        if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+            e.preventDefault();
+            document.execCommand('italic', false, null);
+        }
+        
+        // Ctrl/Cmd + U pour souligné
+        if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+            e.preventDefault();
+            document.execCommand('underline', false, null);
+        }
+        
+        // Ctrl/Cmd + K pour lien
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            executeCommand('createLink', activeEditor);
+        }
+        
+        updateToolbarState();
+    });
+}
+
+function setupLivePreview() {
+    const titleField = document.getElementById('{{ form.title.id_for_label }}');
+    const excerptField = document.getElementById('{{ form.excerpt.id_for_label }}');
+    const authorField = document.getElementById('{{ form.author.id_for_label }}');
+    const categoryField = document.getElementById('{{ form.category.id_for_label }}');
+    const statusField = document.getElementById('{{ form.status.id_for_label }}');
+    const publishedAtField = document.getElementById('{{ form.published_at.id_for_label }}');
+    
+    // Mettre à jour l'aperçu en temps réel
+    [titleField, excerptField, authorField, categoryField, statusField, publishedAtField].forEach(field => {
+        if (field) {
+            field.addEventListener('input', updatePreview);
+            field.addEventListener('change', updatePreview);
+        }
+    });
+    
+    // Mise à jour initiale
+    updatePreview();
+}
+
+function updatePreview() {
+    const titleField = document.getElementById('{{ form.title.id_for_label }}');
+    const excerptField = document.getElementById('{{ form.excerpt.id_for_label }}');
+    const authorField = document.getElementById('{{ form.author.id_for_label }}');
+    const categoryField = document.getElementById('{{ form.category.id_for_label }}');
+    const statusField = document.getElementById('{{ form.status.id_for_label }}');
+    const publishedAtField = document.getElementById('{{ form.published_at.id_for_label }}');
+    
+    // Mettre à jour le titre
+    const previewTitle = document.getElementById('previewTitle');
+    if (titleField && previewTitle) {
+        previewTitle.textContent = titleField.value || 'Titre de l\'article';
+    }
+    
+    // Mettre à jour l'extrait
+    const previewExcerpt = document.getElementById('previewExcerpt');
+    if (excerptField && previewExcerpt) {
+        previewExcerpt.textContent = excerptField.value || 'Extrait de l\'article...';
+    }
+    
+    // Mettre à jour l'auteur
+    const previewAuthor = document.getElementById('previewAuthor');
+    if (authorField && previewAuthor) {
+        previewAuthor.textContent = '{{ request.user.get_full_name|default:request.user.username }}';
+    }
+    
+    // Mettre à jour la catégorie
+    const previewCategory = document.getElementById('previewCategory');
+    if (categoryField && previewCategory) {
+        if (categoryField.options && categoryField.selectedIndex >= 0) {
+            const selectedOption = categoryField.options[categoryField.selectedIndex];
+            previewCategory.textContent = selectedOption ? selectedOption.text : 'Catégorie';
+        } else {
+            previewCategory.textContent = 'Catégorie';
+        }
+    }
+    
+    // Mettre à jour le statut
+    const previewStatus = document.getElementById('previewStatus');
+    if (statusField && previewStatus) {
+        if (statusField.options && statusField.selectedIndex >= 0) {
+            const statusText = statusField.options[statusField.selectedIndex]?.text || 'Brouillon';
+            previewStatus.textContent = statusText;
+            previewStatus.className = `status-badge status-${statusField.value || 'draft'}`;
+        } else {
+            previewStatus.textContent = 'Brouillon';
+            previewStatus.className = 'status-badge status-draft';
+        }
+    }
+    
+    // Mettre à jour la date
+    const previewDate = document.getElementById('previewDate');
+    if (publishedAtField && previewDate) {
+        if (publishedAtField.value) {
+            const date = new Date(publishedAtField.value);
+            previewDate.textContent = date.toLocaleDateString('fr-FR');
+        } else {
+            previewDate.textContent = 'Date';
+        }
+    }
+}
+
+function setupFormValidation() {
+    const form = document.getElementById('articleForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                showValidationErrors();
+            }
+        });
+    }
+}
+
+function validateForm() {
+    let isValid = true;
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+    
+    return isValid;
+}
+
+function showValidationErrors() {
+    if (window.AdminInterface && window.AdminInterface.showNotification) {
+        window.AdminInterface.showNotification('Veuillez corriger les erreurs dans le formulaire', 'error');
+    } else {
+        alert('Veuillez corriger les erreurs dans le formulaire');
+    }
+}
+
+function setupImageHandling() {
+    const featuredImageField = document.getElementById('{{ form.featured_image.id_for_label }}');
+    const imagesField = document.getElementById('{{ form.images.id_for_label }}');
+    
+    if (featuredImageField) {
+        featuredImageField.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                console.log('Image principale sélectionnée:', file.name);
+            }
+        });
+    }
+    
+    if (imagesField) {
+        imagesField.addEventListener('change', function() {
+            if (this.files) {
+                console.log(`${this.files.length} image(s) supplémentaire(s) sélectionnée(s)`);
+            }
+        });
+    }
+}
+
+// Auto-sauvegarde du formulaire
+let autoSaveTimer;
+const form = document.getElementById('articleForm');
+if (form) {
+    const inputs = form.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                console.log('Auto-sauvegarde...');
+            }, 2000);
+        });
+    });
+}
+
+// Gestion des raccourcis clavier
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + S pour sauvegarder
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        document.getElementById('articleForm').submit();
+    }
+    
+    // Ctrl/Cmd + Enter pour prévisualiser
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        console.log('Prévisualisation...');
+    }
+});
+</script>
+{% endblock %}

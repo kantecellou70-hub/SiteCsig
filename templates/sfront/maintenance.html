@@ -1,0 +1,411 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Site en maintenance - CSIG{% endblock %}
+
+{% block content %}
+<!-- Maintenance Hero -->
+<section class="maintenance-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="maintenance-content">
+                    <div class="maintenance-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h1 class="maintenance-title">Site en maintenance</h1>
+                    <p class="maintenance-subtitle">
+                        Nous travaillons actuellement sur l'amélioration de notre site web 
+                        pour vous offrir une meilleure expérience.
+                    </p>
+                    <div class="maintenance-status">
+                        <div class="status-badge">
+                            <i class="fas fa-clock me-2"></i>
+                            Temps estimé : 2-3 heures
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- What We're Doing Section -->
+<section class="what-we-do-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="what-we-do-container">
+                    <h2>Ce que nous faisons</h2>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="task-card">
+                                <div class="task-icon">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <h5>Amélioration des performances</h5>
+                                <p>Optimisation de la vitesse de chargement et de la réactivité du site.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="task-card">
+                                <div class="task-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <h5>Amélioration mobile</h5>
+                                <p>Optimisation de l'expérience utilisateur sur les appareils mobiles.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="task-card">
+                                <div class="task-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h5>Sécurité renforcée</h5>
+                                <p>Mise à jour des protocoles de sécurité et des certificats.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="task-card">
+                                <div class="task-icon">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                                <h5>Nouveau design</h5>
+                                <p>Amélioration de l'interface utilisateur et de l'expérience visuelle.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Progress Section -->
+<section class="progress-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="progress-container">
+                    <h2>Progression de la maintenance</h2>
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span class="progress-label">Vérification des systèmes</span>
+                            <span class="progress-percentage">100%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span class="progress-label">Mise à jour des bases de données</span>
+                            <span class="progress-percentage">75%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span class="progress-label">Tests de sécurité</span>
+                            <span class="progress-percentage">50%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span class="progress-label">Tests finaux</span>
+                            <span class="progress-percentage">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-secondary" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="contact-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="contact-container text-center">
+                    <h2>Besoin d'aide urgente ?</h2>
+                    <p class="text-muted">
+                        Si vous avez besoin d'informations urgentes pendant la maintenance, 
+                        n'hésitez pas à nous contacter.
+                    </p>
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <i class="fas fa-envelope text-primary"></i>
+                            <h6>Email</h6>
+                            <p>contact@csig.gn</p>
+                        </div>
+                        <div class="contact-method">
+                            <i class="fas fa-phone text-primary"></i>
+                            <h6>Téléphone</h6>
+                            <p>+224 XXX XXX XXX</p>
+                        </div>
+                        <div class="contact-method">
+                            <i class="fas fa-comments text-primary"></i>
+                            <h6>WhatsApp</h6>
+                            <p>+224 XXX XXX XXX</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.maintenance-hero {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+    color: white;
+    padding: 6rem 0;
+    text-align: center;
+}
+
+.maintenance-content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.maintenance-icon {
+    font-size: 5rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.maintenance-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.maintenance-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+.maintenance-status {
+    margin-top: 2rem;
+}
+
+.status-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.what-we-do-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.what-we-do-container {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.what-we-do-container h2 {
+    color: var(--csig-primary);
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.task-card {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    height: 100%;
+    transition: all 0.3s ease;
+    border: 1px solid var(--gray-200);
+}
+
+.task-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+    border-color: var(--csig-primary);
+}
+
+.task-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--csig-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.task-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.task-card h5 {
+    color: var(--csig-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.task-card p {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.progress-section {
+    padding: 4rem 0;
+}
+
+.progress-container {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.progress-container h2 {
+    color: var(--csig-primary);
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.progress-item {
+    margin-bottom: 2rem;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.progress-label {
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.progress-percentage {
+    font-weight: 600;
+    color: var(--csig-primary);
+}
+
+.progress {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--gray-200);
+}
+
+.progress-bar {
+    border-radius: 5px;
+    transition: width 0.6s ease;
+}
+
+.contact-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.contact-container {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.contact-container h2 {
+    color: var(--csig-primary);
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.contact-container p {
+    margin-bottom: 2rem;
+}
+
+.contact-methods {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.contact-method {
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+}
+
+.contact-method i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.contact-method h6 {
+    color: var(--csig-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.contact-method p {
+    color: var(--gray-600);
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .maintenance-title {
+        font-size: 2rem;
+    }
+    
+    .maintenance-icon {
+        font-size: 3rem;
+    }
+    
+    .what-we-do-container,
+    .progress-container,
+    .contact-container {
+        padding: 2rem;
+    }
+    
+    .contact-methods {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .contact-method {
+        min-width: auto;
+    }
+}
+</style>
+{% endblock %}

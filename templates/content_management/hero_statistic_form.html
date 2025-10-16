@@ -1,0 +1,378 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} une Statistique Hero - Page À propos{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+    
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .form-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .form-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 1.1rem;
+    }
+    
+    .form-label i {
+        color: #667eea;
+        margin-right: 0.5rem;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        background: white;
+    }
+    
+    .form-control:focus::placeholder {
+        color: #6c757d;
+    }
+    
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .form-text i {
+        color: #667eea;
+        margin-right: 0.25rem;
+    }
+    
+    .btn-container {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .icon-preview {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-top: 0.5rem;
+        border: 2px dashed #dee2e6;
+    }
+    
+    .icon-preview i {
+        font-size: 2rem;
+        color: #667eea;
+    }
+    
+    .icon-preview-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .help-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .help-section h4 {
+        color: #495057;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .help-section p {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .icon-examples {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .icon-example {
+        text-align: center;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+    
+    .icon-example:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .icon-example i {
+        font-size: 1.5rem;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+    
+    .icon-example span {
+        display: block;
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-family: monospace;
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1.5rem;
+        }
+        
+        .form-header h1 {
+            font-size: 2rem;
+        }
+        
+        .form-card {
+            padding: 1.5rem;
+        }
+        
+        .btn-container {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+        
+        .icon-examples {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1><i class="fas fa-chart-line me-3"></i>{{ action }} une Statistique Hero</h1>
+        <p>Configurez les chiffres clés affichés dans la section hero de la page À propos</p>
+    </div>
+</div>
+
+<div class="form-card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.number.id_for_label }}" class="form-label">
+                <i class="fas fa-chart-bar"></i>Chiffre/Statistique
+            </label>
+            {{ form.number }}
+            {% if form.number.help_text %}
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>{{ form.number.help_text }}
+                </div>
+            {% endif %}
+            {% if form.number.errors %}
+                <div class="text-danger mt-1">
+                    {% for error in form.number.errors %}
+                        <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.label.id_for_label }}" class="form-label">
+                <i class="fas fa-tag"></i>Libellé
+            </label>
+            {{ form.label }}
+            {% if form.label.help_text %}
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>{{ form.label.help_text }}
+                </div>
+            {% endif %}
+            {% if form.label.errors %}
+                <div class="text-danger mt-1">
+                    {% for error in form.label.errors %}
+                        <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.order.id_for_label }}" class="form-label">
+                <i class="fas fa-sort-numeric-up"></i>Ordre d'affichage
+            </label>
+            {{ form.order }}
+            {% if form.order.help_text %}
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>{{ form.order.help_text }}
+                </div>
+            {% endif %}
+            {% if form.order.errors %}
+                <div class="text-danger mt-1">
+                    {% for error in form.order.errors %}
+                        <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <div class="form-check">
+                {{ form.is_active }}
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                    <i class="fas fa-toggle-on me-2"></i>Statistique active
+                </label>
+            </div>
+            {% if form.is_active.help_text %}
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>{{ form.is_active.help_text }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="btn-container">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                {% if action == 'Créer' %}Créer la statistique{% else %}Enregistrer les modifications{% endif %}
+            </button>
+            <a href="{% url 'content_management:hero_statistic_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>Retour à la liste
+            </a>
+        </div>
+    </form>
+    
+    <div class="help-section">
+        <h4><i class="fas fa-lightbulb me-2"></i>Conseils pour vos statistiques</h4>
+        <p>Les statistiques hero sont affichées en grand format sur la page À propos. Choisissez des chiffres impactants qui mettent en valeur votre organisation :</p>
+        <ul class="mb-3">
+            <li><strong>Exemples de chiffres :</strong> 50+, 100+, 1000+, 25 ans, 95%</li>
+            <li><strong>Exemples de libellés :</strong> "Projets réalisés", "Chercheurs actifs", "Années d'expérience", "Taux de réussite"</li>
+            <li><strong>Ordre d'affichage :</strong> Les statistiques s'affichent du plus petit au plus grand ordre</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Amélioration de l'expérience utilisateur
+    const inputs = document.querySelectorAll('.form-control');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+    });
+    
+    // Validation en temps réel
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const numberInput = document.getElementById('{{ form.number.id_for_label }}');
+        const labelInput = document.getElementById('{{ form.label.id_for_label }}');
+        
+        if (!numberInput.value.trim()) {
+            e.preventDefault();
+            alert('Veuillez saisir un chiffre/statistique');
+            numberInput.focus();
+            return false;
+        }
+        
+        if (!labelInput.value.trim()) {
+            e.preventDefault();
+            alert('Veuillez saisir un libellé');
+            labelInput.focus();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

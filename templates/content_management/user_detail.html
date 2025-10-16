@@ -1,0 +1,789 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ user.first_name }} {{ user.last_name }} - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.user-detail-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.user-detail-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.user-detail-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.1);
+    z-index: 1;
+}
+
+.user-detail-header > * {
+    position: relative;
+    z-index: 2;
+}
+
+.user-avatar-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 3rem;
+    margin: 0 auto 1rem;
+    border: 4px solid rgba(255,255,255,0.3);
+}
+
+.user-avatar-large img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-name {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.user-username {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.user-status-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.user-detail-body {
+    padding: 2rem;
+}
+
+.user-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.info-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border-left: 4px solid #17a2b8;
+}
+
+.info-card h4 {
+    color: #495057;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.info-value {
+    color: #495057;
+    text-align: right;
+}
+
+.user-actions-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.action-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.action-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+}
+
+.btn-warning {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-success {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+@media (max-width: 768px) {
+    .user-detail-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .user-detail-header {
+        padding: 1.5rem;
+    }
+    
+    .user-name {
+        font-size: 2rem;
+    }
+    
+    .user-avatar-large {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+    }
+    
+    .user-detail-body {
+        padding: 1rem;
+    }
+    
+    .user-info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .info-value {
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-detail-header {
+        padding: 1rem;
+    }
+    
+    .user-name {
+        font-size: 1.5rem;
+    }
+    
+    .user-avatar-large {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+    
+    .user-detail-body {
+        padding: 0.75rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-user me-2"></i>Détails de l'utilisateur
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Informations complètes et actions disponibles</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:user_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-home me-2"></i>Tableau de bord
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="user-detail-container">
+    <!-- En-tête avec avatar et informations principales -->
+    <div class="user-detail-header">
+        {% if user.avatar_url %}
+            <img src="{{ user.avatar_url }}" alt="Avatar" class="user-avatar-large">
+        {% else %}
+            <div class="user-avatar-large">
+                {% if user.first_name and user.last_name %}
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                {% else %}
+                    {{ user.username|first|upper }}
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <h1 class="user-name">
+            {% if user.first_name and user.last_name %}
+                {{ user.first_name }} {{ user.last_name }}
+            {% else %}
+                {{ user.username }}
+            {% endif %}
+        </h1>
+        
+        <p class="user-username">@{{ user.username }}</p>
+        
+        <span class="user-status-badge status-{{ user.status }}">
+            {% if user.status == 'active' %}
+                Actif
+            {% else %}
+                Inactif
+            {% endif %}
+        </span>
+        
+        {% if user.is_superuser %}
+            <br><span class="badge bg-danger" style="margin-top: 0.5rem;">Administrateur</span>
+        {% endif %}
+    </div>
+
+    <!-- Corps avec informations détaillées -->
+    <div class="user-detail-body">
+        <!-- Grille d'informations -->
+        <div class="user-info-grid">
+            <!-- Informations personnelles -->
+            <div class="info-card">
+                <h4><i class="fas fa-user me-2"></i>Informations personnelles</h4>
+                <div class="info-item">
+                    <span class="info-label">Nom complet</span>
+                    <span class="info-value">
+                        {% if user.first_name and user.last_name %}
+                            {{ user.first_name }} {{ user.last_name }}
+                        {% else %}
+                            Non renseigné
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nom d'utilisateur</span>
+                    <span class="info-value">{{ user.username }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ user.email }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Téléphone</span>
+                    <span class="info-value">{{ user.phone|default:"Non renseigné" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Langue</span>
+                    <span class="info-value">
+                        {% if user.language == 'fr' %}Français{% else %}English{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Informations professionnelles -->
+            <div class="info-card">
+                <h4><i class="fas fa-briefcase me-2"></i>Informations professionnelles</h4>
+                <div class="info-item">
+                    <span class="info-label">Poste</span>
+                    <span class="info-value">{{ user.job_title|default:"Non renseigné" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Département</span>
+                    <span class="info-value">{{ user.department|default:"Non renseigné" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Vérifié</span>
+                    <span class="info-value">
+                        {% if user.is_verified %}
+                            <span class="badge bg-success">Oui</span>
+                        {% else %}
+                            <span class="badge bg-warning">Non</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Informations du compte -->
+            <div class="info-card">
+                <h4><i class="fas fa-shield-alt me-2"></i>Informations du compte</h4>
+                <div class="info-item">
+                    <span class="info-label">Statut</span>
+                    <span class="info-value">
+                        {% if user.is_active %}
+                            <span class="badge bg-success">Actif</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactif</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Staff</span>
+                    <span class="info-value">
+                        {% if user.is_staff %}
+                            <span class="badge bg-primary">Oui</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Non</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Rôles</span>
+                    <span class="info-value">
+                        {% if user.roles %}
+                            {% for role in user.roles %}
+                                <span class="badge bg-primary me-1">{{ role }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="badge bg-secondary">Aucun rôle</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Informations de connexion -->
+            <div class="info-card">
+                <h4><i class="fas fa-clock me-2"></i>Informations de connexion</h4>
+                <div class="info-item">
+                    <span class="info-label">Créé le</span>
+                    <span class="info-value">{{ user.date_joined|slice:":10" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Dernière connexion</span>
+                    <span class="info-value">
+                        {% if user.last_login %}
+                            {{ user.last_login|slice:":10" }}
+                        {% else %}
+                            Jamais
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section des actions -->
+        <div class="user-actions-section">
+            <h3 class="mb-3"><i class="fas fa-tools me-2"></i>Actions disponibles</h3>
+            
+            <div class="actions-grid">
+                <!-- Modification du profil -->
+                <div class="action-card">
+                    <h5 class="action-title">Modifier le profil</h5>
+                    <p class="text-muted mb-3">Mettre à jour les informations personnelles et professionnelles</p>
+                    <button class="btn btn-primary" onclick="showEditModal()">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </button>
+                </div>
+
+                <!-- Changement de statut -->
+                <div class="action-card">
+                    <h5 class="action-title">Statut du compte</h5>
+                    <p class="text-muted mb-3">
+                        {% if user.is_active %}
+                            Le compte est actuellement actif
+                        {% else %}
+                            Le compte est actuellement inactif
+                        {% endif %}
+                    </p>
+                    <button class="btn btn-warning" onclick="toggleUserStatus()">
+                        {% if user.is_active %}
+                            <i class="fas fa-pause me-2"></i>Désactiver
+                        {% else %}
+                            <i class="fas fa-play me-2"></i>Activer
+                        {% endif %}
+                    </button>
+                </div>
+
+                <!-- Changement de rôle -->
+                <div class="action-card">
+                    <h5 class="action-title">Changer le rôle</h5>
+                    <p class="text-muted mb-3">Attribuer un nouveau rôle à l'utilisateur</p>
+                    <select class="form-control mb-2" id="newRoleSelect">
+                        <option value="">Sélectionner un rôle</option>
+                        {% for role in available_roles %}
+                            <option value="{{ role.id }}">{{ role.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-success" onclick="changeUserRole()">
+                        <i class="fas fa-user-shield me-2"></i>Changer le rôle
+                    </button>
+                </div>
+
+                <!-- Suppression du compte -->
+                <div class="action-card">
+                    <h5 class="action-title">Supprimer le compte</h5>
+                    <p class="text-muted mb-3">Cette action est irréversible et supprimera définitivement l'utilisateur</p>
+                    <button class="btn btn-danger" onclick="deleteUser()">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de modification -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier l'utilisateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_user">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Prénom</label>
+                                <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-control" name="last_name" value="{{ user.last_name }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" value="{{ user.email }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Téléphone</label>
+                                <input type="text" class="form-control" name="phone" value="{{ user.phone }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Poste</label>
+                                <input type="text" class="form-control" name="job_title" value="{{ user.job_title }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Département</label>
+                                <input type="text" class="form-control" name="department" value="{{ user.department }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Langue</label>
+                        <select class="form-control" name="language">
+                            <option value="fr" {% if user.language == 'fr' %}selected{% endif %}>Français</option>
+                            <option value="en" {% if user.language == 'en' %}selected{% endif %}>English</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="saveUserChanges()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let editModal;
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+});
+
+function showEditModal() {
+    editModal.show();
+}
+
+function saveUserChanges() {
+    const form = document.getElementById('editUserForm');
+    const formData = new FormData(form);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomNotification(data.message, 'success');
+            editModal.hide();
+            // Recharger la page pour afficher les changements
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showCustomNotification(data.message || 'Erreur lors de la modification', 'error');
+        }
+    })
+    .catch(error => {
+        showCustomNotification('Erreur lors de la communication avec le serveur', 'error');
+    });
+}
+
+function toggleUserStatus() {
+    const formData = new FormData();
+    formData.append('action', 'toggle_status');
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showCustomNotification(data.message || 'Erreur lors du changement de statut', 'error');
+        }
+    })
+    .catch(error => {
+        showCustomNotification('Erreur lors de la communication avec le serveur', 'error');
+    });
+}
+
+function changeUserRole() {
+    const roleId = document.getElementById('newRoleSelect').value;
+    if (!roleId) {
+        showCustomNotification('Veuillez sélectionner un rôle', 'warning');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('action', 'change_role');
+    formData.append('role_id', roleId);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showCustomNotification(data.message || 'Erreur lors du changement de rôle', 'error');
+        }
+    })
+    .catch(error => {
+        showCustomNotification('Erreur lors de la communication avec le serveur', 'error');
+    });
+}
+
+function deleteUser() {
+    showCustomConfirm(
+        'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.',
+        function() {
+            const formData = new FormData();
+            formData.append('action', 'delete_user');
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    return response.json();
+                }
+            })
+            .then(data => {
+                if (data && data.success) {
+                    showCustomNotification(data.message, 'success');
+                    setTimeout(() => window.location.href = '{% url "content_management:user_list" %}', 1500);
+                }
+            })
+            .catch(error => {
+                showCustomNotification('Erreur lors de la suppression', 'error');
+            });
+        }
+    );
+}
+</script>
+{% endblock %}

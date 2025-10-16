@@ -1,0 +1,192 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% if partner %}
+        Modifier le partenaire - {{ partner.name }}
+    {% else %}
+        Nouveau partenaire
+    {% endif %}
+    - CSIG
+{% endblock %}
+
+{% block page_title %}
+    {% if partner %}
+        <i class="fas fa-edit me-2"></i>Modifier le partenaire
+    {% else %}
+        <i class="fas fa-plus me-2"></i>Nouveau partenaire
+    {% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    {% if partner %}
+        Modifiez les informations du partenaire "{{ partner.name }}"
+    {% else %}
+        Ajoutez un nouveau partenaire au projet "{{ project.title }}"
+    {% endif %}
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:project_detail' project.pk %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour au projet
+    </a>
+    <button type="submit" form="partnerForm" class="btn btn-primary">
+        <i class="fas fa-save me-2"></i>
+        {% if partner %}Mettre à jour{% else %}Ajouter{% endif %}
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        {% if partner %}
+                            <i class="fas fa-edit me-2"></i>Modifier le partenaire
+                        {% else %}
+                            <i class="fas fa-plus me-2"></i>Nouveau partenaire
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form id="partnerForm" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label required">Nom du partenaire</label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.role.id_for_label }}" class="form-label required">Rôle dans le projet</label>
+                                    {{ form.role }}
+                                    {% if form.role.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.role.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.logo.id_for_label }}" class="form-label">Logo</label>
+                                    {{ form.logo }}
+                                    {% if form.logo.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.logo.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.website.id_for_label }}" class="form-label">Site web</label>
+                                    {{ form.website }}
+                                    {% if form.website.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.website.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.contact_email.id_for_label }}" class="form-label">Email de contact</label>
+                                    {{ form.contact_email }}
+                                    {% if form.contact_email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.contact_email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.contact_phone.id_for_label }}" class="form-label">Téléphone</label>
+                                    {{ form.contact_phone }}
+                                    {% if form.contact_phone.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.contact_phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    Partenaire actif
+                                </label>
+                            </div>
+                            {% if form.is_active.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.is_active.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'content_management:project_detail' project.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour au projet
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                {% if partner %}Mettre à jour{% else %}Ajouter{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

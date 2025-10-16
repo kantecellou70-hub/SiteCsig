@@ -1,0 +1,799 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Gérer les champs du formulaire" %} - {{ event.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Prévention du débordement horizontal */
+    body {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    
+    .container {
+        max-width: 100%;
+        overflow-x: hidden;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    /* Styles principaux */
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .form-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .form-header h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0;
+        opacity: 0.9;
+    }
+    
+    .back-link {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .back-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .fields-container {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .fields-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .fields-title {
+        color: #333;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-secondary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-danger-custom {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-danger-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+    
+
+    
+    .fields-list {
+        margin-bottom: 2rem;
+    }
+    
+    .field-item {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .field-item:hover {
+        border-color: #667eea;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .field-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .field-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    
+    .field-type {
+        background: #667eea;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .field-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .field-detail {
+        background: white;
+        padding: 0.75rem;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .detail-value {
+        color: #333;
+        font-size: 1rem;
+    }
+    
+    .field-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+    
+    .no-fields {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .no-fields i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .form-header {
+            padding: 1.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-header h1 {
+            font-size: 2rem;
+        }
+        
+        .form-header h3 {
+            font-size: 1.2rem;
+        }
+        
+        .fields-container {
+            padding: 1.5rem;
+        }
+        
+        .fields-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .field-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .field-actions {
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .form-header {
+            padding: 1rem 0;
+        }
+        
+        .form-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .form-header h3 {
+            font-size: 1rem;
+        }
+        
+        .fields-container {
+            padding: 1rem;
+        }
+        
+        .field-item {
+            padding: 1rem;
+        }
+        
+        .field-details {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* Styles pour les notifications personnalisées */
+    #notificationContainer .alert {
+        animation: slideInRight 0.3s ease-out;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    #notificationContainer .alert .btn-close {
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+    
+    #notificationContainer .alert .btn-close:hover {
+        opacity: 1;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Styles pour les modals */
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .modal-header {
+        border-bottom: 2px solid #e9ecef;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .modal-footer {
+        border-top: 2px solid #e9ecef;
+        border-radius: 0 0 15px 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="form-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-3">
+                    <i class="fas fa-list me-3"></i>
+                    {% trans "Gérer les champs du formulaire" %}
+                </h1>
+                <h3 class="mb-0">{{ event.title }}</h3>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'content_management:event_registration_form_manage' event.pk %}" class="back-link">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    {% trans "Retour à la gestion" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="fields-container">
+        <form id="mainForm" style="display: none;">
+            {% csrf_token %}
+        </form>
+        <div class="fields-header">
+            <h4 class="fields-title">
+                <i class="fas fa-cogs me-2"></i>
+                {% trans "Champs du formulaire d'inscription" %}
+            </h4>
+            
+            <button type="button" class="btn btn-primary-custom" onclick="openAddFieldModal()">
+                <i class="fas fa-plus me-2"></i>
+                {% trans "Ajouter un champ" %}
+            </button>
+        </div>
+        
+        <!-- Liste des champs -->
+        <div class="fields-list">
+            {% if form_fields %}
+                {% for field in form_fields %}
+                <div class="field-item" data-field-id="{{ field.pk }}">
+                    <div class="field-header">
+                        <h5 class="field-title">{{ field.label }}</h5>
+                        <span class="field-type">{{ field.get_field_type_display }}</span>
+                    </div>
+                    
+                    <div class="field-details">
+                        <div class="field-detail">
+                            <div class="detail-label">{% trans "Type" %}</div>
+                            <div class="detail-value">{{ field.get_field_type_display }}</div>
+                        </div>
+                        
+                        {% if field.required %}
+                        <div class="field-detail">
+                            <div class="detail-label">{% trans "Obligatoire" %}</div>
+                            <div class="detail-value">{% trans "Oui" %}</div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if field.help_text %}
+                        <div class="field-detail">
+                            <div class="detail-label">{% trans "Aide" %}</div>
+                            <div class="detail-value">{{ field.help_text }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if field.placeholder %}
+                        <div class="field-detail">
+                            <div class="detail-label">{% trans "Placeholder" %}</div>
+                            <div class="detail-value">{{ field.placeholder }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if field.field_type in 'select,radio,multiselect' and field.options.exists %}
+                        <div class="field-detail">
+                            <div class="detail-label">{% trans "Options" %}</div>
+                            <div class="detail-value">
+                                {% for option in field.options.all %}
+                                    <span class="badge bg-secondary me-1">{{ option.label }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="field-actions">
+                        <button type="button" class="btn btn-secondary-custom" onclick="editField({{ field.pk }})">
+                            <i class="fas fa-edit me-1"></i>
+                            {% trans "Modifier" %}
+                        </button>
+                        
+                        <button type="button" class="btn btn-danger-custom" onclick="deleteField({{ field.pk }})">
+                            <i class="fas fa-trash me-1"></i>
+                            {% trans "Supprimer" %}
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-fields">
+                    <i class="fas fa-list-ul"></i>
+                    <h5>{% trans "Aucun champ configuré" %}</h5>
+                    <p>{% trans "Commencez par ajouter des champs à votre formulaire d'inscription." %}</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Actions -->
+        <div class="text-center">
+            <a href="{% url 'content_management:event_registration_form_manage' event.pk %}" class="btn btn-secondary-custom">
+                <i class="fas fa-arrow-left me-2"></i>
+                {% trans "Retour à la gestion" %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter/modifier un champ -->
+<div class="modal fade" id="fieldModal" tabindex="-1" aria-labelledby="fieldModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fieldModalLabel">
+                    <i class="fas fa-plus me-2"></i>
+                    <span id="modalTitle">{% trans "Ajouter un champ" %}</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="fieldForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="fieldId" name="field_id">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fieldLabel" class="form-label">{% trans "Libellé du champ" %}</label>
+                                <input type="text" class="form-control" id="fieldLabel" name="label" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fieldType" class="form-label">{% trans "Type de champ" %}</label>
+                                <select class="form-control" id="fieldType" name="field_type" required>
+                                    <option value="">{% trans "Sélectionnez un type" %}</option>
+                                    <option value="text">{% trans "Texte court" %}</option>
+                                    <option value="textarea">{% trans "Texte long" %}</option>
+                                    <option value="email">{% trans "Email" %}</option>
+                                    <option value="phone">{% trans "Téléphone" %}</option>
+                                    <option value="date">{% trans "Date" %}</option>
+                                    <option value="datetime">{% trans "Date et heure" %}</option>
+                                    <option value="number">{% trans "Nombre" %}</option>
+                                    <option value="select">{% trans "Sélection unique" %}</option>
+                                    <option value="radio">{% trans "Boutons radio" %}</option>
+                                    <option value="multiselect">{% trans "Sélection multiple" %}</option>
+                                    <option value="checkbox">{% trans "Case à cocher" %}</option>
+                                    <option value="file">{% trans "Fichier" %}</option>
+                                    <option value="url">{% trans "URL" %}</option>
+                                    <option value="note">{% trans "Note/Description" %}</option>
+                                    <option value="divider">{% trans "Séparateur" %}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fieldPlaceholder" class="form-label">{% trans "Placeholder" %}</label>
+                                <input type="text" class="form-control" id="fieldPlaceholder" name="placeholder">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fieldHelpText" class="form-label">{% trans "Texte d'aide" %}</label>
+                                <input type="text" class="form-control" id="fieldHelpText" name="help_text">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="fieldRequired" name="required">
+                            <label class="form-check-label" for="fieldRequired">
+                                {% trans "Champ obligatoire" %}
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="fieldVisible" name="is_visible" checked>
+                            <label class="form-check-label" for="fieldVisible">
+                                {% trans "Champ visible" %}
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {% trans "Annuler" %}
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveField()">
+                    <i class="fas fa-save me-2"></i>
+                    <span id="saveButtonText">{% trans "Enregistrer" %}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour confirmer la suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    {% trans "Confirmer la suppression" %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Êtes-vous sûr de vouloir supprimer ce champ ?" %}</p>
+                <p class="text-muted small">{% trans "Cette action est irréversible." %}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {% trans "Annuler" %}
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>
+                    {% trans "Supprimer" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notifications personnalisées -->
+<div id="notificationContainer" class="position-fixed" style="top: 20px; right: 20px; z-index: 9999;"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentFieldId = null;
+let currentFieldToDelete = null;
+
+// Fonction pour afficher les notifications personnalisées
+function showNotification(message, type = 'success') {
+    const container = document.getElementById('notificationContainer');
+    const notification = document.createElement('div');
+    
+    const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
+    const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle';
+    
+    notification.className = `alert ${bgClass} text-white border-0 shadow-sm mb-2`;
+    notification.style.minWidth = '300px';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas ${icon} me-2"></i>
+            <span>${message}</span>
+            <button type="button" class="btn-close btn-close-white ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Ouvrir le modal pour ajouter un champ
+function openAddFieldModal() {
+    currentFieldId = null;
+    document.getElementById('modalTitle').textContent = '{% trans "Ajouter un champ" %}';
+    document.getElementById('saveButtonText').textContent = '{% trans "Enregistrer" %}';
+    document.getElementById('fieldForm').reset();
+    document.getElementById('fieldId').value = '';
+    
+    // Réinitialiser les checkboxes
+    document.getElementById('fieldRequired').checked = false;
+    document.getElementById('fieldVisible').checked = true;
+    
+    const modal = new bootstrap.Modal(document.getElementById('fieldModal'));
+    modal.show();
+}
+
+// Ouvrir le modal pour modifier un champ
+function editField(fieldId) {
+    currentFieldId = fieldId;
+    
+    // Récupérer les données du champ
+    const csrfToken = document.querySelector('#mainForm [name=csrfmiddlewaretoken]').value;
+    
+    fetch(`{% url "content_management:event_registration_form_field_data" event.pk 0 %}`.replace('/0/', `/${fieldId}/`), {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const field = data.field;
+            
+            // Remplir le formulaire
+            document.getElementById('fieldId').value = field.id;
+            document.getElementById('fieldLabel').value = field.label;
+            document.getElementById('fieldType').value = field.field_type;
+            document.getElementById('fieldPlaceholder').value = field.placeholder;
+            document.getElementById('fieldHelpText').value = field.help_text;
+            document.getElementById('fieldRequired').checked = field.required;
+            document.getElementById('fieldVisible').checked = field.is_visible;
+            
+            // Mettre à jour le titre et le bouton
+            document.getElementById('modalTitle').textContent = '{% trans "Modifier le champ" %}';
+            document.getElementById('saveButtonText').textContent = '{% trans "Mettre à jour" %}';
+            
+            // Ouvrir le modal
+            const modal = new bootstrap.Modal(document.getElementById('fieldModal'));
+            modal.show();
+        } else {
+            showNotification(data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('Une erreur est survenue lors de la récupération des données', 'error');
+    });
+}
+
+// Sauvegarder ou modifier un champ
+function saveField() {
+    const form = document.getElementById('fieldForm');
+    const formData = new FormData(form);
+    
+    // Ajouter l'ID de l'événement
+    formData.append('event_pk', '{{ event.pk }}');
+    
+    // Récupérer le token CSRF
+    const csrfToken = document.querySelector('#fieldForm [name=csrfmiddlewaretoken]').value;
+    
+    fetch('{% url "content_management:event_registration_form_fields" event.pk %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            
+            // Fermer le modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('fieldModal'));
+            modal.hide();
+            
+            // Recharger la page pour afficher les changements
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('Une erreur est survenue', 'error');
+    });
+}
+
+// Ouvrir le modal de confirmation de suppression
+function deleteField(fieldId) {
+    currentFieldToDelete = fieldId;
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    modal.show();
+}
+
+// Confirmer la suppression
+function confirmDelete() {
+    if (!currentFieldToDelete) return;
+    
+    const fieldId = currentFieldToDelete;
+    const csrfToken = document.querySelector('#mainForm [name=csrfmiddlewaretoken]').value;
+    
+    const deleteFormData = new FormData();
+    deleteFormData.append('_method', 'DELETE');
+    deleteFormData.append('field_id', fieldId);
+    
+    fetch(`{% url "content_management:event_registration_form_fields" event.pk %}`, {
+        method: 'POST',
+        body: deleteFormData,
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            
+            // Fermer le modal de confirmation
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+            modal.hide();
+            
+            // Supprimer l'élément du DOM
+            const fieldElement = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (fieldElement) {
+                fieldElement.remove();
+                
+                // Vérifier s'il reste des champs
+                if (document.querySelectorAll('.field-item').length === 0) {
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            }
+        } else {
+            showNotification(data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('Une erreur est survenue', 'error');
+    });
+    
+    currentFieldToDelete = null;
+}
+
+// Initialiser les événements
+document.addEventListener('DOMContentLoaded', function() {
+    // Lier le bouton de confirmation de suppression
+    document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 'n':
+                    e.preventDefault();
+                    openAddFieldModal();
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    window.location.href = "{% url 'content_management:event_registration_form_manage' event.pk %}";
+                    break;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1886 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ program.title }} - CSIG{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-eye me-2"></i>{{ program.title }}
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Détails du programme et informations complètes
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:program_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:program_edit' program.pk %}" class="btn btn-primary">
+        <i class="fas fa-edit me-2"></i>Modifier
+    </a>
+    <button class="btn btn-outline-danger" onclick="showDeleteConfirm({{ program.pk }}, '{{ program.title|escapejs }}')">
+        <i class="fas fa-trash me-2"></i>Supprimer
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.program-detail-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.program-header-detail {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 3rem 2rem;
+    border-radius: 25px;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(13, 71, 134, 0.3);
+}
+
+.program-header-detail::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.program-header-detail::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -15%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.program-title-large {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.program-subtitle {
+    font-size: 1.3rem;
+    opacity: 0.95;
+    margin-bottom: 2rem;
+    font-weight: 300;
+    position: relative;
+    z-index: 2;
+}
+
+.program-meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.meta-badge {
+    padding: 0.75rem 1.25rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255,255,255,0.1);
+}
+
+.meta-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.3);
+}
+
+.meta-badge.status-draft {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.meta-badge.status-published {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.meta-badge.status-archived {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.meta-badge.level {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+}
+
+.meta-badge.duration {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+.program-image-large {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.program-image-large img {
+    border-radius: 20px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+    max-width: 100%;
+    height: auto;
+    border: 4px solid rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+}
+
+.program-image-large img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    border-color: rgba(255,255,255,0.4);
+}
+
+.content-section {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
+    border: 1px solid #e9ecef;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+
+.content-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.4s ease;
+}
+
+.content-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+}
+
+.content-section:hover::before {
+    width: 12px;
+}
+
+.content-section h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0d4786;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.content-section h3::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    border-radius: 2px;
+}
+
+.content-section h3 i {
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 4px rgba(13, 71, 134, 0.3));
+}
+
+.section-body {
+    color: #495057;
+    line-height: 1.7;
+}
+
+.program-description-full,
+.program-objectives,
+.program-results {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.price-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.free-badge {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.price-badge {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.dates-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.date-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #0d4786;
+}
+
+.date-item i {
+    color: #0d4786;
+    margin-right: 0.5rem;
+}
+
+.capacity-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.capacity-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #17a2b8;
+}
+
+.capacity-item i {
+    color: #17a2b8;
+    margin-right: 0.5rem;
+}
+
+.stats-grid-detailed {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-item-detailed {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    transition: all 0.4s ease;
+    border: 1px solid #e9ecef;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-item-detailed::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+}
+
+.stat-item-detailed:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+}
+
+.stat-item-detailed:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-icon-detailed {
+    font-size: 2rem;
+    color: #0d4786;
+    margin-bottom: 1rem;
+}
+
+.stat-number-detailed {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d4786;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label-detailed {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 16px;
+    border: 1px solid #e9ecef;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.info-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transform: scaleY(0);
+    transition: transform 0.4s ease;
+}
+
+.info-item:hover {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+    border-color: #0d4786;
+    transform: translateX(5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.info-item:hover::before {
+    transform: scaleY(1);
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.info-value {
+    color: #0d4786;
+    font-weight: 600;
+}
+
+.quick-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.quick-actions-list .btn {
+    border-radius: 16px;
+    font-weight: 600;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    padding: 0.875rem 1.5rem;
+}
+
+.quick-actions-list .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.quick-actions-list .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+}
+
+.quick-actions-list .btn:hover::before {
+    left: 100%;
+}
+
+.history-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-color: #0d4786;
+}
+
+.history-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.history-content {
+    flex: 1;
+}
+
+.history-title {
+    font-weight: 600;
+    color: #0d4786;
+    margin-bottom: 0.25rem;
+}
+
+.history-date {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.history-user {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .program-header-detail {
+        padding: 1.5rem;
+    }
+    
+    .program-title-large {
+        font-size: 2rem;
+    }
+    
+    .program-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .content-section {
+        padding: 1.5rem;
+    }
+    
+    .stats-grid-detailed {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .program-meta-badges {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .program-header-detail {
+        padding: 1rem;
+    }
+    
+    .program-title-large {
+        font-size: 1.5rem;
+    }
+    
+    .program-subtitle {
+        font-size: 1rem;
+    }
+    
+    .content-section {
+        padding: 1rem;
+    }
+    
+    .content-section h3 {
+        font-size: 1.25rem;
+    }
+    
+    .content-section h3 i {
+        font-size: 1.5rem;
+    }
+    
+    .stat-item-detailed {
+        padding: 1rem;
+    }
+    
+    .stat-icon-detailed {
+        font-size: 1.5rem;
+    }
+    
+    .stat-number-detailed {
+        font-size: 1.25rem;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .history-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+}
+
+/* Règles globales pour empêcher le défilement horizontal */
+@media (max-width: 768px) {
+    body, html {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    
+    .container, .container-fluid {
+        overflow-x: hidden;
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .program-detail-container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .content-section {
+        overflow-x: hidden;
+    }
+    
+    .stats-grid-detailed {
+        overflow-x: hidden;
+    }
+    
+    .info-list {
+        overflow-x: hidden;
+    }
+    
+    .history-timeline {
+        overflow-x: hidden;
+    }
+    
+    /* Ajuster la grille des statistiques */
+    .stats-grid-detailed {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    /* Ajuster les badges meta */
+    .program-meta-badges {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .meta-badge {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Ajuster la grille des informations */
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .info-label {
+        font-weight: 700;
+        color: #0d4786;
+        font-size: 0.9rem;
+    }
+    
+    .info-value {
+        width: 100%;
+    }
+    
+    /* Ajuster les actions rapides */
+    .quick-actions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .quick-actions-list .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Ajuster l'historique */
+    .history-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .history-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    
+    .history-icon {
+        align-self: center;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Styles pour les très petits écrans */
+    .program-header-detail {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+    
+    .program-title-large {
+        font-size: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .program-subtitle {
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+    
+    .content-section {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .content-section h3 {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .content-section h3 i {
+        font-size: 1.5rem;
+    }
+    
+    .stat-item-detailed {
+        padding: 1rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    
+    .stat-icon-detailed {
+        font-size: 1.5rem;
+        align-self: center;
+    }
+    
+    .stat-number-detailed {
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    
+    .stat-label-detailed {
+        font-size: 0.85rem;
+    }
+    
+    /* Ajuster les badges de statut */
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    /* Ajuster les boutons d'action */
+    .page-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        justify-content: center;
+    }
+    
+    .page-actions .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    /* Ajuster les informations techniques */
+    .info-list {
+        gap: 0.75rem;
+    }
+    
+    .info-item {
+        padding: 0.75rem;
+        border-radius: 8px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+    
+    .info-label {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        font-size: 0.9rem;
+    }
+    
+    /* Ajuster l'historique */
+    .history-item {
+        padding: 1rem;
+        border-radius: 8px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+    
+    .history-title {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .history-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .history-user {
+        font-size: 0.8rem;
+        color: #495057;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Styles pour les très très petits écrans */
+    .program-header-detail {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 16px;
+    }
+    
+    .program-title-large {
+        font-size: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .program-subtitle {
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+    
+    .content-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 16px;
+    }
+    
+    .content-section h3 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .content-section h3 i {
+        font-size: 1.5rem;
+    }
+    
+    .content-section h3::after {
+        width: 40px;
+        height: 2px;
+    }
+    
+    .stat-item-detailed {
+        padding: 1rem;
+    }
+    
+    .stat-number-detailed {
+        font-size: 1.3rem;
+    }
+    
+    .stat-label-detailed {
+        font-size: 0.8rem;
+    }
+    
+    .info-item {
+        padding: 0.75rem;
+    }
+    
+    .info-label {
+        font-size: 0.8rem;
+    }
+    
+    .info-value {
+        font-size: 0.9rem;
+    }
+    
+    .history-item {
+        padding: 1rem;
+    }
+    
+    .history-title {
+        font-size: 1rem;
+    }
+    
+    .history-date {
+        font-size: 0.8rem;
+    }
+    
+    .history-user {
+        font-size: 0.75rem;
+    }
+    
+    /* Ajuster les boutons */
+    .btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+    }
+    
+    .page-actions .btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.8rem;
+    }
+    
+    /* Ajuster les badges meta */
+    .meta-badge {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajuster l'image */
+    .program-image-large img {
+        border-width: 2px;
+    }
+    
+    /* Empêcher le défilement horizontal */
+    body, html {
+        overflow-x: hidden;
+        max-width: 100vw;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .container, .container-fluid {
+        overflow-x: hidden;
+        max-width: 100%;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    
+    .program-detail-container {
+        max-width: 100%;
+        overflow-x: hidden;
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .content-section {
+        overflow-x: hidden;
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .stats-grid-detailed {
+        overflow-x: hidden;
+        max-width: 100%;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .info-list {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+    
+    .history-timeline {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+    
+    /* Gérer les longs textes */
+    .program-title-large,
+    .program-subtitle,
+    .content-section h3,
+    .info-label,
+    .info-value,
+    .history-title,
+    .history-date,
+    .history-user {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+        white-space: normal;
+    }
+    
+    /* Ajuster les badges meta */
+    .program-meta-badges {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .meta-badge {
+        width: 100%;
+        text-align: center;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Ajuster les informations */
+    .info-item {
+        min-width: 0;
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .info-label,
+    .info-value {
+        min-width: 0;
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Ajuster l'historique */
+    .history-item {
+        min-width: 0;
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .history-content {
+        min-width: 0;
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Ajuster le modal sur mobile */
+    #deleteConfirmModal .modal-dialog {
+        margin: 1rem;
+    }
+    
+    #deleteConfirmModal .modal-content {
+        border-radius: 16px;
+    }
+    
+    #deleteConfirmModal .modal-header,
+    #deleteConfirmModal .modal-body,
+    #deleteConfirmModal .modal-footer {
+        padding: 1rem;
+    }
+}
+
+/* Gestion des longs textes */
+.program-title-large,
+.program-subtitle,
+.content-section h3,
+.program-description-full,
+.program-objectives,
+.program-results,
+.info-label,
+.info-value,
+.history-title,
+.history-date,
+.history-user {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Optimisation des grilles */
+.stats-grid-detailed {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Gestion des cartes */
+.stat-item-detailed,
+.info-item,
+.history-item {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.content-section {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.stat-item-detailed,
+.info-item,
+.history-item {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Styles pour le modal de suppression */
+#deleteConfirmModal .modal-content {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+#deleteConfirmModal .modal-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    padding: 1.5rem;
+}
+
+#deleteConfirmModal .modal-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+#deleteConfirmModal .modal-body {
+    padding: 2rem;
+}
+
+#deleteConfirmModal .modal-footer {
+    padding: 1.5rem;
+    gap: 1rem;
+}
+
+#deleteConfirmModal .btn {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+#deleteConfirmModal .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+#deleteConfirmModal .alert {
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+/* Styles spécifiques pour les sections de la sidebar */
+.sidebar-section {
+    padding: 2rem !important;
+    margin-bottom: 2rem !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    transition: all 0.4s ease;
+}
+
+/* Styles pour les badges de statut */
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.status-badge.status-draft {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-badge.status-published {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-badge.status-archived {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.sidebar-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 45px rgba(0,0,0,0.12);
+    border-color: #0d4786;
+}
+
+.sidebar-section h3 {
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+    color: #0d4786;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.75rem;
+}
+
+.sidebar-section h3::after {
+    width: 50px;
+    height: 2px;
+    bottom: -0.75rem;
+}
+
+/* Amélioration des éléments d'information */
+.sidebar-section .info-item {
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.sidebar-section .info-item:hover {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+    border-color: #0d4786;
+    transform: translateX(3px);
+}
+
+.sidebar-section .info-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-section .info-value {
+    color: #0d4786;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Amélioration des boutons d'action */
+.sidebar-section .quick-actions-list .btn {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-section .quick-actions-list .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.4s ease;
+}
+
+.sidebar-section .quick-actions-list .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.sidebar-section .quick-actions-list .btn:hover::before {
+    left: 100%;
+}
+
+/* Amélioration de l'historique */
+.sidebar-section .history-item {
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.sidebar-section .history-item:hover {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+    border-color: #0d4786;
+    transform: translateX(3px);
+}
+
+.sidebar-section .history-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    box-shadow: 0 4px 15px rgba(13, 71, 134, 0.3);
+}
+
+.sidebar-section .history-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0d4786;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-section .history-date {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-section .history-user {
+    font-size: 0.8rem;
+    color: #495057;
+}
+
+/* Responsive pour la sidebar */
+@media (max-width: 992px) {
+    .sidebar-section {
+        padding: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .sidebar-section h3 {
+        font-size: 1.4rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    .sidebar-section .info-item,
+    .sidebar-section .history-item {
+        padding: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .sidebar-section .quick-actions-list .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar-section {
+        padding: 1.25rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+    
+    .sidebar-section h3 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .sidebar-section .info-item,
+    .sidebar-section .history-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .sidebar-section .quick-actions-list .btn {
+        padding: 0.7rem 0.9rem;
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Gestion de l'orientation paysage sur mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .program-header-detail {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .program-title-large {
+        font-size: 1.5rem;
+    }
+    
+    .program-subtitle {
+        font-size: 1rem;
+    }
+    
+    .content-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-grid-detailed {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .info-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .quick-actions-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .quick-actions-list .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) and (orientation: landscape) {
+    .program-header-detail {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .program-title-large {
+        font-size: 1.25rem;
+    }
+    
+    .program-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .content-section {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .stats-grid-detailed {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .stat-item-detailed {
+        padding: 0.5rem;
+    }
+    
+    .stat-number-detailed {
+        font-size: 1rem;
+    }
+    
+    .stat-label-detailed {
+        font-size: 0.7rem;
+    }
+    
+    .info-list {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .quick-actions-list {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .quick-actions-list .btn {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="program-detail-container">
+    <!-- En-tête du programme -->
+    <div class="program-header-detail mb-4">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="program-main-info">
+                    <div class="program-title-large">{{ program.title }}</div>
+                    {% if program.short_description %}
+                    <div class="program-subtitle">{{ program.short_description }}</div>
+                    {% endif %}
+                    
+                    <div class="program-meta-badges">
+                        <span class="meta-badge status-{{ program.status }}">
+                            {{ program.get_status_display }}
+                        </span>
+                        {% if program.level %}
+                        <span class="meta-badge level">
+                            <i class="fas fa-layer-group me-1"></i>
+                            {% if program.level == 'beginner' %}Débutant
+                            {% elif program.level == 'intermediate' %}Intermédiaire
+                            {% elif program.level == 'advanced' %}Avancé
+                            {% else %}{{ program.level }}{% endif %}
+                        </span>
+                        {% endif %}
+                        {% if program.duration %}
+                        <span class="meta-badge duration">
+                            <i class="fas fa-clock me-1"></i>{{ program.duration }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                {% if program.featured_image %}
+                <div class="program-image-large">
+                    <img src="{{ program.featured_image.url }}" alt="{{ program.title }}" class="img-fluid rounded">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contenu principal -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Description -->
+            <div class="content-section mb-4">
+                <h3><i class="fas fa-align-left me-2"></i>Description</h3>
+                <div class="section-body">
+                    <div class="program-description-full">
+                        {{ program.description|safe }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informations sur le prix -->
+            {% if program.price or program.is_free %}
+            <div class="content-section mb-4">
+                <h3><i class="fas fa-tag me-2"></i>Informations sur le prix</h3>
+                <div class="section-body">
+                    <div class="price-info">
+                        {% if program.is_free %}
+                            <div class="free-badge">
+                                <i class="fas fa-gift me-2"></i>Programme gratuit
+                            </div>
+                        {% else %}
+                            <div class="price-badge">
+                                <i class="fas fa-credit-card me-2"></i>Prix : {{ program.price }} GNF
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Dates du programme -->
+            {% if program.start_date or program.end_date %}
+            <div class="content-section mb-4">
+                <h3><i class="fas fa-calendar-alt me-2"></i>Dates du programme</h3>
+                <div class="section-body">
+                    <div class="dates-info">
+                        {% if program.start_date %}
+                        <div class="date-item">
+                            <i class="fas fa-play me-2"></i>
+                            <strong>Début :</strong> {{ program.start_date|date:"d/m/Y" }}
+                        </div>
+                        {% endif %}
+                        {% if program.end_date %}
+                        <div class="date-item">
+                            <i class="fas fa-flag-checkered me-2"></i>
+                            <strong>Fin :</strong> {{ program.end_date|date:"d/m/Y" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Capacité du programme -->
+            {% if program.max_students %}
+            <div class="content-section mb-4">
+                <h3><i class="fas fa-users me-2"></i>Capacité</h3>
+                <div class="section-body">
+                    <div class="capacity-info">
+                        <div class="capacity-item">
+                            <i class="fas fa-user-graduate me-2"></i>
+                            <strong>Nombre maximum d'étudiants :</strong> {{ program.max_students }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Statistiques détaillées -->
+            <div class="content-section mb-4">
+                <h3><i class="fas fa-chart-bar me-2"></i>Statistiques</h3>
+                <div class="section-body">
+                    <div class="stats-grid-detailed">
+                        <div class="stat-item-detailed">
+                            <div class="stat-icon-detailed">
+                                <i class="fas fa-calendar-plus"></i>
+                            </div>
+                            <div class="stat-content-detailed">
+                                <div class="stat-number-detailed">{{ program.created_at|date:"d/m/Y" }}</div>
+                                <div class="stat-label-detailed">Date de création</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item-detailed">
+                            <div class="stat-icon-detailed">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="stat-content-detailed">
+                                <div class="stat-number-detailed">{{ program.updated_at|date:"d/m/Y" }}</div>
+                                <div class="stat-label-detailed">Dernière modification</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item-detailed">
+                            <div class="stat-icon-detailed">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-content-detailed">
+                                <div class="stat-number-detailed">
+                                    {% if program.is_featured %}Oui{% else %}Non{% endif %}
+                                </div>
+                                <div class="stat-label-detailed">Mis en avant</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item-detailed">
+                            <div class="stat-icon-detailed">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div class="stat-content-detailed">
+                                <div class="stat-number-detailed">{{ program.slug }}</div>
+                                <div class="stat-label-detailed">Slug URL</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Informations techniques -->
+            <div class="content-section mb-4 sidebar-section">
+                <h3><i class="fas fa-cog me-2"></i>Informations techniques</h3>
+                <div class="section-body">
+                    <div class="info-list">
+                        <div class="info-item">
+                            <div class="info-label">ID du programme</div>
+                            <div class="info-value">{{ program.pk }}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Statut</div>
+                            <div class="info-value">
+                                <span class="status-badge status-{{ program.status }}">
+                                    {{ program.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Niveau</div>
+                            <div class="info-value">
+                                {% if program.level %}
+                                    <span class="badge bg-info">
+                                        {% if program.level == 'beginner' %}Débutant
+                                        {% elif program.level == 'intermediate' %}Intermédiaire
+                                        {% elif program.level == 'advanced' %}Avancé
+                                        {% else %}{{ program.level }}{% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Non spécifié</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Durée</div>
+                            <div class="info-value">
+                                {% if program.duration %}
+                                    {{ program.duration }}
+                                {% else %}
+                                    <span class="text-muted">Non spécifiée</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Créé le</div>
+                            <div class="info-value">{{ program.created_at|date:"d/m/Y à H:i" }}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Modifié le</div>
+                            <div class="info-value">{{ program.updated_at|date:"d/m/Y à H:i" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions rapides -->
+            <div class="content-section mb-4 sidebar-section">
+                <h3><i class="fas fa-bolt me-2"></i>Actions rapides</h3>
+                <div class="section-body">
+                    <div class="quick-actions-list">
+                        <a href="{% url 'content_management:program_edit' program.pk %}" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-edit me-2"></i>Modifier le programme
+                        </a>
+                        
+                        {% if program.status == 'draft' %}
+                        <button class="btn btn-success w-100 mb-3" onclick="publishProgram({{ program.pk }})">
+                            <i class="fas fa-publish me-2"></i>Publier
+                        </button>
+                        {% elif program.status == 'published' %}
+                        <button class="btn btn-warning w-100 mb-3" onclick="unpublishProgram({{ program.pk }})">
+                            <i class="fas fa-eye-slash me-2"></i>Dépublier
+                        </button>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-info w-100 mb-3" onclick="copyProgramLink()">
+                            <i class="fas fa-copy me-2"></i>Copier le lien
+                        </button>
+                        
+                        <button class="btn btn-outline-danger w-100" onclick="showDeleteConfirm({{ program.pk }}, '{{ program.title|escapejs }}')">
+                            <i class="fas fa-trash me-2"></i>Supprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Historique des modifications -->
+            <div class="content-section sidebar-section">
+                <h3><i class="fas fa-history me-2"></i>Historique</h3>
+                <div class="section-body">
+                    <div class="history-timeline">
+                        <div class="history-item">
+                            <div class="history-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="history-content">
+                                <div class="history-title">Programme créé</div>
+                                <div class="history-date">{{ program.created_at|date:"d/m/Y à H:i" }}</div>
+                                <div class="history-user">Programme ajouté au système</div>
+                            </div>
+                        </div>
+                        
+                        {% if program.updated_at != program.created_at %}
+                        <div class="history-item">
+                            <div class="history-icon">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="history-content">
+                                <div class="history-title">Programme modifié</div>
+                                <div class="history-date">{{ program.updated_at|date:"d/m/Y à H:i" }}</div>
+                                <div class="history-user">Dernière mise à jour</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white border-0">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmation de suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="text-center mb-3">
+                    <i class="fas fa-trash-alt fa-3x text-danger mb-3"></i>
+                    <h6 class="text-danger fw-bold">Attention !</h6>
+                </div>
+                <p class="text-center mb-0">
+                    Êtes-vous sûr de vouloir supprimer le programme <strong id="programTitleToDelete"></strong> ?
+                </p>
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Cette action est irréversible</strong> et supprimera définitivement le programme et toutes ses données associées.
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-danger px-4" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>Supprimer définitivement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des statistiques
+    const statNumbers = document.querySelectorAll('.stat-number-detailed');
+    
+    function animateCounters() {
+        statNumbers.forEach(stat => {
+            const target = parseInt(stat.textContent) || 0;
+            let current = 0;
+            const increment = target / 50;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                stat.textContent = Math.floor(current);
+            }, 20);
+        });
+    }
+    
+    // Démarrer l'animation après un délai
+    setTimeout(animateCounters, 500);
+    
+    // Effet de survol sur les sections
+    const contentSections = document.querySelectorAll('.content-section');
+    contentSections.forEach(section => {
+        section.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        section.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Gestion du modal de suppression
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', confirmDelete);
+    }
+});
+
+// Fonction de publication
+function publishProgram(programId) {
+    if (confirm('Voulez-vous publier ce programme ?')) {
+        // Ici vous pouvez implémenter la logique de publication via AJAX
+        console.log('Publication du programme:', programId);
+        // Rediriger vers la page d'édition pour changer le statut
+        window.location.href = `/content-management/programs/${programId}/edit/`;
+    }
+}
+
+// Fonction de dépublication
+function unpublishProgram(programId) {
+    if (confirm('Voulez-vous dépublier ce programme ?')) {
+        // Ici vous pouvez implémenter la logique de dépublication via AJAX
+        console.log('Dépublication du programme:', programId);
+        // Rediriger vers la page d'édition pour changer le statut
+        window.location.href = `/content-management/programs/${programId}/edit/`;
+    }
+}
+
+// Fonction de copie de lien
+function copyProgramLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        // Afficher une notification de succès
+        alert('Lien copié dans le presse-papiers !');
+    }).catch(() => {
+        // Fallback pour les navigateurs plus anciens
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Lien copié dans le presse-papiers !');
+    });
+}
+
+// Variables globales pour la suppression
+let currentProgramId = null;
+let currentProgramTitle = null;
+
+// Fonction pour afficher le modal de confirmation de suppression
+function showDeleteConfirm(programId, programTitle) {
+    currentProgramId = programId;
+    currentProgramTitle = programTitle;
+    
+    // Mettre à jour le titre dans le modal
+    document.getElementById('programTitleToDelete').textContent = programTitle;
+    
+    // Afficher le modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    modal.show();
+}
+
+// Fonction de suppression confirmée
+function confirmDelete() {
+    if (currentProgramId && currentProgramTitle) {
+        // Rediriger vers la page de confirmation de suppression
+        window.location.href = `/content-management/programs/${currentProgramId}/delete/`;
+    }
+}
+</script>
+{% endblock %}

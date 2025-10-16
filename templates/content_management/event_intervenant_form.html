@@ -1,0 +1,393 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .intervenant-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .form-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .section-title {
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .photo-preview {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 3px solid #667eea;
+        overflow: hidden;
+        margin: 1rem auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        color: #6c757d;
+        font-size: 3rem;
+    }
+    
+    .photo-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: #5a6268;
+        color: white;
+    }
+    
+    .social-links {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .intervenant-header {
+            padding: 1.5rem 0;
+        }
+        
+        .form-container {
+            padding: 1rem;
+        }
+        
+        .social-links {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="intervenant-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-3">
+                    <i class="fas fa-user-plus me-3"></i>
+                    {{ title }}
+                </h1>
+                <p class="mb-0">
+                    {% if intervenant %}
+                        {% trans "Modifiez les informations de l'intervenant" %}
+                    {% else %}
+                        {% trans "Créez un nouvel intervenant pour vos événements" %}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'content_management:event_intervenant_list' %}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    {% trans "Retour à la liste" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-container">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Informations personnelles -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user"></i>
+                    {% trans "Informations personnelles" %}
+                </h3>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="{{ form.nom.id_for_label }}" class="form-label">
+                                {{ form.nom.label }} *
+                            </label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.nom.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.profession.id_for_label }}" class="form-label">
+                                {{ form.profession.label }} *
+                            </label>
+                            {{ form.profession }}
+                            {% if form.profession.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.profession.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.photo.id_for_label }}" class="form-label">
+                                {{ form.photo.label }}
+                            </label>
+                            {{ form.photo }}
+                            {% if form.photo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.photo.errors.0 }}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="photo-preview" id="photoPreview">
+                                {% if intervenant and intervenant.photo %}
+                                    <img src="{{ intervenant.photo.url }}" alt="{{ intervenant.nom }}">
+                                {% else %}
+                                    <i class="fas fa-user"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Biographie -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-book-open"></i>
+                    {% trans "Biographie" %}
+                </h3>
+                
+                <div class="form-group">
+                    <label for="{{ form.biographie.id_for_label }}" class="form-label">
+                        {{ form.biographie.label }} *
+                    </label>
+                    {{ form.biographie }}
+                    {% if form.biographie.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.biographie.errors.0 }}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">
+                        {% trans "Décrivez l'expertise et l'expérience de l'intervenant" %}
+                    </small>
+                </div>
+            </div>
+            
+            <!-- Informations de contact -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-address-book"></i>
+                    {% trans "Informations de contact" %}
+                </h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                {{ form.email.label }}
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.telephone.id_for_label }}" class="form-label">
+                                {{ form.telephone.label }}
+                            </label>
+                            {{ form.telephone }}
+                            {% if form.telephone.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.telephone.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Réseaux sociaux et web -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-share-alt"></i>
+                    {% trans "Réseaux sociaux et web" %}
+                </h3>
+                
+                <div class="social-links">
+                    <div class="form-group">
+                        <label for="{{ form.website.id_for_label }}" class="form-label">
+                            {{ form.website.label }}
+                        </label>
+                        {{ form.website }}
+                        {% if form.website.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.website.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.linkedin.id_for_label }}" class="form-label">
+                            {{ form.linkedin.label }}
+                        </label>
+                        {{ form.linkedin }}
+                        {% if form.linkedin.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.linkedin.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.twitter.id_for_label }}" class="form-label">
+                            {{ form.twitter.label }}
+                        </label>
+                        {{ form.twitter }}
+                        {% if form.twitter.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.twitter.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-submit me-3">
+                    <i class="fas fa-save me-2"></i>
+                    {{ submit_text }}
+                </button>
+                
+                <a href="{% url 'content_management:event_intervenant_list' %}" class="btn btn-cancel">
+                    <i class="fas fa-times me-2"></i>
+                    {% trans "Annuler" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Prévisualisation de la photo
+    document.getElementById('{{ form.photo.id_for_label }}').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('photoPreview');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" alt="Aperçu">`;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.innerHTML = '<i class="fas fa-user"></i>';
+        }
+    });
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 's':
+                    e.preventDefault();
+                    document.querySelector('form').dispatchEvent(new Event('submit'));
+                    break;
+            }
+        }
+        
+        if (e.key === 'Escape') {
+            window.location.href = "{% url 'content_management:event_intervenant_list' %}";
+        }
+    });
+</script>
+{% endblock %}

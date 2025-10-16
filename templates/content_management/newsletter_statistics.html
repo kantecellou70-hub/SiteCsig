@@ -1,0 +1,470 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Statistiques des newsletters - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.stats-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.stats-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    padding: 2rem;
+}
+
+.stats-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.stats-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.stats-overview {
+    padding: 2rem;
+}
+
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.overview-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    border-left: 4px solid #17a2b8;
+}
+
+.overview-card:hover {
+    transform: translateY(-5px);
+}
+
+.overview-card.primary {
+    border-left-color: #17a2b8;
+}
+
+.overview-card.success {
+    border-left-color: #28a745;
+}
+
+.overview-card.info {
+    border-left-color: #17a2b8;
+}
+
+.overview-card.warning {
+    border-left-color: #ffc107;
+}
+
+.overview-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.overview-card.primary .overview-number {
+    color: #17a2b8;
+}
+
+.overview-card.success .overview-number {
+    color: #28a745;
+}
+
+.overview-card.info .overview-number {
+    color: #17a2b8;
+}
+
+.overview-card.warning .overview-number {
+    color: #ffc107;
+}
+
+.overview-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.overview-description {
+    color: #495057;
+    font-size: 0.875rem;
+}
+
+.charts-section {
+    padding: 0 2rem 2rem;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.chart-card h3 {
+    color: #495057;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.chart-card h3 i {
+    color: #17a2b8;
+    font-size: 1.1rem;
+}
+
+.chart-placeholder {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 3rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.chart-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.chart-placeholder h4 {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.chart-placeholder p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.recent-campaigns {
+    padding: 0 2rem 2rem;
+}
+
+.campaign-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid #17a2b8;
+    transition: transform 0.2s ease;
+}
+
+.campaign-item:hover {
+    transform: translateX(5px);
+}
+
+.campaign-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.campaign-title {
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+}
+
+.campaign-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-draft {
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.status-scheduled {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-sending {
+    background: #d1edff;
+    color: #0c5460;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.campaign-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.campaign-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .overview-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .overview-number {
+        font-size: 2rem;
+    }
+    
+    .stats-header {
+        padding: 1.5rem;
+    }
+    
+    .stats-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .stats-overview,
+    .charts-section,
+    .recent-campaigns {
+        padding: 1rem;
+    }
+    
+    .chart-card {
+        padding: 1rem;
+    }
+    
+    .campaign-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .campaign-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-chart-line me-2"></i>Statistiques des newsletters
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Analysez les performances de vos campagnes de newsletter</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:newsletter_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux newsletters
+    </a>
+    <button class="btn btn-primary" onclick="refreshStats()">
+        <i class="fas fa-sync-alt me-2"></i>Actualiser
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="stats-container">
+    <!-- En-tête -->
+    <div class="stats-header">
+        <h1>
+            <i class="fas fa-chart-line me-3"></i>Statistiques des newsletters
+        </h1>
+        <p>Analysez les performances et l'engagement de vos campagnes</p>
+    </div>
+
+    <!-- Vue d'ensemble -->
+    <div class="stats-overview">
+        <div class="overview-grid">
+            <div class="overview-card primary">
+                <div class="overview-number">{{ total_campaigns }}</div>
+                <div class="overview-label">Campagnes totales</div>
+                <div class="overview-description">Nombre total de campagnes créées</div>
+            </div>
+            
+            <div class="overview-card success">
+                <div class="overview-number">{{ total_subscribers }}</div>
+                <div class="overview-label">Abonnés totaux</div>
+                <div class="overview-description">Tous les abonnés confondus</div>
+            </div>
+            
+            <div class="overview-card info">
+                <div class="overview-number">{{ active_subscribers }}</div>
+                <div class="overview-label">Abonnés actifs</div>
+                <div class="overview-description">Abonnés recevant les newsletters</div>
+            </div>
+            
+            <div class="overview-card warning">
+                <div class="overview-number">{{ total_sent }}</div>
+                <div class="overview-label">Emails envoyés</div>
+                <div class="overview-description">Total des emails distribués</div>
+            </div>
+        </div>
+        
+        <!-- Statistiques d'engagement -->
+        {% if total_sent > 0 %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="overview-card success">
+                    <div class="overview-number">{{ open_rate }}%</div>
+                    <div class="overview-label">Taux d'ouverture</div>
+                    <div class="overview-description">Emails ouverts / Emails envoyés</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="overview-card info">
+                    <div class="overview-number">{{ click_rate }}%</div>
+                    <div class="overview-label">Taux de clic</div>
+                    <div class="overview-description">Clics / Emails envoyés</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Graphiques et analyses -->
+    <div class="charts-section">
+        <!-- Évolution des abonnés -->
+        <div class="chart-card">
+            <h3>
+                <i class="fas fa-chart-area"></i>
+                Évolution des abonnés (30 derniers jours)
+            </h3>
+            <div class="chart-placeholder">
+                <i class="fas fa-chart-line"></i>
+                <h4>Graphique d'évolution</h4>
+                <p>Ce graphique montrera l'évolution du nombre d'abonnés au fil du temps</p>
+                <button class="btn btn-primary btn-sm" onclick="loadSubscriberChart()">
+                    <i class="fas fa-chart-line me-2"></i>Charger le graphique
+                </button>
+            </div>
+        </div>
+
+        <!-- Répartition des campagnes par statut -->
+        <div class="chart-card">
+            <h3>
+                <i class="fas fa-chart-pie"></i>
+                Répartition des campagnes par statut
+            </h3>
+            <div class="chart-placeholder">
+                <i class="fas fa-chart-pie"></i>
+                <h4>Graphique circulaire</h4>
+                <p>Ce graphique montrera la répartition des campagnes selon leur statut</p>
+                <button class="btn btn-primary btn-sm" onclick="loadStatusChart()">
+                    <i class="fas fa-chart-pie me-2"></i>Charger le graphique
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campagnes récentes -->
+    <div class="recent-campaigns">
+        <div class="chart-card">
+            <h3>
+                <i class="fas fa-clock"></i>
+                Campagnes récentes
+            </h3>
+            
+            {% if recent_campaigns %}
+                {% for campaign in recent_campaigns %}
+                <div class="campaign-item">
+                    <div class="campaign-header">
+                        <h5 class="campaign-title">{{ campaign.title }}</h5>
+                        <span class="campaign-status status-{{ campaign.status }}">
+                            {{ campaign.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="campaign-meta">
+                        <span>
+                            <i class="fas fa-calendar"></i>
+                            {{ campaign.created_at|date:"d/m/Y H:i" }}
+                        </span>
+                        {% if campaign.sent_count > 0 %}
+                        <span>
+                            <i class="fas fa-paper-plane"></i>
+                            {{ campaign.sent_count }} envoyés
+                        </span>
+                        {% endif %}
+                        {% if campaign.failed_count > 0 %}
+                        <span>
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ campaign.failed_count }} échecs
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <h5>Aucune campagne trouvée</h5>
+                    <p>Créez votre première campagne pour commencer à collecter des statistiques.</p>
+                    <a href="{% url 'content_management:newsletter_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Créer une campagne
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fonction pour actualiser les statistiques
+function refreshStats() {
+    location.reload();
+}
+
+// Fonction pour charger le graphique des abonnés
+function loadSubscriberChart() {
+    // TODO: Implémenter le chargement du graphique avec Chart.js ou autre librairie
+    alert('Fonctionnalité de graphique à implémenter avec Chart.js');
+}
+
+// Fonction pour charger le graphique des statuts
+function loadStatusChart() {
+    // TODO: Implémenter le chargement du graphique avec Chart.js ou autre librairie
+    alert('Fonctionnalité de graphique à implémenter avec Chart.js');
+}
+
+// Actualisation automatique des statistiques toutes les 5 minutes
+setInterval(function() {
+    // TODO: Implémenter l'actualisation AJAX des statistiques
+    console.log('Actualisation automatique des statistiques...');
+}, 300000); // 5 minutes
+</script>
+{% endblock %}

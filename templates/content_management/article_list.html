@@ -1,0 +1,1093 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Gestion des articles - CSIG{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-newspaper me-2"></i>Gestion des articles
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">
+        Gérez tous vos articles, modifiez leurs statuts et organisez votre contenu
+    </p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'content_management:article_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouvel article
+        </a>
+        <button class="btn btn-outline-secondary" id="toggleFilters">
+            <i class="fas fa-filter me-2"></i>Filtres
+        </button>
+        <button class="btn btn-outline-info" id="exportArticles">
+            <i class="fas fa-download me-2"></i>Exporter
+        </button>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.article-list-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.article-filters {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+}
+
+.article-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.article-table th {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.article-table td {
+    padding: 1rem 0.75rem;
+    border: none;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+.article-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.article-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+}
+
+.article-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.article-title {
+    font-weight: 700;
+    color: #0d4786;
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.article-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.article-date {
+    text-align: center;
+    font-weight: 600;
+}
+
+.article-date .date {
+    color: #0d4786;
+    font-size: 1.1rem;
+}
+
+.article-date .time {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.article-category {
+    max-width: 200px;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.article-status {
+    text-align: center;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.status-draft {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.status-published {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+.status-trash {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.article-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.action-btn.view {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+}
+
+.action-btn.feature-toggle {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    color: #f57c00;
+    border: 1px solid #ffcc02;
+}
+
+.action-btn.feature-toggle:hover {
+    background: linear-gradient(135deg, #ffe0b2 0%, #ffcc02 100%);
+    color: #e65100;
+    transform: scale(1.1);
+}
+
+.action-btn.feature-toggle.active {
+    background: linear-gradient(135deg, #ffcc02 0%, #ff9800 100%);
+    color: #e65100;
+    border-color: #ff9800;
+}
+
+.article-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+}
+
+.stat-card:hover::before {
+    width: 8px;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0d4786;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+}
+
+.stat-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    color: #0d4786;
+    opacity: 0.3;
+}
+
+/* Styles pour les éléments spécifiques */
+.checkbox-cell {
+    width: 50px;
+    text-align: center;
+}
+
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.checkbox-custom:checked {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    border-color: #0d4786;
+    transform: scale(1.1);
+}
+
+.checkbox-custom:hover {
+    border-color: #0d4786;
+    transform: scale(1.05);
+}
+
+.image-cell {
+    width: 80px;
+    text-align: center;
+}
+
+.article-info-cell {
+    min-width: 250px;
+}
+
+.views-cell {
+    text-align: center;
+}
+
+.views-badge {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+    padding: 0.4rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    border: 1px solid #bbdefb;
+    display: inline-block;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .filter-row {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 992px) {
+    .article-table {
+        font-size: 0.9rem;
+    }
+    
+    .article-table th,
+    .article-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .article-image {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    .article-filters {
+        padding: 1.5rem;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .article-table {
+        font-size: 0.8rem;
+    }
+    
+    .article-table th,
+    .article-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .article-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    
+    /* Masquer certaines colonnes sur mobile */
+    .article-table th:nth-child(4),
+    .article-table td:nth-child(4),
+    .article-table th:nth-child(6),
+    .article-table td:nth-child(6) {
+        display: none;
+    }
+    
+    /* Ajuster les largeurs des colonnes restantes */
+    .checkbox-cell {
+        width: 40px;
+        min-width: 40px;
+    }
+    
+    .image-cell {
+        width: 60px;
+        min-width: 60px;
+    }
+    
+    .article-info-cell {
+        min-width: 0;
+        width: auto;
+    }
+    
+    .article-status {
+        width: 80px;
+        min-width: 80px;
+    }
+    
+    .views-cell {
+        width: 60px;
+        min-width: 60px;
+    }
+    
+    .article-actions {
+        width: 50px;
+        min-width: 50px;
+    }
+    
+    /* Ajuster les stats sur mobile */
+    .article-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .article-list-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .article-filters {
+        padding: 1rem;
+    }
+    
+    .article-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    /* Masquer encore plus de colonnes sur très petit écran */
+    .article-table th:nth-child(5),
+    .article-table td:nth-child(5) {
+        display: none;
+    }
+    
+    /* Ajuster les largeurs finales */
+    .checkbox-cell {
+        width: 35px;
+        min-width: 35px;
+    }
+    
+    .image-cell {
+        width: 50px;
+        min-width: 50px;
+    }
+    
+    .article-info-cell {
+        width: auto;
+        min-width: 0;
+    }
+    
+    .article-actions {
+        width: 45px;
+        min-width: 45px;
+    }
+    
+    /* Réduire encore plus le padding */
+    .article-table th,
+    .article-table td {
+        padding: 0.4rem 0.2rem;
+    }
+    
+    .article-image {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .article-title {
+        font-size: 0.85rem;
+        line-height: 1.2;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .article-meta {
+        font-size: 0.7rem;
+    }
+    
+    .article-meta span {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.65rem;
+    }
+    
+    .status-badge {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.6rem;
+    }
+    
+    .views-badge {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.65rem;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    /* Ajuster les filtres sur très petit écran */
+    .filter-group label {
+        font-size: 0.8rem;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .filter-actions .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajuster la pagination */
+    .pagination .page-link {
+        padding: 0.4rem 0.6rem;
+        margin: 0 0.1rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajuster les actions en masse */
+    .bulk-actions .card-body {
+        padding: 1rem;
+    }
+    
+    .bulk-actions .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .bulk-actions select {
+        width: 100%;
+    }
+    
+    .bulk-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Styles spécifiques pour les très petits écrans */
+@media (max-width: 480px) {
+    .article-table {
+        font-size: 0.75rem;
+    }
+    
+    .article-table th,
+    .article-table td {
+        padding: 0.3rem 0.15rem;
+    }
+    
+    .article-title {
+        font-size: 0.8rem;
+        -webkit-line-clamp: 1;
+    }
+    
+    .article-meta {
+        display: none;
+    }
+    
+    .checkbox-custom {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .action-btn {
+        width: 25px;
+        height: 25px;
+        font-size: 0.65rem;
+    }
+    
+    .stat-card {
+        padding: 0.8rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="article-list-container">
+    <!-- Token CSRF caché pour les requêtes AJAX -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    
+    <!-- Statistiques -->
+    <div class="article-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-newspaper"></i>
+            </div>
+            <div class="stat-number">{{ articles.paginator.count|default:0 }}</div>
+            <div class="stat-label">Total articles</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-number">{{ published_articles|default:0 }}</div>
+            <div class="stat-label">Articles publiés</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-number">{{ featured_articles|default:0 }}</div>
+            <div class="stat-label">À la une</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+            <div class="stat-number">{{ draft_articles|default:0 }}</div>
+            <div class="stat-label">Brouillons</div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="article-filters" id="articleFilters" style="display: none;">
+        <form method="get" class="filter-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="category">Catégorie</label>
+                    <select name="category" id="category" class="form-control">
+                        <option value="">Toutes les catégories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="status">Statut</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="">Tous les statuts</option>
+                        <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Brouillon</option>
+                        <option value="published" {% if request.GET.status == 'published' %}selected{% endif %}>Publié</option>
+                        <option value="trash" {% if request.GET.status == 'trash' %}selected{% endif %}>Corbeille</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="featured">Mise en avant</label>
+                    <select name="featured" id="featured" class="form-control">
+                        <option value="">Tous les articles</option>
+                        <option value="true" {% if request.GET.featured == 'true' %}selected{% endif %}>À la une</option>
+                        <option value="false" {% if request.GET.featured == 'false' %}selected{% endif %}>Non mis en avant</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="date_from">Date de début</label>
+                    <input type="date" name="date_from" id="date_from" class="form-control" 
+                           value="{{ request.GET.date_from }}">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="date_to">Date de fin</label>
+                    <input type="date" name="date_to" id="date_to" class="form-control" 
+                           value="{{ request.GET.date_to }}">
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Filtrer
+                </button>
+                <a href="{% url 'content_management:article_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tableau des articles -->
+    <div class="table-responsive">
+        <table class="article-table">
+            <thead>
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom" id="headerCheckbox">
+                    </th>
+                    <th>Image</th>
+                    <th>Article</th>
+                    <th>Catégorie</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th>Vues</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article in articles %}
+                <tr>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom article-checkbox" value="{{ article.id }}">
+                    </td>
+                    
+                    <td class="image-cell">
+                        {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" class="article-image">
+                        {% else %}
+                        <div class="article-image d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-newspaper text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="article-info-cell">
+                        <div class="article-info">
+                            <div class="article-title">{{ article.title }}</div>
+                            <div class="article-meta">
+                                <span><i class="fas fa-user me-1"></i>{{ article.author.get_full_name|default:article.author.username }}</span>
+                                {% if article.is_featured %}
+                                <span class="badge bg-warning ms-2">
+                                    <i class="fas fa-star me-1"></i>À la une
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td class="article-category">
+                        {% if article.category %}
+                            {{ article.category.name }}
+                        {% else %}
+                            <span class="text-muted">Aucune</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="article-status">
+                        <span class="status-badge status-{{ article.status }}">
+                            {{ article.get_status_display }}
+                        </span>
+                    </td>
+                    
+                    <td class="article-date">
+                        <div class="date">{{ article.created_at|date:"d/m/Y" }}</div>
+                        {% if article.published_at %}
+                        <div class="time">Publié: {{ article.published_at|date:"d/m/Y" }}</div>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="views-cell">
+                        <span class="views-badge">{{ article.views_count|default:0 }}</span>
+                    </td>
+                    
+                    <td class="article-actions">
+                        <a href="{% url 'content_management:article_detail' article.pk %}" 
+                           class="action-btn view" title="Voir les détails">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        
+                        <button class="action-btn feature-toggle" 
+                                onclick="toggleArticleFeature({{ article.id }}, {{ article.is_featured|yesno:'true,false' }})"
+                                title="{% if article.is_featured %}Retirer de la une{% else %}Mettre à la une{% endif %}"
+                                data-article-id="{{ article.id }}">
+                            <i class="fas fa-{% if article.is_featured %}star text-warning{% else %}star text-muted{% endif %}"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-newspaper fa-3x mb-3"></i>
+                            <h5>Aucun article trouvé</h5>
+                            <p>Créez votre premier article pour commencer.</p>
+                            <a href="{% url 'content_management:article_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Créer un article
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if articles.has_other_pages %}
+    <div class="d-flex justify-content-center py-4">
+        <nav aria-label="Navigation des articles">
+            <ul class="pagination">
+                {% if articles.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ articles.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in articles.paginator.page_range %}
+                    {% if articles.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > articles.number|add:'-3' and num < articles.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if articles.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ articles.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Actions en masse -->
+<div class="bulk-actions mt-3" id="bulkActions" style="display: none;">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted">
+                    <span id="selectedCount">0</span> article(s) sélectionné(s)
+                </span>
+                
+                <select class="form-select" id="bulkAction" style="width: auto;">
+                    <option value="">Choisir une action...</option>
+                    <option value="publish">Publier</option>
+                    <option value="draft">Mettre en brouillon</option>
+                    <option value="feature">Mettre en avant</option>
+                    <option value="unfeature">Retirer de la une</option>
+                    <option value="delete">Supprimer</option>
+                </select>
+                
+                <button class="btn btn-primary" onclick="performBulkAction()">
+                    <i class="fas fa-play me-2"></i>Exécuter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des filtres
+    const toggleFiltersBtn = document.getElementById('toggleFilters');
+    const articleFilters = document.getElementById('articleFilters');
+    
+    if (toggleFiltersBtn && articleFilters) {
+        toggleFiltersBtn.addEventListener('click', function() {
+            if (articleFilters.style.display === 'none') {
+                articleFilters.style.display = 'block';
+                this.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Masquer les filtres';
+            } else {
+                articleFilters.style.display = 'none';
+                this.innerHTML = '<i class="fas fa-filter me-2"></i>Filtres';
+            }
+        });
+    }
+    
+    // Gestion de la sélection multiple
+    initializeSelectAll();
+    initializeBulkActions();
+});
+
+// Initialiser la sélection multiple
+function initializeSelectAll() {
+    const headerCheckbox = document.getElementById('headerCheckbox');
+    const articleCheckboxes = document.querySelectorAll('.article-checkbox');
+    
+    if (headerCheckbox) {
+        headerCheckbox.addEventListener('change', function() {
+            articleCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+    
+    articleCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+}
+
+// Initialiser les actions en masse
+function initializeBulkActions() {
+    updateBulkActions();
+}
+
+// Mettre à jour l'affichage des actions en masse
+function updateBulkActions() {
+    const selectedCheckboxes = document.querySelectorAll('.article-checkbox:checked');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (selectedCheckboxes.length > 0) {
+        bulkActions.style.display = 'block';
+        selectedCount.textContent = selectedCheckboxes.length;
+    } else {
+        bulkActions.style.display = 'none';
+    }
+}
+
+// Exécuter une action en masse
+function performBulkAction() {
+    const action = document.getElementById('bulkAction').value;
+    const selectedCheckboxes = document.querySelectorAll('.article-checkbox:checked');
+    
+    if (!action) {
+        alert('Veuillez sélectionner une action.');
+        return;
+    }
+    
+    if (selectedCheckboxes.length === 0) {
+        alert('Aucun article sélectionné.');
+        return;
+    }
+    
+    if (action === 'delete' && !confirm('Êtes-vous sûr de vouloir supprimer ces articles ?')) {
+        return;
+    }
+    
+    const articleIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+    const formData = new FormData();
+    formData.append('action', action);
+    articleIds.forEach(id => formData.append('article_ids[]', id));
+    
+    fetch('{% url "content_management:bulk_article_action" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erreur lors de l\'action en masse : ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'action en masse. Veuillez réessayer.');
+    });
+}
+
+// Basculer le statut "à la une" d'un article
+function toggleArticleFeature(articleId, currentFeatured) {
+    const button = document.querySelector(`[data-article-id="${articleId}"]`);
+    const icon = button.querySelector('i');
+    
+    // Désactiver le bouton pendant la requête
+    button.disabled = true;
+    
+    fetch('{% url "content_management:toggle_feature" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            article_id: articleId,
+            featured: !currentFeatured
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mettre à jour l'interface
+            if (data.featured) {
+                icon.className = 'fas fa-star text-warning';
+                button.title = 'Retirer de la une';
+                button.classList.add('active');
+            } else {
+                icon.className = 'fas fa-star text-muted';
+                button.title = 'Mettre à la une';
+                button.classList.remove('active');
+            }
+            
+            // Afficher un message de succès
+            showNotification(data.message, 'success');
+            
+            // Mettre à jour les statistiques si nécessaire
+            updateStats();
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('Erreur lors de la modification. Veuillez réessayer.', 'error');
+    })
+    .finally(() => {
+        button.disabled = false;
+    });
+}
+
+// Afficher une notification
+function showNotification(message, type) {
+    // Créer une notification temporaire
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Supprimer automatiquement après 5 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Mettre à jour les statistiques (optionnel)
+function updateStats() {
+    // Ici vous pourriez faire une requête AJAX pour mettre à jour les statistiques
+    // Pour l'instant, on recharge la page pour avoir les données à jour
+    // location.reload();
+}
+</script>
+{% endblock %}

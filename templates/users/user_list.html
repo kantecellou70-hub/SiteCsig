@@ -1,0 +1,450 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Utilisateurs - Gestion des utilisateurs CSIG{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-users me-2"></i>Gestion des utilisateurs
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">Gérez tous les utilisateurs de votre plateforme</p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#filterModal">
+            <i class="fas fa-filter me-2"></i>Filtres avancés
+        </button>
+        <a href="{% url 'users:user_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouvel utilisateur
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="categories-container">
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon-wrapper">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+12%</span>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ total_users }}</div>
+                    <div class="stat-label">Total utilisateurs</div>
+                    <div class="stat-details">
+                        <span class="stat-badge active">{{ active_users }} actifs</span>
+                        <span class="stat-badge draft">{{ inactive_users }} inactifs</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card stat-success">
+                <div class="stat-icon-wrapper">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+5%</span>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ active_users }}</div>
+                    <div class="stat-label">Utilisateurs actifs</div>
+                    <div class="stat-details">
+                        <span class="stat-badge online">En ligne</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card stat-info">
+                <div class="stat-icon-wrapper">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+8%</span>
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ roles|length }}</div>
+                    <div class="stat-label">Rôles définis</div>
+                    <div class="stat-details">
+                        <span class="stat-badge new">Nouveaux</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="search-filter-bar">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="search-box">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un utilisateur...">
+                        <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                            Rechercher
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex justify-content-end gap-2">
+                    <div class="filter-options">
+                        <select class="form-select form-select-sm" id="roleFilter">
+                            <option value="">Tous les rôles</option>
+                            {% for role in roles %}
+                                <option value="{{ role.id }}">{{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-options">
+                        <select class="form-select form-select-sm" id="statusFilter">
+                            <option value="">Tous les statuts</option>
+                            <option value="1">Actifs</option>
+                            <option value="0">Inactifs</option>
+                        </select>
+                    </div>
+                    <div class="results-count">
+                        <span id="resultsCount">{{ page_obj.paginator.count }} utilisateur(s)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grille des utilisateurs -->
+    <div class="categories-grid" id="usersGrid">
+        {% for user in page_obj %}
+        <div class="category-card user-card" data-role="{{ user.roles.first.id|default:'' }}" data-status="{{ user.is_active|yesno:'1,0' }}">
+            <div class="category-header">
+                <div class="category-icon" style="background-color: {% if user.is_superuser %}#dc3545{% elif user.is_staff %}#ffc107{% else %}#0d4786{% endif %}">
+                    {% if user.is_superuser %}
+                        <i class="fas fa-crown"></i>
+                    {% elif user.is_staff %}
+                        <i class="fas fa-user-shield"></i>
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
+                </div>
+                <div class="category-status">
+                    <span class="status-badge status-{{ user.is_active|yesno:'active,inactive' }}">
+                        {% if user.is_active %}Actif{% else %}Inactif{% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="category-content">
+                <div class="category-title">
+                    <h5>{{ user.get_full_name|default:user.username }}</h5>
+                    <small>@{{ user.username }}</small>
+                </div>
+                
+                <div class="category-description">
+                    {{ user.email }}
+                </div>
+                
+                <div class="category-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-calendar me-1"></i>
+                        <span>Inscrit le {{ user.date_joined|date:"d/m/Y" }}</span>
+                    </div>
+                    {% if user.last_login %}
+                        <div class="meta-item">
+                            <i class="fas fa-clock me-1"></i>
+                            <span>Dernière connexion: {{ user.last_login|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    {% endif %}
+                    {% if user.roles.exists %}
+                        <div class="meta-item">
+                            <i class="fas fa-user-tag me-1"></i>
+                            <span>{{ user.roles.first.name }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="category-actions">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'users:user_detail' user.pk %}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="{% url 'users:user_edit' user.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                            onclick="deleteUser({{ user.pk }}, '{{ user.username }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h5>Aucun utilisateur trouvé</h5>
+                <p>Commencez par créer votre premier utilisateur</p>
+                <a href="{% url 'users:user_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Créer un utilisateur
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="d-flex justify-content-center mt-4">
+        <nav aria-label="Pagination des utilisateurs">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Précédent</a>
+                    </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Suivant</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de filtres avancés -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterModalLabel">
+                    <i class="fas fa-filter me-2"></i>Filtres avancés
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="get" id="advancedFilterForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Rôle</label>
+                                <select class="form-select" name="role">
+                                    <option value="">Tous les rôles</option>
+                                    {% for role in roles %}
+                                        <option value="{{ role.id }}" {% if request.GET.role == role.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ role.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Statut</label>
+                                <select class="form-select" name="is_active">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="1" {% if request.GET.is_active == "1" %}selected{% endif %}>Actifs</option>
+                                    <option value="0" {% if request.GET.is_active == "0" %}selected{% endif %}>Inactifs</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Date d'inscription (début)</label>
+                                <input type="date" class="form-control" name="date_joined_from" 
+                                       value="{{ request.GET.date_joined_from|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Date d'inscription (fin)</label>
+                                <input type="date" class="form-control" name="date_joined_to" 
+                                       value="{{ request.GET.date_joined_to|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="resetFilters()">
+                    <i class="fas fa-undo me-2"></i>Réinitialiser
+                </button>
+                <button type="submit" form="advancedFilterForm" class="btn btn-primary">
+                    <i class="fas fa-check me-2"></i>Appliquer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong id="userNameToDelete"></strong> ?</p>
+                <p class="text-danger"><small>Cette action est irréversible.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentUserId = null;
+
+// Recherche en temps réel
+document.getElementById('searchInput').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const userCards = document.querySelectorAll('.user-card');
+    let visibleCount = 0;
+    
+    userCards.forEach(card => {
+        const name = card.querySelector('h5').textContent.toLowerCase();
+        const username = card.querySelector('small').textContent.toLowerCase();
+        const email = card.querySelector('.category-description').textContent.toLowerCase();
+        
+        if (name.includes(searchTerm) || username.includes(searchTerm) || email.includes(searchTerm)) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    document.getElementById('resultsCount').textContent = `${visibleCount} utilisateur(s)`;
+});
+
+// Filtres de rôle et statut
+document.getElementById('roleFilter').addEventListener('change', filterUsers);
+document.getElementById('statusFilter').addEventListener('change', filterUsers);
+
+function filterUsers() {
+    const roleFilter = document.getElementById('roleFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const userCards = document.querySelectorAll('.user-card');
+    let visibleCount = 0;
+    
+    userCards.forEach(card => {
+        const role = card.dataset.role;
+        const status = card.dataset.status;
+        
+        let showCard = true;
+        
+        if (roleFilter && role !== roleFilter) {
+            showCard = false;
+        }
+        
+        if (statusFilter && status !== statusFilter) {
+            showCard = false;
+        }
+        
+        if (showCard) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    document.getElementById('resultsCount').textContent = `${visibleCount} utilisateur(s)`;
+}
+
+function resetFilters() {
+    document.getElementById('roleFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('searchInput').value = '';
+    
+    // Réinitialiser l'affichage
+    const userCards = document.querySelectorAll('.user-card');
+    userCards.forEach(card => {
+        card.style.display = 'block';
+    });
+    
+    document.getElementById('resultsCount').textContent = `${userCards.length} utilisateur(s)`;
+}
+
+// Suppression d'utilisateur
+function deleteUser(userId, userName) {
+    currentUserId = userId;
+    document.getElementById('userNameToDelete').textContent = userName;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (currentUserId) {
+        // Rediriger vers la page de suppression
+        window.location.href = `/users/${currentUserId}/delete/`;
+    }
+});
+
+// Initialisation des composants
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser Select2 pour les filtres si disponible
+    if (typeof Select2 !== 'undefined') {
+        $('#roleFilter, #statusFilter').select2({
+            placeholder: 'Sélectionner...',
+            allowClear: true
+        });
+    }
+    
+    // Initialiser les tooltips Bootstrap
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

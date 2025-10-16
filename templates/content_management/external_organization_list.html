@@ -1,0 +1,536 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}Organisations externes{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:external_organization_create' %}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Nouvelle organisation
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="external-organizations-container">
+    <!-- En-tête avec statistiques -->
+    <div class="stats-header">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ organizations.count }}</h3>
+                        <p>Total organisations</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon active">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ active_organizations_count }}</h3>
+                        <p>Organisations actives</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon inactive">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ inactive_organizations_count }}</h3>
+                        <p>Organisations inactives</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon info">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ recent_organizations_count }}</h3>
+                        <p>Nouvelles ce mois</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="search-filter-bar">
+        <div class="row">
+            <div class="col-md-8">
+                <form method="get" class="search-form">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Rechercher une organisation..." 
+                               value="{{ request.GET.search }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <div class="filter-controls">
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">Tous les statuts</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Actives</option>
+                        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactives</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des organisations -->
+    <div class="organizations-grid">
+        {% if organizations %}
+            <div class="row">
+                {% for organization in organizations %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="organization-card">
+                        <div class="card-header">
+                            <div class="organization-status">
+                                {% if organization.is_active %}
+                                    <span class="status-badge status-active">
+                                        <i class="fas fa-check-circle me-1"></i>Active
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">
+                                        <i class="fas fa-times-circle me-1"></i>Inactive
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="organization-type">
+                                <span class="type-badge">
+                                    <i class="fas fa-tag me-1"></i>{{ organization.get_organization_type_display }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="organization-name">{{ organization.name }}</h5>
+                            
+                            {% if organization.contact_person %}
+                            <div class="contact-info">
+                                <i class="fas fa-user me-2"></i>
+                                <span>{{ organization.contact_person }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if organization.email %}
+                            <div class="contact-info">
+                                <i class="fas fa-envelope me-2"></i>
+                                <span>{{ organization.email }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if organization.phone %}
+                            <div class="contact-info">
+                                <i class="fas fa-phone me-2"></i>
+                                <span>{{ organization.phone }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if organization.address %}
+                            <div class="contact-info">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <span>{{ organization.address|truncatechars:50 }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if organization.website %}
+                            <div class="contact-info">
+                                <i class="fas fa-globe me-2"></i>
+                                <a href="{{ organization.website }}" target="_blank" class="website-link">
+                                    {{ organization.website|truncatechars:30 }}
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            {% if organization.tax_id %}
+                            <div class="contact-info">
+                                <i class="fas fa-id-card me-2"></i>
+                                <span>NIF: {{ organization.tax_id }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-footer">
+                            <div class="action-buttons">
+                                <a href="{% url 'content_management:external_organization_detail' organization.slug %}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Voir
+                                </a>
+                                <a href="{% url 'content_management:external_organization_edit' organization.slug %}" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit me-1"></i>Modifier
+                                </a>
+                                <a href="{% url 'content_management:external_organization_delete' organization.slug %}" 
+                                   class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette organisation ?')">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h4>Aucune organisation trouvée</h4>
+                <p>
+                    {% if request.GET.search or request.GET.status %}
+                        Aucune organisation ne correspond à vos critères de recherche.
+                        <a href="{% url 'content_management:external_organization_list' %}">Voir toutes les organisations</a>
+                    {% else %}
+                        Commencez par créer votre première organisation externe.
+                    {% endif %}
+                </p>
+                <a href="{% url 'content_management:external_organization_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Créer une organisation
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if organizations.has_other_pages %}
+    <div class="pagination-container">
+        <nav aria-label="Navigation des organisations">
+            <ul class="pagination justify-content-center">
+                {% if organizations.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ organizations.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in organizations.paginator.page_range %}
+                    {% if organizations.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > organizations.number|add:'-3' and num < organizations.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if organizations.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ organizations.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ organizations.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        
+        <div class="pagination-info text-center">
+            <small class="text-muted">
+                Page {{ organizations.number }} sur {{ organizations.paginator.num_pages }} 
+                ({{ organizations.paginator.count }} organisations au total)
+            </small>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.external-organizations-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* En-tête avec statistiques */
+.stats-header {
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--box-shadow);
+    height: 100%;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--gray-200);
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+}
+
+.stat-icon.active {
+    background: var(--success-color);
+    color: white;
+}
+
+.stat-icon.inactive {
+    background: var(--danger-color);
+    color: white;
+}
+
+.stat-icon.info {
+    background: var(--info-color);
+    color: white;
+}
+
+.stat-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gray-800);
+}
+
+.stat-content p {
+    margin: 0;
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+/* Barre de recherche et filtres */
+.search-filter-bar {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--box-shadow);
+}
+
+.search-form .input-group {
+    max-width: 500px;
+}
+
+.filter-controls .form-select {
+    max-width: 200px;
+}
+
+/* Grille des organisations */
+.organizations-grid {
+    margin-bottom: 2rem;
+}
+
+.organization-card {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--box-shadow);
+    height: 100%;
+    transition: var(--transition);
+}
+
+.organization-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+.organization-status {
+    margin-bottom: 0.5rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.status-active {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.status-inactive {
+    background: var(--danger-color);
+    color: white;
+}
+
+.type-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.organization-name {
+    color: var(--gray-800);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.contact-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+.contact-info i {
+    color: var(--primary-color);
+    width: 20px;
+    text-align: center;
+}
+
+.website-link {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.website-link:hover {
+    text-decoration: underline;
+}
+
+.card-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* État vide */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--gray-400);
+    margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+    color: var(--gray-700);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: var(--gray-600);
+    margin-bottom: 1.5rem;
+}
+
+/* Pagination */
+.pagination-container {
+    margin-top: 2rem;
+}
+
+.pagination-info {
+    margin-top: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-header .row > div {
+        margin-bottom: 1rem;
+    }
+    
+    .search-filter-bar .row > div {
+        margin-bottom: 1rem;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+    }
+    
+    .btn-sm {
+        flex: 1;
+        min-width: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    
+    .stat-content h3 {
+        font-size: 1.5rem;
+    }
+    
+    .organization-card {
+        margin-bottom: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .card-footer {
+        padding: 0.75rem;
+    }
+}
+</style>
+{% endblock %}

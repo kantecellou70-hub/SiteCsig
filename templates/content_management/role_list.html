@@ -1,0 +1,565 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Rôles - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.roles-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.roles-header {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.roles-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.roles-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.roles-body {
+    padding: 2rem;
+}
+
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border-left: 4px solid #6f42c1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #6f42c1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.actions-bar {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.search-box {
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-box .form-control {
+    border-radius: 25px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: #6f42c1;
+    border-color: #6f42c1;
+}
+
+.btn-success {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.btn-warning {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.role-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.role-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #6f42c1;
+}
+
+.role-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+}
+
+.role-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.role-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+}
+
+.role-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-primary {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.role-description {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.role-permissions {
+    margin-bottom: 1.5rem;
+}
+
+.permissions-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.permissions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.permission-tag {
+    background: #f8f9fa;
+    color: #495057;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    border: 1px solid #e9ecef;
+}
+
+.role-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #6f42c1;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+}
+
+.role-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .roles-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .roles-header {
+        padding: 1.5rem;
+    }
+    
+    .roles-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .roles-body {
+        padding: 1rem;
+    }
+    
+    .actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-box {
+        max-width: none;
+    }
+    
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .roles-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .role-actions {
+        flex-direction: column;
+    }
+    
+    .btn-sm {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-user-shield me-2"></i>Rôles
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Gestion des rôles et permissions</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+    </a>
+    <a href="{% url 'content_management:role_create' %}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Nouveau rôle
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="roles-container">
+    <!-- En-tête -->
+    <div class="roles-header">
+        <h1>
+            <i class="fas fa-user-shield me-3"></i>Gestion des rôles
+        </h1>
+        <p>Administrez les rôles et leurs permissions</p>
+    </div>
+
+    <!-- Corps -->
+    <div class="roles-body">
+        <!-- Statistiques -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_roles }}</div>
+                <div class="stat-label">Total rôles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ active_roles|default:"0" }}</div>
+                <div class="stat-label">Rôles actifs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ custom_roles|default:"0" }}</div>
+                <div class="stat-label">Rôles personnalisés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_permissions|default:"0" }}</div>
+                <div class="stat-label">Permissions totales</div>
+            </div>
+        </div>
+
+        <!-- Barre d'actions -->
+        <div class="actions-bar">
+            <div class="search-box">
+                <input type="text" class="form-control" placeholder="Rechercher un rôle..." id="roleSearch">
+            </div>
+            
+            <div class="d-flex gap-2">
+                <select class="form-select" id="typeFilter" style="max-width: 150px;">
+                    <option value="">Tous les types</option>
+                    <option value="system">Système</option>
+                    <option value="custom">Personnalisés</option>
+                </select>
+                
+                <button class="btn btn-outline-secondary" onclick="exportRoles()">
+                    <i class="fas fa-download me-2"></i>Exporter
+                </button>
+            </div>
+        </div>
+
+        <!-- Grille des rôles -->
+        {% if roles %}
+        <div class="roles-grid">
+            {% for role in roles %}
+            <div class="role-card" data-role-id="{{ role.id }}">
+                <div class="role-header">
+                    <h5 class="role-title">{{ role.name }}</h5>
+                    <span class="role-badge badge-{{ role.type|lower|default:'primary' }}">
+                        {{ role.type|default:"Système" }}
+                    </span>
+                    {% if not role.is_active %}
+                        <span class="badge bg-danger ms-2">Inactif</span>
+                    {% endif %}
+                </div>
+                
+                <div class="role-description">
+                    {{ role.description|default:"Aucune description disponible" }}
+                </div>
+                
+                <div class="role-permissions">
+                    <div class="permissions-title">Permissions</div>
+                    <div class="permissions-list">
+                        {% for permission in role.permissions|slice:":5" %}
+                        <span class="permission-tag">{{ permission.name }}</span>
+                        {% endfor %}
+                        {% if role.permissions|length > 5 %}
+                        <span class="permission-tag">+{{ role.permissions|length|add:"-5" }} autres</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="role-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ role.users.count|default:"0" }}</div>
+                        <div class="stat-label">Utilisateurs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ role.permissions|length|default:"0" }}</div>
+                        <div class="stat-label">Permissions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ role.created_at|default:"-" }}</div>
+                        <div class="stat-label">Créé le</div>
+                    </div>
+                </div>
+                
+                                            <div class="role-actions">
+                                <a href="{% url 'content_management:role_detail' role.id %}" class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                    <i class="fas fa-eye me-1"></i>Voir
+                                </a>
+                                <a href="{% url 'content_management:role_edit' role.id %}" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                    <i class="fas fa-edit me-1"></i>Modifier
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteRole({{ role.id }})" title="Supprimer">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-shield"></i>
+            <h5>Aucun rôle trouvé</h5>
+            <p class="text-muted">Commencez par créer votre premier rôle</p>
+            <button class="btn btn-primary" onclick="showCreateRoleModal()">
+                <i class="fas fa-plus me-2"></i>Créer un rôle
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let selectedRoles = [];
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    initializeRoleManagement();
+});
+
+function initializeRoleManagement() {
+    // Recherche
+    const searchInput = document.getElementById('roleSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterRoles(this.value);
+        });
+    }
+    
+    // Filtre par type
+    const typeFilter = document.getElementById('typeFilter');
+    if (typeFilter) {
+        typeFilter.addEventListener('change', function() {
+            filterRolesByType(this.value);
+        });
+    }
+}
+
+function filterRoles(searchTerm) {
+    const cards = document.querySelectorAll('.role-card');
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const matches = text.includes(searchTerm.toLowerCase());
+        card.style.display = matches ? '' : 'none';
+    });
+}
+
+function filterRolesByType(type) {
+    const cards = document.querySelectorAll('.role-card');
+    cards.forEach(card => {
+        if (!type) {
+            card.style.display = '';
+            return;
+        }
+        
+        const badge = card.querySelector('.role-badge');
+        if (badge) {
+            const roleType = badge.textContent.toLowerCase();
+            const matches = roleType.includes(type.toLowerCase());
+            card.style.display = matches ? '' : 'none';
+        }
+    });
+}
+
+
+
+function deleteRole(roleId) {
+    showCustomConfirm(`Êtes-vous sûr de vouloir supprimer ce rôle ?`, function() {
+        const formData = new FormData();
+        formData.append('action', 'delete_role');
+        formData.append('role_id', roleId);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showCustomNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showCustomNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showCustomNotification('Erreur lors de la suppression', 'error');
+        });
+    });
+}
+
+
+
+
+
+function exportRoles() {
+    showCustomNotification('Fonctionnalité d\'export à implémenter', 'info');
+}
+</script>
+{% endblock %}

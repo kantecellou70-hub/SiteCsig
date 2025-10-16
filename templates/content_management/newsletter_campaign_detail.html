@@ -1,0 +1,535 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ campaign.title }} - Détails Campagne Newsletter - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.newsletter-detail-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.detail-header {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 2rem;
+}
+
+.detail-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.detail-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.detail-actions {
+    background: #f8f9fa;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-action.view {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-action.edit {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-action.send {
+    background: #28a745;
+    color: white;
+}
+
+.btn-action.schedule {
+    background: #6f42c1;
+    color: white;
+}
+
+.btn-action.duplicate {
+    background: #fd7e14;
+    color: white;
+}
+
+.btn-action.delete {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: white;
+    text-decoration: none;
+}
+
+.detail-content {
+    padding: 2rem;
+}
+
+.info-section {
+    margin-bottom: 2rem;
+}
+
+.info-section h3 {
+    color: #0d4786;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #0d4786;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    color: #212529;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-draft {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.status-scheduled {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-sending {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.content-preview {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0d4786;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .detail-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5 pt-3">
+    <div class="newsletter-detail-container">
+        <!-- En-tête -->
+        <div class="detail-header">
+            <h1>
+                <i class="fas fa-envelope me-2"></i>
+                {{ campaign.title }}
+            </h1>
+            <p>Détails de la campagne de newsletter</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="detail-actions">
+            <div class="breadcrumb-nav">
+                <a href="{% url 'content_management:newsletter_campaign_list' %}" class="text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'content_management:newsletter_campaign_edit' campaign.pk %}" class="btn-action edit">
+                    <i class="fas fa-edit"></i>Modifier
+                </a>
+                
+                {% if campaign.status == 'draft' %}
+                    <button class="btn-action send" onclick="sendNewsletter({{ campaign.pk }})">
+                        <i class="fas fa-paper-plane"></i>Envoyer
+                    </button>
+                    
+                    <button class="btn-action schedule" onclick="scheduleNewsletter({{ campaign.pk }})">
+                        <i class="fas fa-clock"></i>Programmer
+                    </button>
+                {% endif %}
+                
+                {% if campaign.status == 'scheduled' %}
+                    <button class="btn-action send" onclick="sendNewsletter({{ campaign.pk }})">
+                        <i class="fas fa-paper-plane"></i>Envoyer maintenant
+                    </button>
+                {% endif %}
+                
+                <button class="btn-action duplicate" onclick="duplicateNewsletter({{ campaign.pk }})">
+                    <i class="fas fa-copy"></i>Dupliquer
+                </button>
+                
+                <button class="btn-action delete" onclick="deleteNewsletter({{ campaign.pk }})">
+                    <i class="fas fa-trash"></i>Supprimer
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="detail-content">
+            <!-- Informations générales -->
+            <div class="info-section">
+                <h3>
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informations générales
+                </h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Titre</div>
+                        <div class="info-value">{{ campaign.title }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Sujet</div>
+                        <div class="info-value">{{ campaign.subject }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Statut</div>
+                        <div class="info-value">
+                            <span class="status-badge status-{{ campaign.status }}">
+                                {{ campaign.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Template</div>
+                        <div class="info-value">{{ campaign.template_name }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Créé le</div>
+                        <div class="info-value">{{ campaign.created_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Modifié le</div>
+                        <div class="info-value">{{ campaign.updated_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    
+                    {% if campaign.scheduled_at %}
+                    <div class="info-item">
+                        <div class="info-label">Programmée pour</div>
+                        <div class="info-value">{{ campaign.scheduled_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if campaign.started_at %}
+                    <div class="info-item">
+                        <div class="info-label">Début d'envoi</div>
+                        <div class="info-value">{{ campaign.started_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if campaign.completed_at %}
+                    <div class="info-item">
+                        <div class="info-label">Fin d'envoi</div>
+                        <div class="info-value">{{ campaign.completed_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="info-section">
+                <h3>
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Statistiques d'envoi
+                </h3>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ campaign.sent_count }}</div>
+                        <div class="stat-label">Emails envoyés</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">{{ campaign.failed_count }}</div>
+                        <div class="stat-label">Échecs</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">{{ campaign.opened_count }}</div>
+                        <div class="stat-label">Ouvertures</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">{{ campaign.clicked_count }}</div>
+                        <div class="stat-label">Clics</div>
+                    </div>
+                </div>
+                
+                {% if campaign.sent_count > 0 %}
+                <div class="mt-3">
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: {{ campaign.success_rate }}%">
+                            {{ campaign.success_rate|floatformat:1 }}% de succès
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Filtres d'audience -->
+            <div class="info-section">
+                <h3>
+                    <i class="fas fa-users me-2"></i>
+                    Filtres d'audience
+                </h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Langue cible</div>
+                        <div class="info-value">
+                            {% if campaign.target_language == 'all' %}
+                                Toutes les langues
+                            {% else %}
+                                {{ campaign.get_target_language_display }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Abonnés actifs uniquement</div>
+                        <div class="info-value">
+                            {% if campaign.target_active_only %}
+                                <i class="fas fa-check text-success"></i> Oui
+                            {% else %}
+                                <i class="fas fa-times text-danger"></i> Non
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aperçu du contenu -->
+            <div class="info-section">
+                <h3>
+                    <i class="fas fa-eye me-2"></i>
+                    Aperçu du contenu
+                </h3>
+                
+                <div class="content-preview">
+                    {{ campaign.content|safe }}
+                </div>
+            </div>
+
+            <!-- Métadonnées -->
+            {% if campaign.created_by %}
+            <div class="info-section">
+                <h3>
+                    <i class="fas fa-user me-2"></i>
+                    Métadonnées
+                </h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Créé par</div>
+                        <div class="info-value">{{ campaign.created_by.get_full_name|default:campaign.created_by.username }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour l'envoi -->
+<div class="modal fade" id="sendNewsletterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer l'envoi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir envoyer cette campagne maintenant ?</p>
+                <p><strong>Attention :</strong> Cette action ne peut pas être annulée.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="confirmSendBtn">Confirmer l'envoi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour la suppression -->
+<div class="modal fade" id="deleteNewsletterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette campagne ?</p>
+                <p><strong>Attention :</strong> Cette action ne peut pas être annulée.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Confirmer la suppression</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentNewsletterId = null;
+
+function sendNewsletter(newsletterId) {
+    currentNewsletterId = newsletterId;
+    const modal = new bootstrap.Modal(document.getElementById('sendNewsletterModal'));
+    modal.show();
+}
+
+function deleteNewsletter(newsletterId) {
+    currentNewsletterId = newsletterId;
+    const modal = new bootstrap.Modal(document.getElementById('deleteNewsletterModal'));
+    modal.show();
+}
+
+function duplicateNewsletter(newsletterId) {
+    if (confirm('Voulez-vous dupliquer cette campagne ?')) {
+        window.location.href = `{% url 'content_management:newsletter_campaign_duplicate' 0 %}`.replace('0', newsletterId);
+    }
+}
+
+function scheduleNewsletter(newsletterId) {
+    window.location.href = `{% url 'content_management:newsletter_campaign_schedule' 0 %}`.replace('0', newsletterId);
+}
+
+// Gestionnaire pour la confirmation d'envoi
+document.getElementById('confirmSendBtn').addEventListener('click', function() {
+    if (currentNewsletterId) {
+        window.location.href = `{% url 'content_management:newsletter_campaign_send' 0 %}`.replace('0', currentNewsletterId);
+    }
+});
+
+// Gestionnaire pour la confirmation de suppression
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (currentNewsletterId) {
+        window.location.href = `{% url 'content_management:newsletter_campaign_delete' 0 %}`.replace('0', currentNewsletterId);
+    }
+});
+</script>
+{% endblock %}

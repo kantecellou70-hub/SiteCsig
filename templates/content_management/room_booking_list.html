@@ -1,0 +1,827 @@
+{% extends 'content_management/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Gestion des réservations" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        background: white;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .booking-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .booking-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid #f0f0f0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .booking-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        transform: translate(30px, -30px);
+    }
+    
+    .booking-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        color: white;
+        line-height: 1.3;
+    }
+    
+    .booking-subtitle {
+        font-size: 0.95rem;
+        opacity: 0.95;
+        margin: 0;
+        font-weight: 500;
+    }
+    
+    .booking-body {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .time-indicator {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .time-indicator::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    .time-indicator.urgent {
+        background: linear-gradient(135deg, #ff4757 0%, #c44569 100%);
+        animation: pulse 2s infinite;
+    }
+    
+    .time-indicator.ongoing {
+        background: linear-gradient(135deg, #2ed573 0%, #1e90ff 100%);
+    }
+    
+    .time-indicator.completed {
+        background: linear-gradient(135deg, #747d8c 0%, #57606f 100%);
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    .time-text {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .time-details {
+        font-size: 0.85rem;
+        opacity: 0.9;
+        margin: 0.25rem 0 0 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .booking-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex: 1;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        color: #495057;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+    
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        text-align: center;
+        min-width: 80px;
+    }
+    
+    .status-pending { 
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); 
+        color: #856404; 
+        border: 1px solid #ffeaa7;
+    }
+    .status-confirmed { 
+        background: linear-gradient(135deg, #d1ecf1 0%, #a8e6cf 100%); 
+        color: #0c5460; 
+        border: 1px solid #a8e6cf;
+    }
+    .status-cancelled { 
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); 
+        color: #721c24; 
+        border: 1px solid #f5c6cb;
+    }
+    .status-completed { 
+        background: linear-gradient(135deg, #d4edda 0%, #b8f2e6 100%); 
+        color: #155724; 
+        border: 1px solid #b8f2e6;
+    }
+    .status-rejected { 
+        background: linear-gradient(135deg, #f5c6cb 0%, #f8d7da 100%); 
+        color: #721c24; 
+        border: 1px solid #f8d7da;
+    }
+    
+    .payment-status {
+        display: flex;
+        gap: 0.75rem;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+    }
+    
+    .payment-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        border: 1px solid transparent;
+    }
+    
+    .payment-paid { 
+        background: linear-gradient(135deg, #d4edda 0%, #b8f2e6 100%); 
+        color: #155724; 
+        border-color: #b8f2e6;
+    }
+    .payment-unpaid { 
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); 
+        color: #721c24; 
+        border-color: #f5c6cb;
+    }
+    
+    .special-requirements {
+        background: #f8f9fa;
+        border-left: 4px solid #17a2b8;
+        padding: 0.75rem;
+        border-radius: 0 8px 8px 0;
+        margin: 1rem 0;
+    }
+    
+    .special-requirements small {
+        color: #495057;
+        font-style: italic;
+    }
+    
+    .booking-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: auto;
+        padding-top: 1rem;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-sm:hover {
+        transform: translateY(-1px);
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.75rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transition: transform 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stats-label {
+        font-size: 1rem;
+        opacity: 0.95;
+        margin: 0.5rem 0 0 0;
+        font-weight: 500;
+    }
+    
+    .search-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+    }
+    
+    .search-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+        align-items: end;
+    }
+    
+    .search-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: end;
+    }
+    
+    .filters-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .filter-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 3rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.4;
+        color: #dee2e6;
+    }
+    
+    .empty-state h4 {
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .booking-info {
+            grid-template-columns: 1fr;
+        }
+        
+        .search-form {
+            grid-template-columns: 1fr;
+        }
+        
+        .search-actions {
+            justify-content: stretch;
+        }
+        
+        .search-actions .btn {
+            flex: 1;
+        }
+        
+        .filters-row {
+            flex-direction: column;
+        }
+        
+        .filter-group {
+            justify-content: space-between;
+        }
+        
+        .booking-actions {
+            flex-direction: column;
+        }
+        
+        .booking-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête de la page -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{% trans "Gestion des réservations" %}</h1>
+            <p class="text-muted mb-0">{% trans "Gérez toutes les réservations de salles de conférence" %}</p>
+        </div>
+        <a href="{% url 'content_management:room_booking_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>{% trans "Nouvelle réservation" %}
+        </a>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3 class="stats-number">{{ total_bookings }}</h3>
+                <p class="stats-label">{% trans "Total réservations" %}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3 class="stats-number">{{ pending_bookings }}</h3>
+                <p class="stats-label">{% trans "En attente" %}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3 class="stats-number">{{ confirmed_bookings }}</h3>
+                <p class="stats-label">{% trans "Confirmées" %}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3 class="stats-number">{{ total_revenue|floatformat:0 }} GNF</h3>
+                <p class="stats-label">{% trans "Revenus totaux" %}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section de recherche et filtres -->
+    <div class="search-section">
+        <h5 class="mb-3">{% trans "Recherche et filtres" %}</h5>
+        
+        <form method="get" class="search-form">
+            <div class="form-group">
+                <label for="{{ search_form.room.id_for_label }}" class="form-label">{% trans "Salle" %}</label>
+                {{ search_form.room }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ search_form.organization.id_for_label }}" class="form-label">{% trans "Organisation" %}</label>
+                {{ search_form.organization }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ search_form.status.id_for_label }}" class="form-label">{% trans "Statut" %}</label>
+                {{ search_form.status }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ search_form.start_date.id_for_label }}" class="form-label">{% trans "Date début" %}</label>
+                {{ search_form.start_date }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ search_form.end_date.id_for_label }}" class="form-label">{% trans "Date fin" %}</label>
+                {{ search_form.end_date }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ search_form.search.id_for_label }}" class="form-label">{% trans "Recherche" %}</label>
+                {{ search_form.search }}
+            </div>
+            
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>{% trans "Rechercher" %}
+                </button>
+                <a href="{% url 'content_management:room_booking_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>{% trans "Effacer" %}
+                </a>
+            </div>
+        </form>
+        
+        {% if request.GET %}
+        <div class="filters-row">
+            <span class="filter-label">{% trans "Filtres actifs:" %}</span>
+            {% if search_form.cleaned_data.room %}
+            <span class="badge bg-primary">{{ search_form.cleaned_data.room.name }}</span>
+            {% endif %}
+            {% if search_form.cleaned_data.organization %}
+            <span class="badge bg-primary">{{ search_form.cleaned_data.organization.name }}</span>
+            {% endif %}
+            {% if search_form.cleaned_data.status %}
+            <span class="badge bg-primary">{{ search_form.cleaned_data.get_status_display }}</span>
+            {% endif %}
+            {% if search_form.cleaned_data.start_date %}
+            <span class="badge bg-primary">{% trans "Début:" %} {{ search_form.cleaned_data.start_date }}</span>
+            {% endif %}
+            {% if search_form.cleaned_data.end_date %}
+            <span class="badge bg-primary">{% trans "Fin:" %} {{ search_form.cleaned_data.end_date }}</span>
+            {% endif %}
+            {% if search_form.cleaned_data.search %}
+            <span class="badge bg-primary">{% trans "Recherche:" %} "{{ search_form.cleaned_data.search }}"</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Liste des réservations -->
+    {% if bookings %}
+    <div class="row">
+        {% for booking in bookings %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="booking-card">
+                <div class="booking-header">
+                    <h6 class="booking-title">{{ booking.event_title }}</h6>
+                    <p class="booking-subtitle">{{ booking.room.name }} • {{ booking.organization.name }}</p>
+                </div>
+                
+                <div class="booking-body">
+                    <!-- Indicateur de temps intelligent -->
+                    <div class="time-indicator" id="time-indicator-{{ booking.pk }}" 
+                         data-start-time="{{ booking.start_time|date:'Y-m-d\TH:i:s' }}" 
+                         data-end-time="{{ booking.end_time|date:'Y-m-d\TH:i:s' }}">
+                        <div class="time-text" id="time-text-{{ booking.pk }}">
+                            {% if booking.status == 'completed' %}
+                                <i class="fas fa-check-circle me-2"></i>{% trans "Terminé" %}
+                            {% elif booking.status == 'cancelled' or booking.status == 'rejected' %}
+                                <i class="fas fa-times-circle me-2"></i>{% trans "Annulé" %}
+                            {% else %}
+                                <i class="fas fa-clock me-2"></i>{% trans "Calcul en cours..." %}
+                            {% endif %}
+                        </div>
+                        <div class="time-details" id="time-details-{{ booking.pk }}">
+                            {% if booking.status == 'completed' %}
+                                {{ booking.end_time|date:"d/m/Y H:i" }}
+                            {% elif booking.status == 'cancelled' or booking.status == 'rejected' %}
+                                {{ booking.updated_at|date:"d/m/Y H:i" }}
+                            {% else %}
+                                {% trans "Mise à jour en temps réel" %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="booking-info">
+                        <div class="info-item">
+                            <span class="info-label">{% trans "Statut" %}</span>
+                            <span class="status-badge status-{{ booking.status }}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">{% trans "Date" %}</span>
+                            <span class="info-value">{{ booking.start_time|date:"d/m/Y" }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">{% trans "Heure" %}</span>
+                            <span class="info-value">{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">{% trans "Durée" %}</span>
+                            <span class="info-value">{{ booking.duration_hours|floatformat:1 }}h</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">{% trans "Participants" %}</span>
+                            <span class="info-value">{{ booking.attendees_count|default:"-" }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">{% trans "Prix" %}</span>
+                            <span class="info-value">{{ booking.total_price|floatformat:0 }} GNF</span>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-status">
+                        <span class="payment-badge {% if booking.deposit_paid %}payment-paid{% else %}payment-unpaid{% endif %}">
+                            <i class="fas {% if booking.deposit_paid %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                            {% if booking.deposit_paid %}{% trans "Acompte payé" %}{% else %}{% trans "Acompte en attente" %}{% endif %}
+                        </span>
+                        <span class="payment-badge {% if booking.full_payment_paid %}payment-paid{% else %}payment-unpaid{% endif %}">
+                            <i class="fas {% if booking.full_payment_paid %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                            {% if booking.full_payment_paid %}{% trans "Paiement complet" %}{% else %}{% trans "Paiement en attente" %}{% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if booking.special_requirements %}
+                    <div class="special-requirements">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i>
+                            {{ booking.special_requirements|truncatechars:120 }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="booking-actions">
+                        <a href="{% url 'content_management:room_booking_detail' booking.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>{% trans "Voir les détails" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if bookings.has_other_pages %}
+    <div class="pagination-wrapper">
+        <nav aria-label="{% trans 'Navigation des réservations' %}">
+            <ul class="pagination">
+                {% if bookings.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.room %}&room={{ request.GET.room }}{% endif %}{% if request.GET.organization %}&organization={{ request.GET.organization }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.previous_page_number }}{% if request.GET.room %}&room={{ request.GET.room }}{% endif %}{% if request.GET.organization %}&organization={{ request.GET.organization }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in bookings.paginator.page_range %}
+                    {% if bookings.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > bookings.number|add:'-3' and num < bookings.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.room %}&room={{ request.GET.room }}{% endif %}{% if request.GET.organization %}&organization={{ request.GET.organization }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if bookings.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.next_page_number }}{% if request.GET.room %}&room={{ request.GET.room }}{% endif %}{% if request.GET.organization %}&organization={{ request.GET.organization }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ bookings.paginator.num_pages }}{% if request.GET.room %}&room={{ request.GET.room }}{% endif %}{% if request.GET.organization %}&organization={{ request.GET.organization }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- État vide -->
+    <div class="empty-state">
+        <i class="fas fa-calendar-times"></i>
+        <h4>{% trans "Aucune réservation trouvée" %}</h4>
+        <p class="mb-3">{% trans "Il n'y a actuellement aucune réservation correspondant à vos critères de recherche." %}</p>
+        <a href="{% url 'content_management:room_booking_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>{% trans "Créer la première réservation" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fonction pour formater le temps restant de manière intelligente
+function formatTimeRemaining(startTime, endTime) {
+    const now = new Date();
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    
+    // Si l'événement est terminé
+    if (end < now) {
+        return {
+            text: '{% trans "Terminé" %}',
+            details: end.toLocaleDateString('fr-FR') + ' ' + end.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}),
+            status: 'completed',
+            icon: 'fas fa-check-circle'
+        };
+    }
+    
+    // Si l'événement est en cours
+    if (start <= now && end > now) {
+        const remaining = end - now;
+        const hours = Math.floor(remaining / (1000 * 60 * 60));
+        const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+        
+        if (hours > 0) {
+            return {
+                text: `{% trans "En cours" %} - ${hours}h ${minutes}m restantes`,
+                details: '{% trans "Se termine dans" %} ' + (hours > 1 ? `${hours} heures` : `${hours} heure`) + (minutes > 0 ? ` et ${minutes} minutes` : ''),
+                status: 'ongoing',
+                icon: 'fas fa-play-circle'
+            };
+        } else {
+            return {
+                text: `{% trans "En cours" %} - ${minutes}m restantes`,
+                details: '{% trans "Se termine dans" %} ' + (minutes > 1 ? `${minutes} minutes` : `${minutes} minute`),
+                status: 'ongoing',
+                icon: 'fas fa-play-circle'
+            };
+        }
+    }
+    
+    // Si l'événement est à venir
+    const timeUntilStart = start - now;
+    const days = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeUntilStart % (1000 * 60)) / 1000);
+    
+    let text, details, status, icon;
+    
+    if (days > 365) {
+        const years = Math.floor(days / 365);
+        text = `${years} an${years > 1 ? 's' : ''}`;
+        details = `{% trans "Commence dans" %} ${years} an${years > 1 ? 's' : ''}`;
+        status = 'normal';
+        icon = 'fas fa-calendar-alt';
+    } else if (days > 30) {
+        const weeks = Math.floor(days / 7);
+        text = `${weeks} semaine${weeks > 1 ? 's' : ''}`;
+        details = `{% trans "Commence dans" %} ${weeks} semaine${weeks > 1 ? 's' : ''}`;
+        status = 'normal';
+        icon = 'fas fa-calendar-week';
+    } else if (days > 0) {
+        text = `${days} jour${days > 1 ? 's' : ''}`;
+        details = `{% trans "Commence dans" %} ${days} jour${days > 1 ? 's' : ''}`;
+        status = days <= 3 ? 'urgent' : 'normal';
+        icon = days <= 3 ? 'fas fa-exclamation-triangle' : 'fas fa-calendar-day';
+    } else if (hours > 0) {
+        text = `${hours}h ${minutes}m`;
+        details = `{% trans "Commence dans" %} ${hours} heure${hours > 1 ? 's' : ''}`;
+        status = hours <= 2 ? 'urgent' : 'normal';
+        icon = hours <= 2 ? 'fas fa-exclamation-triangle' : 'fas fa-clock';
+    } else if (minutes > 0) {
+        text = `${minutes}m ${seconds}s`;
+        details = `{% trans "Commence dans" %} ${minutes} minute${minutes > 1 ? 's' : ''}`;
+        status = minutes <= 30 ? 'urgent' : 'normal';
+        icon = minutes <= 30 ? 'fas fa-exclamation-triangle' : 'fas fa-clock';
+    } else {
+        text = `${seconds}s`;
+        details = '{% trans "Commence dans quelques secondes" %}';
+        status = 'urgent';
+        icon = 'fas fa-exclamation-triangle';
+    }
+    
+    return { text, details, status, icon };
+}
+
+// Fonction pour mettre à jour l'indicateur de temps
+function updateTimeIndicator(bookingId, startTime, endTime) {
+    const indicator = document.getElementById(`time-indicator-${bookingId}`);
+    const timeText = document.getElementById(`time-text-${bookingId}`);
+    const timeDetails = document.getElementById(`time-details-${bookingId}`);
+    
+    if (!indicator || !timeText || !timeDetails) return;
+    
+    const timeInfo = formatTimeRemaining(startTime, endTime);
+    
+    // Mettre à jour le texte et l'icône
+    timeText.innerHTML = `<i class="${timeInfo.icon} me-2"></i>${timeInfo.text}`;
+    timeDetails.textContent = timeInfo.details;
+    
+    // Mettre à jour le style
+    indicator.className = `time-indicator ${timeInfo.status}`;
+}
+
+// Fonction pour mettre à jour tous les indicateurs
+function updateAllTimeIndicators() {
+    const indicators = document.querySelectorAll('[id^="time-indicator-"]');
+    
+    indicators.forEach(indicator => {
+        const bookingId = indicator.id.replace('time-indicator-', '');
+        const startTime = indicator.getAttribute('data-start-time');
+        const endTime = indicator.getAttribute('data-end-time');
+        
+        if (startTime && endTime) {
+            updateTimeIndicator(bookingId, startTime, endTime);
+        }
+    });
+}
+
+// Initialiser les indicateurs de temps
+document.addEventListener('DOMContentLoaded', function() {
+    // Mettre à jour immédiatement tous les indicateurs
+    updateAllTimeIndicators();
+    
+    // Mettre à jour toutes les 30 secondes
+    setInterval(updateAllTimeIndicators, 30000);
+    
+    // Mettre à jour toutes les 5 secondes pour les événements urgents
+    setInterval(() => {
+        const indicators = document.querySelectorAll('[id^="time-indicator-"]');
+        indicators.forEach(indicator => {
+            const startTime = indicator.getAttribute('data-start-time');
+            const endTime = indicator.getAttribute('data-end-time');
+            if (startTime && endTime) {
+                const timeInfo = formatTimeRemaining(startTime, endTime);
+                if (timeInfo.status === 'urgent') {
+                    updateTimeIndicator(indicator.id.replace('time-indicator-', ''), startTime, endTime);
+                }
+            }
+        });
+    }, 5000);
+});
+
+
+
+// Ajouter le token CSRF à tous les formulaires
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!csrfToken) {
+        const token = document.createElement('input');
+        token.type = 'hidden';
+        token.name = 'csrfmiddlewaretoken';
+        token.value = '{{ csrf_token }}';
+        document.body.appendChild(token);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Mentions légales - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="legal-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h1 class="hero-title">Mentions légales</h1>
+                <p class="hero-subtitle">
+                    Informations légales et administratives concernant 
+                    le Centre de Services Informatiques de Guinée (CSIG).
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="legal-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="legal-container">
+                    <div class="legal-section">
+                        <h2>Éditeur du site</h2>
+                        <p>
+                            <strong>Centre de Services Informatiques de Guinée (CSIG)</strong><br>
+                            Siège social : Conakry, République de Guinée<br>
+                            Téléphone : +224 XXX XXX XXX<br>
+                            Email : contact@csig.gn
+                        </p>
+                    </div>
+                    
+                    <div class="legal-section">
+                        <h2>Directeur de publication</h2>
+                        <p>
+                            [Nom du Directeur]<br>
+                            Directeur Général du CSIG
+                        </p>
+                    </div>
+                    
+                    <div class="legal-section">
+                        <h2>Hébergement</h2>
+                        <p>
+                            Ce site web est hébergé par [Nom de l'hébergeur]<br>
+                            Adresse : [Adresse de l'hébergeur]<br>
+                            Téléphone : [Téléphone de l'hébergeur]
+                        </p>
+                    </div>
+                    
+                    <div class="legal-section">
+                        <h2>Conception et développement</h2>
+                        <p>
+                            Site web conçu et développé par l'équipe technique du CSIG<br>
+                            Technologies utilisées : Django, Bootstrap, JavaScript
+                        </p>
+                    </div>
+                    
+                    <div class="legal-section">
+                        <h2>Propriété intellectuelle</h2>
+                        <p>
+                            L'ensemble de ce site relève de la législation guinéenne et internationale 
+                            sur le droit d'auteur et la propriété intellectuelle. Tous les droits 
+                            de reproduction sont réservés, y compris pour les documents téléchargeables 
+                            et les représentations iconographiques et photographiques.
+                        </p>
+                    </div>
+                    
+                    <div class="legal-section">
+                        <h2>Liens hypertextes</h2>
+                        <p>
+                            Les liens hypertextes mis en place dans le cadre du présent site web 
+                            en direction d'autres ressources présentes sur le réseau Internet ne sauraient 
+                            engager la responsabilité du CSIG.
+                        </p>
+                    </div>
+                    
+                    <div class="legal-section">
+                        <h2>Crédits photos</h2>
+                        <p>
+                            Les photographies présentes sur ce site sont la propriété du CSIG 
+                            ou de ses partenaires. Toute reproduction sans autorisation est interdite.
+                        </p>
+                    </div>
+                    
+                    <div class="legal-footer">
+                        <p class="text-muted">
+                            <small>Dernière mise à jour : {% now "F Y" %}</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.legal-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.legal-content {
+    padding: 4rem 0;
+}
+
+.legal-container {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.legal-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.legal-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.legal-section h2 {
+    color: var(--csig-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.legal-section p {
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.legal-footer {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .legal-container {
+        padding: 2rem;
+    }
+}
+</style>
+{% endblock %}

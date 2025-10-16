@@ -1,0 +1,568 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Contact - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="contact-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h1 class="hero-title">Contactez-nous</h1>
+                <p class="hero-subtitle">
+                    Nous sommes là pour répondre à vos questions et vous accompagner 
+                    dans vos projets scientifiques et innovants.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Informations de contact -->
+<section class="contact-info-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h4>Notre Adresse</h4>
+                    <p>Rogbané, corniche nord Taouyah<br>Conakry, République de Guinée</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h4>Téléphone</h4>
+                    <p>+224 XXX XXX XXX<br>+224 XXX XXX XXX</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h4>Email</h4>
+                    <p>contact@csig.gn<br>info@csig.gn</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formulaire de contact et carte -->
+<section class="contact-form-section">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-7" data-aos="fade-right">
+                <div class="contact-form-container">
+                    <h3 class="section-title">Envoyez-nous un message</h3>
+                    <p class="section-subtitle">
+                        Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.
+                    </p>
+                    
+                    <form class="contact-form" method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="name" class="form-label">Nom complet *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phone" class="form-label">Téléphone</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="subject" class="form-label">Sujet *</label>
+                                    <select class="form-select" id="subject" name="subject" required>
+                                        <option value="">Choisir un sujet</option>
+                                        <option value="general">Question générale</option>
+                                        <option value="programs">Nos programmes</option>
+                                        <option value="projects">Nos projets</option>
+                                        <option value="partnership">Partenariat</option>
+                                        <option value="career">Opportunités de carrière</option>
+                                        <option value="other">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="message" class="form-label">Message *</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" required 
+                                              placeholder="Décrivez votre demande en détail..."></textarea>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Envoyer le message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-lg-5" data-aos="fade-left">
+                <div class="map-container">
+                    <h3 class="section-title">Notre Localisation</h3>
+                    <div class="map-placeholder">
+                        <i class="fas fa-map fa-3x text-muted mb-3"></i>
+                        <h5>Carte en cours de chargement</h5>
+                        <p class="text-muted">
+                            Rogbané, corniche nord Taouyah<br>
+                            Conakry, République de Guinée
+                        </p>
+                        <div class="map-actions">
+                            <a href="#" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-directions me-2"></i>Obtenir l'itinéraire
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="office-hours mt-4">
+                        <h5>Heures d'ouverture</h5>
+                        <div class="hours-list">
+                            <div class="hours-item">
+                                <span class="day">Lundi - Vendredi</span>
+                                <span class="time">8h00 - 17h00</span>
+                            </div>
+                            <div class="hours-item">
+                                <span class="day">Samedi</span>
+                                <span class="time">9h00 - 13h00</span>
+                            </div>
+                            <div class="hours-item">
+                                <span class="day">Dimanche</span>
+                                <span class="time">Fermé</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">Questions Fréquemment Posées</h2>
+            <p class="section-subtitle">Trouvez rapidement des réponses à vos questions</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item" data-aos="fade-up" data-aos-delay="100">
+                        <h2 class="accordion-header" id="faq1">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                Comment puis-je m'inscrire à vos programmes ?
+                            </button>
+                        </h2>
+                        <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Vous pouvez vous inscrire à nos programmes en nous contactant directement par email ou téléphone, 
+                                ou en visitant nos bureaux. Nous vous guiderons dans le processus d'inscription.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item" data-aos="fade-up" data-aos-delay="200">
+                        <h2 class="accordion-header" id="faq2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                Vos programmes sont-ils gratuits ?
+                            </button>
+                        </h2>
+                        <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Oui, la plupart de nos programmes sont gratuits. Nous croyons en l'accessibilité 
+                                de l'éducation scientifique pour tous les Guinéens.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item" data-aos="fade-up" data-aos-delay="300">
+                        <h2 class="accordion-header" id="faq3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                Comment puis-je collaborer avec la CSIG ?
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Nous accueillons les collaborations avec les institutions, entreprises et chercheurs. 
+                                Contactez-nous pour discuter des opportunités de partenariat.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item" data-aos="fade-up" data-aos-delay="400">
+                        <h2 class="accordion-header" id="faq4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4">
+                                Organisez-vous des événements publics ?
+                            </button>
+                        </h2>
+                        <div id="collapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Oui, nous organisons régulièrement des conférences, ateliers et événements publics 
+                                pour promouvoir la science et l'innovation en Guinée.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section CTA -->
+<section class="contact-cta">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center" data-aos="fade-up">
+                <h2>Prêt à Commencer Votre Voyage Scientifique ?</h2>
+                <p class="cta-text">
+                    Rejoignez la CSIG et participez à la révolution scientifique de la Guinée. 
+                    Notre équipe est là pour vous accompagner à chaque étape.
+                </p>
+                <div class="cta-buttons">
+                    <a href="{% url 'sfront:programs' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-graduation-cap me-2"></i>Nos Programmes
+                    </a>
+                    <a href="{% url 'sfront:events' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-calendar me-2"></i>Nos Événements
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.contact-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.contact-info-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.contact-card {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    height: 100%;
+}
+
+.contact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+.contact-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--csig-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+}
+
+.contact-card h4 {
+    color: var(--csig-primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.contact-card p {
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.contact-form-section {
+    padding: 4rem 0;
+}
+
+.contact-form-container {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.section-title {
+    color: var(--csig-primary);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+.section-subtitle {
+    color: var(--gray-600);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: var(--csig-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--csig-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.map-container {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    height: 100%;
+}
+
+.map-placeholder {
+    text-align: center;
+    padding: 2rem;
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+}
+
+.map-actions {
+    margin-top: 1rem;
+}
+
+.office-hours h5 {
+    color: var(--csig-primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.hours-list {
+    list-style: none;
+    padding: 0;
+}
+
+.hours-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.hours-item:last-child {
+    border-bottom: none;
+}
+
+.day {
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.time {
+    color: var(--gray-600);
+}
+
+.faq-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.accordion-item {
+    border: none;
+    margin-bottom: 1rem;
+    border-radius: var(--radius) !important;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.accordion-button {
+    background: white;
+    color: var(--csig-primary);
+    font-weight: 600;
+    border: none;
+    padding: 1.25rem;
+}
+
+.accordion-button:not(.collapsed) {
+    background: var(--csig-primary);
+    color: white;
+    box-shadow: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border: none;
+}
+
+.accordion-body {
+    background: white;
+    color: var(--gray-700);
+    line-height: 1.6;
+    padding: 1.25rem;
+}
+
+.contact-cta {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.contact-cta h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.cta-text {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.cta-buttons {
+    margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .contact-form-container,
+    .map-container {
+        padding: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .contact-cta h2 {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation du formulaire
+    const contactForm = document.querySelector('.contact-form');
+    
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Récupération des données du formulaire
+        const formData = new FormData(this);
+        const name = formData.get('name');
+        const email = formData.get('email');
+        const subject = formData.get('subject');
+        const message = formData.get('message');
+        
+        // Validation basique
+        if (!name || !email || !subject || !message) {
+            alert('Veuillez remplir tous les champs obligatoires.');
+            return;
+        }
+        
+        // Validation email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Veuillez entrer une adresse email valide.');
+            return;
+        }
+        
+        // Simulation d'envoi (remplacer par l'envoi réel)
+        alert('Message envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.');
+        this.reset();
+    });
+    
+    // Animation des cartes de contact
+    const contactCards = document.querySelectorAll('.contact-card');
+    
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    contactCards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

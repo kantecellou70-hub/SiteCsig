@@ -1,0 +1,478 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Modifier {{ role.name }} - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.role-edit-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.role-edit-header {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.role-edit-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.role-edit-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.role-edit-body {
+    padding: 2rem;
+}
+
+.form-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-section h3 {
+    color: #495057;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #6f42c1;
+    box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+}
+
+.permissions-search {
+    margin-bottom: 1rem;
+}
+
+.permissions-search .form-control {
+    border-radius: 25px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.permissions-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    background: white;
+}
+
+.permission-group {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.permission-group h6 {
+    color: #6f42c1;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.permission-item:last-child {
+    border-bottom: none;
+}
+
+.permission-item .form-check {
+    margin: 0;
+    width: 100%;
+}
+
+.permission-item .form-check-input {
+    margin-right: 0.75rem;
+}
+
+.permission-item .form-check-label {
+    font-size: 0.9rem;
+    color: #495057;
+    cursor: pointer;
+    width: 100%;
+}
+
+.permission-item .form-check-label:hover {
+    color: #6f42c1;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: #6f42c1;
+    border-color: #6f42c1;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+}
+
+.permission-count {
+    background: #6f42c1;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.role-info {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.role-info h4 {
+    color: #1976d2;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.role-info p {
+    margin: 0;
+    color: #1565c0;
+}
+
+@media (max-width: 768px) {
+    .role-edit-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .role-edit-header {
+        padding: 1.5rem;
+    }
+    
+    .role-edit-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .role-edit-body {
+        padding: 1rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-edit me-2"></i>Modifier le rôle
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Modifier les permissions et la description du rôle</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:role_detail' role.id %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+    </a>
+    <a href="{% url 'content_management:role_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-list me-2"></i>Liste des rôles
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="role-edit-container">
+    <!-- En-tête -->
+    <div class="role-edit-header">
+        <h1>
+            <i class="fas fa-edit me-3"></i>Modifier le rôle
+        </h1>
+        <p>{{ role.name }} - {{ role.get_name_display }}</p>
+    </div>
+
+    <!-- Corps -->
+    <div class="role-edit-body">
+        <!-- Informations du rôle -->
+        <div class="role-info">
+            <h4><i class="fas fa-info-circle me-2"></i>Informations du rôle</h4>
+            <p><strong>Nom :</strong> {{ role.name }} | <strong>Type :</strong> {{ role.get_name_display }}</p>
+            {% if role.description %}
+                <p><strong>Description actuelle :</strong> {{ role.description }}</p>
+            {% endif %}
+        </div>
+
+        <form method="post" id="roleEditForm">
+            {% csrf_token %}
+            
+            <!-- Description -->
+            <div class="form-section">
+                <h3><i class="fas fa-align-left me-2"></i>Description</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Description du rôle</label>
+                    <textarea class="form-control" name="description" rows="3" 
+                              placeholder="Description du rôle et de ses responsabilités...">{{ role.description }}</textarea>
+                </div>
+            </div>
+
+            <!-- Gestion des permissions -->
+            <div class="form-section">
+                <h3>
+                    <i class="fas fa-key me-2"></i>Permissions
+                    <span class="permission-count" id="selectedCount">0</span>
+                </h3>
+                
+                <div class="permissions-search">
+                    <input type="text" class="form-control" id="permissionSearch" 
+                           placeholder="Rechercher une permission...">
+                </div>
+                
+                <div class="permissions-container">
+                    {% if permissions_by_app %}
+                        {% for app_label, permissions in permissions_by_app.items %}
+                            <div class="permission-group" data-app="{{ app_label }}">
+                                <h6>{{ app_label|title }}</h6>
+                                {% for perm in permissions %}
+                                    <div class="permission-item" data-permission="{{ perm.codename|lower }}">
+                                        <div class="form-check">
+                                            <input class="form-check-input permission-checkbox" 
+                                                   type="checkbox" name="permissions" 
+                                                   value="{{ perm.id }}" id="perm_{{ perm.id }}"
+                                                   {% if perm.id in current_permissions %}checked{% endif %}>
+                                                                                         <label class="form-check-label" for="perm_{{ perm.id }}">
+                                                 {{ perm.name }}
+                                             </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Aucune permission disponible</p>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectAllPermissions()">
+                        <i class="fas fa-check-double me-1"></i>Tout sélectionner
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="deselectAllPermissions()">
+                        <i class="fas fa-times me-1"></i>Tout désélectionner
+                    </button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-section">
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="{% url 'content_management:role_detail' role.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Traduction des permissions en français
+const permissionTranslations = {
+    'add': 'Ajouter',
+    'change': 'Modifier',
+    'delete': 'Supprimer',
+    'view': 'Voir',
+    'can_add': 'Peut ajouter',
+    'can_change': 'Peut modifier',
+    'can_delete': 'Peut supprimer',
+    'can_view': 'Peut voir',
+    'can_edit': 'Peut éditer',
+    'can_create': 'Peut créer',
+    'can_read': 'Peut lire',
+    'can_write': 'Peut écrire',
+    'can_manage': 'Peut gérer',
+    'can_admin': 'Peut administrer',
+    'can_approve': 'Peut approuver',
+    'can_reject': 'Peut rejeter',
+    'can_publish': 'Peut publier',
+    'can_unpublish': 'Peut dépublié',
+    'can_archive': 'Peut archiver',
+    'can_restore': 'Peut restaurer'
+};
+
+// Fonction pour traduire les permissions
+function translatePermission(permissionName) {
+    let translated = permissionName;
+    
+    // Remplacer les patterns courants
+    for (const [pattern, translation] of Object.entries(permissionTranslations)) {
+        if (permissionName.toLowerCase().includes(pattern.toLowerCase())) {
+            translated = permissionName.replace(new RegExp(pattern, 'gi'), translation);
+            break;
+        }
+    }
+    
+    // Améliorer la lisibilité
+    translated = translated
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase());
+    
+    return translated;
+}
+
+// Appliquer les traductions au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    // Traduire tous les noms de permissions
+    document.querySelectorAll('.permission-item .form-check-label').forEach(label => {
+        const originalText = label.textContent.trim();
+        label.textContent = translatePermission(originalText);
+    });
+    
+    // Initialiser le compteur de permissions sélectionnées
+    updatePermissionCount();
+    
+    // Ajouter les écouteurs d'événements
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    // Recherche de permissions
+    const searchInput = document.getElementById('permissionSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterPermissions(this.value);
+        });
+    }
+    
+    // Compteur de permissions sélectionnées
+    document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updatePermissionCount);
+    });
+}
+
+function filterPermissions(searchTerm) {
+    const searchLower = searchTerm.toLowerCase();
+    const permissionItems = document.querySelectorAll('.permission-item');
+    const permissionGroups = document.querySelectorAll('.permission-group');
+    
+    permissionItems.forEach(item => {
+        const label = item.querySelector('.form-check-label');
+        const text = label.textContent.toLowerCase();
+        const matches = text.includes(searchLower);
+        
+        if (matches) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Masquer les groupes vides
+    permissionGroups.forEach(group => {
+        const visibleItems = group.querySelectorAll('.permission-item[style=""]').length;
+        const hiddenItems = group.querySelectorAll('.permission-item[style="display: none;"]').length;
+        
+        if (hiddenItems > 0 && visibleItems === 0) {
+            group.style.display = 'none';
+        } else {
+            group.style.display = '';
+        }
+    });
+}
+
+function updatePermissionCount() {
+    const selectedCount = document.querySelectorAll('.permission-checkbox:checked').length;
+    const totalCount = document.querySelectorAll('.permission-checkbox').length;
+    
+    document.getElementById('selectedCount').textContent = `${selectedCount}/${totalCount}`;
+}
+
+function selectAllPermissions() {
+    document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updatePermissionCount();
+}
+
+function deselectAllPermissions() {
+    document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updatePermissionCount();
+}
+
+// Validation du formulaire
+document.getElementById('roleEditForm').addEventListener('submit', function(e) {
+    const selectedPermissions = document.querySelectorAll('.permission-checkbox:checked');
+    
+    if (selectedPermissions.length === 0) {
+        e.preventDefault();
+        showCustomNotification('Veuillez sélectionner au moins une permission', 'warning');
+        return false;
+    }
+    
+    return true;
+});
+</script>
+{% endblock %}

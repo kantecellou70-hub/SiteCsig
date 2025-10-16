@@ -1,0 +1,673 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Utilisateurs - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.users-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.users-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.users-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.users-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.users-body {
+    padding: 2rem;
+}
+
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border-left: 4px solid #17a2b8;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #17a2b8;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.actions-bar {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.search-box {
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-box .form-control {
+    border-radius: 25px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-success {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.btn-warning {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.users-table {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.table-header {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table-title {
+    margin: 0;
+    color: #495057;
+    font-weight: 600;
+}
+
+.table-responsive {
+    border-radius: 0 0 12px 12px;
+}
+
+.table th {
+    background: #f8f9fa;
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-color: #f1f3f4;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.user-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .users-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .users-header {
+        padding: 1.5rem;
+    }
+    
+    .users-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .users-body {
+        padding: 1rem;
+    }
+    
+    .actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-box {
+        max-width: none;
+    }
+    
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-actions {
+        flex-direction: column;
+    }
+    
+    .btn-sm {
+        width: 100%;
+    }
+    
+    /* Responsive table */
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem;
+    }
+    
+    /* Hide less important columns on mobile */
+    .table th:nth-child(3),
+    .table td:nth-child(3),
+    .table th:nth-child(5),
+    .table td:nth-child(5) {
+        display: none;
+    }
+    
+    /* Stack user info vertically on mobile */
+    .d-flex.align-items-center.gap-3 {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+    
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    /* Responsive stats */
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .users-header {
+        padding: 1rem;
+    }
+    
+    .users-header h1 {
+        font-size: 1.25rem;
+    }
+    
+    .users-body {
+        padding: 0.75rem;
+    }
+    
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.375rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Hide more columns on very small screens */
+    .table th:nth-child(6),
+    .table td:nth-child(6) {
+        display: none;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-users me-2"></i>Utilisateurs
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Gestion des utilisateurs du système</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+    </a>
+    <a href="{% url 'content_management:user_create' %}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Nouvel utilisateur
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="users-container">
+    <!-- En-tête -->
+    <div class="users-header">
+        <h1>
+            <i class="fas fa-users me-3"></i>Gestion des utilisateurs
+        </h1>
+        <p>Administrez les comptes utilisateurs et leurs permissions</p>
+    </div>
+
+    <!-- Corps -->
+    <div class="users-body">
+        <!-- Statistiques -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-label">Total utilisateurs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ active_users|default:"0" }}</div>
+                <div class="stat-label">Utilisateurs actifs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ pending_users|default:"0" }}</div>
+                <div class="stat-label">En attente</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ admin_users|default:"0" }}</div>
+                <div class="stat-label">Administrateurs</div>
+            </div>
+        </div>
+
+        <!-- Barre d'actions -->
+        <div class="actions-bar">
+            <div class="search-box">
+                <input type="text" class="form-control" placeholder="Rechercher un utilisateur..." id="userSearch">
+            </div>
+            
+            <div class="d-flex gap-2">
+                <select class="form-select" id="statusFilter" style="max-width: 150px;">
+                    <option value="">Tous les statuts</option>
+                    <option value="active">Actifs</option>
+                    <option value="inactive">Inactifs</option>
+                    <option value="pending">En attente</option>
+                </select>
+                
+                <button class="btn btn-outline-secondary" onclick="exportUsers()">
+                    <i class="fas fa-download me-2"></i>Exporter
+                </button>
+            </div>
+        </div>
+
+        <!-- Tableau des utilisateurs -->
+        <div class="users-table">
+            <div class="table-header">
+                <h5 class="table-title">
+                    <i class="fas fa-list me-2"></i>Liste des utilisateurs
+                </h5>
+            </div>
+            
+            <div class="table-responsive">
+                {% if users %}
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" class="form-check-input" id="selectAllUsers">
+                            </th>
+                            <th>Utilisateur</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Statut</th>
+                            <th>Dernière connexion</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input user-checkbox" value="{{ user.id }}">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    {% if user.avatar_url %}
+                                        <img src="{{ user.avatar_url }}" alt="Avatar" class="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    {% else %}
+                                        <div class="user-avatar">
+                                            {% if user.first_name and user.last_name %}
+                                                {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                            {% else %}
+                                                {{ user.username|first|upper }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold">
+                                            {% if user.first_name and user.last_name %}
+                                                {{ user.first_name }} {{ user.last_name }}
+                                            {% else %}
+                                                {{ user.username }}
+                                            {% endif %}
+                                        </div>
+                                        <small class="text-muted">@{{ user.username }}</small>
+                                        {% if user.job_title %}
+                                            <br><small class="text-muted">{{ user.job_title }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>{{ user.email }}</div>
+                                {% if user.phone %}
+                                    <small class="text-muted">{{ user.phone }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.roles %}
+                                    {% for role in user.roles %}
+                                        <span class="badge bg-primary me-1">{{ role.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Aucun rôle</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.status == 'active' %}
+                                    <span class="user-status status-active">Actif</span>
+                                {% elif user.status == 'pending' %}
+                                    <span class="user-status status-pending">En attente</span>
+                                {% else %}
+                                    <span class="user-status status-inactive">Inactif</span>
+                                {% endif %}
+                                {% if user.is_superuser %}
+                                    <br><small class="badge bg-danger">Admin</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {% if user.last_login %}
+                                        {{ user.last_login }}
+                                    {% else %}
+                                        Jamais
+                                    {% endif %}
+                                </small>
+                                <br><small class="text-muted">Créé: {{ user.date_joined|slice:":10" }}</small>
+                            </td>
+                            <td>
+                                <div class="user-actions">
+                                    <a href="{% url 'content_management:user_detail' user.id %}" class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <h5>Aucun utilisateur trouvé</h5>
+                    <p class="text-muted">Commencez par créer votre premier utilisateur</p>
+                    <a href="{% url 'content_management:user_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Créer un utilisateur
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Actions en lot -->
+        {% if users %}
+        <div class="actions-bar mt-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted" id="selectedCount">0 utilisateur(s) sélectionné(s)</span>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <select class="form-select" id="bulkAction" style="max-width: 200px;">
+                    <option value="">Action en lot</option>
+                    <option value="activate">Activer</option>
+                    <option value="deactivate">Désactiver</option>
+                    <option value="delete">Supprimer</option>
+                    <option value="change_role">Changer le rôle</option>
+                </select>
+                
+                <button class="btn btn-primary" id="applyBulkAction" disabled onclick="applyBulkAction()">
+                    <i class="fas fa-check me-2"></i>Appliquer
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let selectedUsers = [];
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    initializeUserManagement();
+});
+
+function initializeUserManagement() {
+    // Gestion de la sélection multiple
+    const selectAllCheckbox = document.getElementById('selectAllUsers');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateSelectedCount();
+        });
+    }
+    
+    // Gestion des cases individuelles
+    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Recherche
+    const searchInput = document.getElementById('userSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterUsers(this.value);
+        });
+    }
+    
+    // Filtre par statut
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            filterUsersByStatus(this.value);
+        });
+    }
+    
+
+}
+
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+    const count = checkboxes.length;
+    const countElement = document.getElementById('selectedCount');
+    const applyButton = document.getElementById('applyBulkAction');
+    
+    if (countElement) {
+        countElement.textContent = `${count} utilisateur(s) sélectionné(s)`;
+    }
+    
+    if (applyButton) {
+        applyButton.disabled = count === 0;
+    }
+    
+    selectedUsers = Array.from(checkboxes).map(cb => cb.value);
+}
+
+function filterUsers(searchTerm) {
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const matches = text.includes(searchTerm.toLowerCase());
+        row.style.display = matches ? '' : 'none';
+    });
+}
+
+function filterUsersByStatus(status) {
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        if (!status) {
+            row.style.display = '';
+            return;
+        }
+        
+        const statusCell = row.querySelector('.user-status');
+        if (statusCell) {
+            const userStatus = statusCell.textContent.toLowerCase();
+            const matches = userStatus.includes(status.toLowerCase());
+            row.style.display = matches ? '' : 'none';
+        }
+    });
+}
+
+
+
+function exportUsers() {
+    showCustomNotification('Fonctionnalité d\'export à implémenter', 'info');
+}
+
+function applyBulkAction() {
+    const action = document.getElementById('bulkAction').value;
+    if (!action) {
+        showCustomNotification('Veuillez sélectionner une action', 'warning');
+        return;
+    }
+    
+    if (selectedUsers.length === 0) {
+        showCustomNotification('Veuillez sélectionner au moins un utilisateur', 'warning');
+        return;
+    }
+    
+    showCustomConfirm(`Voulez-vous vraiment ${action} ${selectedUsers.length} utilisateur(s) ?`, function() {
+        showCustomNotification(`Action ${action} appliquée avec succès`, 'success');
+        // Réinitialiser la sélection
+        document.getElementById('selectAllUsers').checked = false;
+        document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+        updateSelectedCount();
+    });
+}
+
+
+</script>
+{% endblock %}

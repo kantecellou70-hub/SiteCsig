@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'fr' }}">
+    {% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}Authentification - Cité des Sciences et de l'Innovation de Guinée{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}connexion, inscription, authentification, CSIG{% endblock %}">
+    <meta name="author" content="Cité des Sciences et de l'Innovation de Guinée">
+    
+    <title>{% block title %}Authentification - CSIG{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'sfront/images/logo.jpg' %}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="auth-body">
+    <!-- Background Pattern -->
+    <div class="auth-background">
+        <div class="pattern-overlay"></div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="auth-container">
+        <!-- Logo Section -->
+        <div class="auth-logo-section text-center mb-4">
+            <a href="{% url 'sfront:home' %}" class="logo-link">
+                <img src="{% static 'sfront/images/logo.jpg' %}" alt="CSIG Logo" class="auth-logo">
+                <h1 class="auth-brand-title">CSIG</h1>
+            </a>
+            <p class="auth-subtitle">Cité des Sciences et de l'Innovation de Guinée</p>
+        </div>
+        
+        <!-- Content Section -->
+        <div class="auth-content">
+            {% block content %}{% endblock %}
+        </div>
+        
+        <!-- Footer -->
+        <div class="auth-footer text-center mt-4">
+            <p class="text-white mb-2">
+                <a href="{% url 'oauth:terms' %}" class="text-white text-decoration-none">Conditions d'utilisation</a>
+                <span class="mx-2 text-white">•</span>
+                <a href="{% url 'oauth:privacy' %}" class="text-white text-decoration-none">Politique de confidentialité</a>
+            </p>
+            <p class="text-white mb-0">
+                <a href="{% url 'oauth:contact_support' %}" class="text-white text-decoration-none">
+                    <i class="fas fa-question-circle me-1"></i>Besoin d'aide ?
+                </a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Messages Flash -->
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/auth.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        // Auto-hide messages after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+        
+        // Smooth scroll to top when clicking logo
+        $('.logo-link').on('click', function(e) {
+            $('html, body').animate({
+                scrollTop: 0
+            }, 800);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1933 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ project.title }} - Détails du projet - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.project-detail-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.project-header {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 2rem;
+}
+
+.project-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.project-meta {
+    margin: 1rem 0 0 0;
+    opacity: 0.9;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.meta-item i {
+    font-size: 1.1rem;
+}
+
+.project-content {
+    padding: 2rem;
+}
+
+.project-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.project-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d4786;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.8rem;
+}
+
+.project-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.info-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+}
+
+.info-card:hover::before {
+    width: 8px;
+}
+
+.info-card h4 {
+    color: #495057;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-card p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-planning {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1565c0;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    color: #2e7d32;
+}
+
+.status-completed {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    color: #7b1fa2;
+}
+
+.status-on_hold {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%);
+    color: #ef6c00;
+}
+
+.project-actions {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.action-btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    text-decoration: none;
+}
+
+.action-btn.edit {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+}
+
+.action-btn.delete {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    color: #d32f2f;
+}
+
+.action-btn.back {
+    background: transparent;
+    color: #6c757d;
+    border: 2px solid #6c757d;
+}
+
+.action-btn.back:hover {
+    background: #6c757d;
+    color: white;
+}
+
+.project-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    margin-bottom: 1rem;
+}
+
+.budget-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #28a745;
+}
+
+.team-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.team-member {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+    padding: 0.75rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Section des partenaires */
+.partners-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.partners-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.partners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.partner-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.partner-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.partner-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.partner-card:hover::before {
+    width: 8px;
+}
+
+.partner-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.partner-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+}
+
+.partner-info h4 {
+    margin: 0;
+    color: #0d4786;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.partner-role {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0.25rem 0;
+}
+
+.partner-description {
+    color: #495057;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.partner-contacts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.contact-item {
+    background: #f8f9fa;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.partner-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.partner-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.partner-action-btn.edit {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.partner-action-btn.delete {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    color: #d32f2f;
+}
+
+.partner-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Modal styles */
+.modal-content {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    border-radius: 20px 20px 0 0;
+    border: none;
+    padding: 1.5rem 2rem;
+}
+
+.modal-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-footer {
+    border: none;
+    padding: 1.5rem 2rem;
+    background: #f8f9fa;
+    border-radius: 0 0 20px 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .project-header {
+        padding: 1.5rem;
+    }
+    
+    .project-title {
+        font-size: 1.5rem;
+    }
+    
+    .project-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .project-content {
+        padding: 1.5rem;
+    }
+    
+    .project-info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .project-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .action-btn {
+        justify-content: center;
+    }
+    
+    .partners-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .partners-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .partner-card {
+        padding: 1rem;
+    }
+    
+    .partner-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .partner-logo {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .partner-contacts {
+        justify-content: center;
+    }
+    
+    .partner-actions {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .project-header {
+        padding: 1rem;
+    }
+    
+    .project-title {
+        font-size: 1.25rem;
+    }
+    
+    .project-content {
+        padding: 1rem;
+    }
+    
+    .partners-section {
+        padding: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .project-detail-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .project-header {
+        border-radius: 0;
+    }
+    
+    .project-actions {
+        padding: 1rem;
+    }
+    
+    .action-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .info-card {
+        padding: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+    }
+    
+    .section-title i {
+        font-size: 1.5rem;
+    }
+    
+    .budget-display {
+        font-size: 1.25rem;
+    }
+    
+    .partner-card {
+        padding: 0.75rem;
+    }
+    
+    .partner-logo {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .partner-info h4 {
+        font-size: 1rem;
+    }
+    
+    .partner-role {
+        font-size: 0.8rem;
+    }
+    
+    .partner-description {
+        font-size: 0.85rem;
+    }
+    
+    .contact-item {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .partner-action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+}
+
+/* Règles globales pour empêcher le défilement horizontal */
+@media (max-width: 768px) {
+    body, html {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    
+    .container, .container-fluid {
+        overflow-x: hidden;
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .project-detail-container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .project-content {
+        overflow-x: hidden;
+    }
+    
+    .partners-section {
+        overflow-x: hidden;
+    }
+    
+    .partners-grid {
+        overflow-x: hidden;
+    }
+    
+    .project-info-grid {
+        overflow-x: hidden;
+    }
+    
+    .project-meta {
+        overflow-x: hidden;
+        word-wrap: break-word;
+    }
+    
+    .meta-item {
+        word-wrap: break-word;
+        max-width: 100%;
+    }
+    
+    .meta-item span {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .section-title {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .partner-card {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .partner-description {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .contact-item {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+    
+    .action-btn {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        text-align: center;
+    }
+    
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+    }
+    
+    .modal-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .modal-body {
+        padding: 1rem 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1rem 1.5rem;
+    }
+    
+    /* Amélioration des formulaires sur mobile */
+    .form-label {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    /* Ajustement des colonnes sur mobile */
+    .row .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    
+    /* Gestion des longs textes */
+    .project-title,
+    .section-title,
+    .partner-info h4,
+    .meta-item span {
+        word-break: break-word;
+        hyphens: auto;
+    }
+    
+    /* Optimisation des grilles */
+    .project-info-grid,
+    .partners-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    /* Ajustement des cartes d'information */
+    .info-card {
+        min-width: 0;
+        overflow: hidden;
+    }
+    
+    .info-card h4,
+    .info-card p {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Gestion des boutons d'action */
+    .project-actions {
+        gap: 0.75rem;
+    }
+    
+    .action-btn {
+        min-width: 0;
+        flex: 1;
+        white-space: normal;
+        text-align: center;
+        padding: 0.75rem 1rem;
+    }
+    
+    /* Optimisation des partenaires */
+    .partner-card {
+        min-width: 0;
+        overflow: hidden;
+    }
+    
+    .partner-contacts {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+    
+    .contact-item {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+    }
+    
+    .contact-item a {
+        word-break: break-all;
+    }
+}
+
+/* Règles pour très petits écrans */
+@media (max-width: 480px) {
+    .project-header {
+        padding: 0.75rem;
+    }
+    
+    .project-title {
+        font-size: 1.1rem;
+        line-height: 1.3;
+    }
+    
+    .project-content {
+        padding: 0.75rem;
+    }
+    
+    .partners-section {
+        padding: 0.75rem;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .section-title i {
+        font-size: 1.3rem;
+    }
+    
+    .info-card {
+        padding: 0.75rem;
+    }
+    
+    .info-card h4 {
+        font-size: 0.9rem;
+    }
+    
+    .info-card p {
+        font-size: 0.85rem;
+    }
+    
+    .budget-display {
+        font-size: 1.1rem;
+    }
+    
+    .partner-card {
+        padding: 0.5rem;
+    }
+    
+    .partner-logo {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .partner-info h4 {
+        font-size: 0.9rem;
+    }
+    
+    .partner-role {
+        font-size: 0.75rem;
+    }
+    
+    .partner-description {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    .contact-item {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.5rem;
+    }
+    
+    .partner-action-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 0.65rem;
+    }
+    
+    .action-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .project-actions {
+        padding: 0.75rem;
+        gap: 0.5rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.25rem;
+        max-width: calc(100% - 0.5rem);
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 0.75rem 1rem;
+    }
+    
+    .modal-title {
+        font-size: 1.2rem;
+    }
+    
+    .form-label {
+        font-size: 0.85rem;
+    }
+    
+    .form-control {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .btn {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    /* Ajustement des colonnes sur très petits écrans */
+    .row .col-md-6 {
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Optimisation des grilles */
+    .project-info-grid,
+    .partners-grid {
+        gap: 0.5rem;
+    }
+    
+    /* Gestion des longs textes */
+    .project-title,
+    .section-title,
+    .partner-info h4,
+    .meta-item span,
+    .partner-description {
+        word-break: break-word;
+        hyphens: auto;
+        line-height: 1.3;
+    }
+    
+    /* Ajustement des cartes d'information */
+    .info-card {
+        padding: 0.6rem;
+    }
+    
+    .info-card h4,
+    .info-card p {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.3;
+    }
+    
+    /* Gestion des boutons d'action */
+    .action-btn {
+        min-width: 0;
+        flex: 1;
+        white-space: normal;
+        text-align: center;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Optimisation des partenaires */
+    .partner-card {
+        min-width: 0;
+        overflow: hidden;
+        padding: 0.6rem;
+    }
+    
+    .partner-contacts {
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        justify-content: center;
+    }
+    
+    .contact-item {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        font-size: 0.65rem;
+        padding: 0.25rem 0.4rem;
+    }
+    
+    .contact-item a {
+        word-break: break-all;
+        font-size: 0.65rem;
+    }
+    
+    /* Ajustement des métadonnées */
+    .project-meta {
+        gap: 0.75rem;
+    }
+    
+    .meta-item {
+        font-size: 0.85rem;
+    }
+    
+    .meta-item i {
+        font-size: 1rem;
+    }
+    
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* Règles pour écrans ultra-petits et orientation paysage sur mobile */
+@media (max-width: 360px) {
+    .project-header {
+        padding: 0.5rem;
+    }
+    
+    .project-title {
+        font-size: 1rem;
+        line-height: 1.2;
+    }
+    
+    .project-content {
+        padding: 0.5rem;
+    }
+    
+    .partners-section {
+        padding: 0.5rem;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .section-title i {
+        font-size: 1.2rem;
+    }
+    
+    .info-card {
+        padding: 0.5rem;
+    }
+    
+    .info-card h4 {
+        font-size: 0.8rem;
+    }
+    
+    .info-card p {
+        font-size: 0.75rem;
+    }
+    
+    .budget-display {
+        font-size: 1rem;
+    }
+    
+    .partner-card {
+        padding: 0.4rem;
+    }
+    
+    .partner-logo {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .partner-info h4 {
+        font-size: 0.8rem;
+    }
+    
+    .partner-role {
+        font-size: 0.7rem;
+    }
+    
+    .partner-description {
+        font-size: 0.75rem;
+        line-height: 1.3;
+    }
+    
+    .contact-item {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.4rem;
+    }
+    
+    .partner-action-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.6rem;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.75rem;
+    }
+    
+    .project-actions {
+        padding: 0.5rem;
+        gap: 0.4rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.2rem;
+        max-width: calc(100% - 0.4rem);
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+    }
+    
+    .form-label {
+        font-size: 0.8rem;
+    }
+    
+    .form-control {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.5rem;
+    }
+    
+    .btn {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+    }
+    
+    /* Ajustement des colonnes sur ultra-petits écrans */
+    .row .col-md-6 {
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Optimisation des grilles */
+    .project-info-grid,
+    .partners-grid {
+        gap: 0.4rem;
+    }
+    
+    /* Gestion des longs textes */
+    .project-title,
+    .section-title,
+    .partner-info h4,
+    .meta-item span,
+    .partner-description {
+        word-break: break-word;
+        hyphens: auto;
+        line-height: 1.2;
+    }
+    
+    /* Ajustement des cartes d'information */
+    .info-card {
+        padding: 0.5rem;
+    }
+    
+    .info-card h4,
+    .info-card p {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.2;
+    }
+    
+    /* Gestion des boutons d'action */
+    .action-btn {
+        min-width: 0;
+        flex: 1;
+        white-space: normal;
+        text-align: center;
+        padding: 0.5rem 0.7rem;
+        font-size: 0.75rem;
+    }
+    
+    /* Optimisation des partenaires */
+    .partner-card {
+        min-width: 0;
+        overflow: hidden;
+        padding: 0.5rem;
+    }
+    
+    .partner-contacts {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        justify-content: center;
+    }
+    
+    .contact-item {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        font-size: 0.6rem;
+        padding: 0.2rem 0.3rem;
+    }
+    
+    .contact-item a {
+        word-break: break-all;
+        font-size: 0.6rem;
+    }
+    
+    /* Ajustement des métadonnées */
+    .project-meta {
+        gap: 0.5rem;
+    }
+    
+    .meta-item {
+        font-size: 0.8rem;
+    }
+    
+    .meta-item i {
+        font-size: 0.9rem;
+    }
+    
+    .status-badge {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+/* Orientation paysage sur mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .project-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .project-title {
+        font-size: 1.3rem;
+    }
+    
+    .project-content {
+        padding: 1rem 1.5rem;
+    }
+    
+    .partners-section {
+        padding: 1rem 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+    }
+    
+    .info-card {
+        padding: 1rem;
+    }
+    
+    .partner-card {
+        padding: 1rem;
+    }
+    
+    .action-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+    }
+    
+    .project-actions {
+        padding: 1rem 1.5rem;
+    }
+    
+    .modal-dialog {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem 1.5rem;
+    }
+}
+
+/* Règles pour empêcher le défilement horizontal sur tous les appareils */
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+.container, .container-fluid {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+.project-detail-container {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.project-content,
+.partners-section,
+.partners-grid,
+.project-info-grid {
+    overflow-x: hidden;
+}
+
+/* Gestion des longs textes sur tous les appareils */
+.project-title,
+.section-title,
+.partner-info h4,
+.meta-item span,
+.partner-description,
+.info-card h4,
+.info-card p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Optimisation des grilles */
+.project-info-grid,
+.partners-grid {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Gestion des cartes */
+.info-card,
+.partner-card {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Gestion des boutons */
+.action-btn,
+.partner-action-btn {
+    min-width: 0;
+    overflow: hidden;
+    white-space: normal;
+}
+
+/* Gestion des modals */
+.modal-dialog {
+    max-width: 95vw;
+}
+
+@media (max-width: 576px) {
+    .modal-dialog {
+        max-width: 98vw;
+        margin: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-dialog {
+        max-width: 99vw;
+        margin: 0.25rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-eye me-2"></i>Détails du projet
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Consultez les informations détaillées du projet "{{ project.title }}"
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:project_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:project_edit' project.pk %}" class="btn btn-primary">
+        <i class="fas fa-edit me-2"></i>Modifier
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Formulaire CSRF caché pour les opérations AJAX -->
+<form id="csrfForm" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<div class="project-detail-container">
+    <!-- En-tête du projet -->
+    <div class="project-header">
+        <h1 class="project-title">{{ project.title }}</h1>
+        
+        <div class="project-meta">
+            <div class="meta-item">
+                <i class="fas fa-calendar"></i>
+                <span>Créé le {{ project.created_at|date:"d/m/Y à H:i" }}</span>
+            </div>
+            
+            {% if project.start_date %}
+            <div class="meta-item">
+                <i class="fas fa-play"></i>
+                <span>Début: {{ project.start_date|date:"d/m/Y" }}</span>
+            </div>
+            {% endif %}
+            
+            {% if project.end_date %}
+            <div class="meta-item">
+                <i class="fas fa-flag-checkered"></i>
+                <span>Fin: {{ project.end_date|date:"d/m/Y" }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="meta-item">
+                <i class="fas fa-toggle-on"></i>
+                <span class="status-badge status-{{ project.status }}">
+                    {% if project.status == 'planning' %}
+                        Planification
+                    {% elif project.status == 'active' %}
+                        Actif
+                    {% elif project.status == 'completed' %}
+                        Terminé
+                    {% elif project.status == 'on_hold' %}
+                        En attente
+                    {% else %}
+                        {{ project.get_status_display }}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="project-content">
+        <!-- Informations générales -->
+        <div class="project-section">
+            <h3 class="section-title">
+                <i class="fas fa-info-circle"></i>Informations générales
+            </h3>
+            
+            <div class="project-info-grid">
+                <div class="info-card">
+                    <h4>Statut</h4>
+                    <span class="status-badge status-{{ project.status }}">
+                        {% if project.status == 'planning' %}
+                            Planification
+                        {% elif project.status == 'active' %}
+                            Actif
+                        {% elif project.status == 'completed' %}
+                            Terminé
+                        {% elif project.status == 'on_hold' %}
+                            En attente
+                        {% else %}
+                            {{ project.get_status_display }}
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="info-card">
+                    <h4>Budget</h4>
+                    {% if project.budget %}
+                        <div class="budget-display">{{ project.budget|floatformat:0 }} GNF</div>
+                    {% else %}
+                        <p>Non défini</p>
+                    {% endif %}
+                </div>
+                
+                <div class="info-card">
+                    <h4>Mise en avant</h4>
+                    <p>{% if project.is_featured %}Oui{% else %}Non{% endif %}</p>
+                </div>
+                
+                <div class="info-card">
+                    <h4>Date de création</h4>
+                    <p>{{ project.created_at|date:"d/m/Y H:i" }}</p>
+                </div>
+                
+                {% if project.start_date %}
+                <div class="info-card">
+                    <h4>Date de début</h4>
+                    <p>{{ project.start_date|date:"d/m/Y" }}</p>
+                </div>
+                {% endif %}
+                
+                {% if project.end_date %}
+                <div class="info-card">
+                    <h4>Date de fin</h4>
+                    <p>{{ project.end_date|date:"d/m/Y" }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Description courte -->
+        {% if project.short_description %}
+        <div class="project-section">
+            <h3 class="section-title">
+                <i class="fas fa-align-left"></i>Description courte
+            </h3>
+            <p style="font-size: 1.1rem; line-height: 1.6; color: #495057;">
+                {{ project.short_description }}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Description complète -->
+        {% if project.description %}
+        <div class="project-section">
+            <h3 class="section-title">
+                <i class="fas fa-file-text"></i>Description complète
+            </h3>
+            <div style="line-height: 1.7; color: #495057;">
+                {{ project.description|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Objectifs -->
+        {% if project.objectives %}
+        <div class="project-section">
+            <h3 class="section-title">
+                <i class="fas fa-bullseye"></i>Objectifs
+            </h3>
+            <div style="line-height: 1.7; color: #495057;">
+                {{ project.objectives|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Résultats -->
+        {% if project.results %}
+        <div class="project-section">
+            <h3 class="section-title">
+                <i class="fas fa-chart-line"></i>Résultats
+            </h3>
+            <div style="line-height: 1.7; color: #495057;">
+                {{ project.results|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Partenaires -->
+        <div class="partners-section">
+            <div class="partners-header">
+                <h3 class="section-title" style="margin: 0;">
+                    <i class="fas fa-handshake"></i>Partenaires du projet
+                </h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPartnerModal">
+                    <i class="fas fa-plus me-2"></i>Ajouter un partenaire
+                </button>
+            </div>
+            
+            {% if project.project_partners.all %}
+            <div class="partners-grid">
+                {% for partner in project.project_partners.all %}
+                <div class="partner-card">
+                    <div class="partner-header">
+                        {% if partner.logo %}
+                        <img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="partner-logo">
+                        {% else %}
+                        <div class="partner-logo d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-building text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="partner-info">
+                            <h4>{{ partner.name }}</h4>
+                            <div class="partner-role">{{ partner.role }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if partner.description %}
+                    <div class="partner-description">
+                        {{ partner.description|truncatechars:150 }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="partner-contacts">
+                        {% if partner.website %}
+                        <span class="contact-item">
+                            <i class="fas fa-globe"></i>
+                            <a href="{{ partner.website }}" target="_blank" style="color: inherit; text-decoration: none;">
+                                Site web
+                            </a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if partner.contact_email %}
+                        <span class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            {{ partner.contact_email }}
+                        </span>
+                        {% endif %}
+                        
+                        {% if partner.contact_phone %}
+                        <span class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            {{ partner.contact_phone }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="partner-actions">
+                        <button class="partner-action-btn edit" title="Modifier" 
+                                onclick="editPartner({{ partner.pk }}, '{{ partner.name }}', '{{ partner.role }}', '{{ partner.description }}', '{{ partner.website }}', '{{ partner.contact_email }}', '{{ partner.contact_phone }}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="partner-action-btn delete" title="Supprimer" 
+                                onclick="deletePartner({{ partner.pk }}, '{{ partner.name }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <div class="text-muted">
+                    <i class="fas fa-handshake fa-3x mb-3"></i>
+                    <h5>Aucun partenaire</h5>
+                    <p>Ce projet n'a pas encore de partenaires. Ajoutez-en un pour commencer.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Médias -->
+        {% if project.featured_image %}
+        <div class="project-section">
+            <h3 class="section-title">
+                <i class="fas fa-images"></i>Médias
+            </h3>
+            
+            <div>
+                <h4 style="color: #495057; margin-bottom: 0.5rem;">Image principale</h4>
+                <img src="{{ project.featured_image.url }}" alt="{{ project.title }}" class="project-image">
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Membres de l'équipe -->
+        {% if project.team_members.all %}
+        <div class="project-section">
+            <h3 class="section-title">
+                <i class="fas fa-users"></i>Membres de l'équipe
+            </h3>
+            <div class="team-members">
+                {% for member in project.team_members.all %}
+                    <span class="team-member">{{ member.get_full_name|default:member.username }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Actions -->
+    <div class="project-actions">
+        <div>
+            <a href="{% url 'content_management:project_list' %}" class="action-btn back">
+                <i class="fas fa-arrow-left"></i>Retour à la liste
+            </a>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <a href="{% url 'content_management:project_edit' project.pk %}" class="action-btn edit">
+                <i class="fas fa-edit"></i>Modifier
+            </a>
+            
+            <button type="button" class="action-btn delete" onclick="confirmDeleteProject({{ project.pk }}, '{{ project.title|escapejs }}')">
+                <i class="fas fa-trash"></i>Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter un partenaire -->
+<div class="modal fade" id="addPartnerModal" tabindex="-1" aria-labelledby="addPartnerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPartnerModalLabel">
+                    <i class="fas fa-plus me-2"></i>Ajouter un partenaire
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="partnerForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="partner_name" class="form-label required">Nom du partenaire</label>
+                                <input type="text" class="form-control" id="partner_name" name="name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="partner_role" class="form-label required">Rôle dans le projet</label>
+                                <input type="text" class="form-control" id="partner_role" name="role" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="partner_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="partner_description" name="description" rows="3" placeholder="Description du partenaire"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="partner_logo" class="form-label">Logo</label>
+                                <input type="file" class="form-control" id="partner_logo" name="logo" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="partner_website" class="form-label">Site web</label>
+                                <input type="url" class="form-control" id="partner_website" name="website" placeholder="https://www.exemple.com">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="partner_email" class="form-label">Email de contact</label>
+                                <input type="email" class="form-control" id="partner_email" name="contact_email" placeholder="contact@partenaire.com">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="partner_phone" class="form-label">Téléphone</label>
+                                <input type="text" class="form-control" id="partner_phone" name="contact_phone" placeholder="+224 XXX XXX XXX">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="partner_active" name="is_active" checked>
+                            <label class="form-check-label" for="partner_active">
+                                Partenaire actif
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Ajouter le partenaire
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour modifier un partenaire -->
+<div class="modal fade" id="editPartnerModal" tabindex="-1" aria-labelledby="editPartnerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPartnerModalLabel">
+                    <i class="fas fa-edit me-2"></i>Modifier le partenaire
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editPartnerForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="edit_partner_id" name="partner_id">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_partner_name" class="form-label required">Nom du partenaire</label>
+                                <input type="text" class="form-control" id="edit_partner_name" name="name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_partner_role" class="form-label required">Rôle dans le projet</label>
+                                <input type="text" class="form-control" id="edit_partner_role" name="role" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_partner_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_partner_description" name="description" rows="3" placeholder="Description du partenaire"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_partner_logo" class="form-label">Logo</label>
+                                <input type="file" class="form-control" id="edit_partner_logo" name="logo" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_partner_website" class="form-label">Site web</label>
+                                <input type="url" class="form-control" id="edit_partner_website" name="website" placeholder="https://www.exemple.com">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_partner_email" class="form-label">Email de contact</label>
+                                <input type="email" class="form-control" id="edit_partner_email" name="contact_email" placeholder="contact@partenaire.com">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_partner_phone" class="form-label">Téléphone</label>
+                                <input type="text" class="form-control" id="edit_partner_phone" name="contact_phone" placeholder="+224 XXX XXX XXX">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_partner_active" name="is_active">
+                            <label class="form-check-label" for="edit_partner_active">
+                                Partenaire actif
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Mettre à jour
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion du formulaire d'ajout de partenaire
+    const partnerForm = document.getElementById('partnerForm');
+    if (partnerForm) {
+        partnerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            addPartner();
+        });
+    }
+    
+    // Gestion du formulaire de modification de partenaire
+    const editPartnerForm = document.getElementById('editPartnerForm');
+    if (editPartnerForm) {
+        editPartnerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            updatePartner();
+        });
+    }
+});
+
+// Ajouter un partenaire
+function addPartner() {
+    const formData = new FormData(document.getElementById('partnerForm'));
+    
+    fetch('{% url "content_management:project_partner_add" project.pk %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Fermer le modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addPartnerModal'));
+            modal.hide();
+            
+            // Recharger la page pour afficher le nouveau partenaire
+            location.reload();
+        } else {
+            alert('Erreur lors de l\'ajout du partenaire: ' + JSON.stringify(data.errors));
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'ajout du partenaire');
+    });
+}
+
+// Modifier un partenaire
+function editPartner(partnerId, name, role, description, website, email, phone) {
+    // Remplir le formulaire de modification
+    document.getElementById('edit_partner_id').value = partnerId;
+    document.getElementById('edit_partner_name').value = name;
+    document.getElementById('edit_partner_role').value = role;
+    document.getElementById('edit_partner_description').value = description || '';
+    document.getElementById('edit_partner_website').value = website || '';
+    document.getElementById('edit_partner_email').value = email || '';
+    document.getElementById('edit_partner_phone').value = phone || '';
+    
+    // Afficher le modal
+    const modal = new bootstrap.Modal(document.getElementById('editPartnerModal'));
+    modal.show();
+}
+
+// Mettre à jour un partenaire
+function updatePartner() {
+    const partnerId = document.getElementById('edit_partner_id').value;
+    const formData = new FormData(document.getElementById('editPartnerForm'));
+    
+    fetch(`{% url "content_management:project_partner_edit" project.pk 0 %}`.replace('0', partnerId), {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Fermer le modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editPartnerModal'));
+            modal.hide();
+            
+            // Recharger la page pour afficher les modifications
+            location.reload();
+        } else {
+            alert('Erreur lors de la modification du partenaire: ' + JSON.stringify(data.errors));
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la modification du partenaire');
+    });
+}
+
+// Supprimer un partenaire
+function deletePartner(partnerId, partnerName) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le partenaire "${partnerName}" ?`)) {
+        fetch(`{% url "content_management:project_partner_delete" project.pk 0 %}`.replace('0', partnerId), {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Recharger la page pour afficher les modifications
+                location.reload();
+            } else {
+                alert('Erreur lors de la suppression du partenaire');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression du partenaire');
+        });
+    }
+}
+
+// Confirmer la suppression d'un projet
+function confirmDeleteProject(projectId, projectTitle) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le projet "${projectTitle}" ?\n\nCette action est irréversible et supprimera définitivement le projet et toutes ses données associées.`)) {
+        // Créer un formulaire temporaire pour l'envoi POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `{% url "content_management:project_delete" project.pk %}`;
+        
+        // Ajouter le token CSRF
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrfmiddlewaretoken';
+        csrfToken.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        form.appendChild(csrfToken);
+        
+        // Ajouter au DOM et soumettre
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

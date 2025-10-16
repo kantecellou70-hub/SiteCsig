@@ -1,0 +1,378 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tag-form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .tag-form-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .tag-form-body {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .section-title {
+        color: #0d4786;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0d4786;
+        box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+    }
+    
+    .color-picker-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .color-preview {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .color-preview:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    
+    .color-input {
+        flex: 1;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .help-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .predefined-colors {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+    
+    .predefined-color {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .predefined-color:hover {
+        transform: scale(1.2);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .predefined-color.active {
+        border-color: #0d4786;
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="tag-form-container">
+        <form method="post" id="tagForm">
+            {% csrf_token %}
+            
+            <!-- Header -->
+            <div class="tag-form-header">
+                <h1 class="mb-2">
+                    <i class="fas fa-tag me-3"></i>{{ title }}
+                </h1>
+                <p class="mb-0 opacity-75">
+                    {% if tag %}
+                        Modifiez les informations de ce tag d'événement
+                    {% else %}
+                        Créez un nouveau tag pour organiser vos événements
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="tag-form-body">
+                <!-- Informations principales -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-info-circle"></i>Informations principales
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}" class="form-label required-field">
+                            <i class="fas fa-tag me-2"></i>Nom du tag
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.name.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="help-text">Nom unique pour identifier ce tag (ex: "Conférence", "Atelier", "Sciences")</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.color.id_for_label }}" class="form-label required-field">
+                            <i class="fas fa-palette me-2"></i>Couleur du tag
+                        </label>
+                        <div class="color-picker-container">
+                            <div class="color-preview" id="colorPreview" style="background-color: {{ form.color.value|default:'#0d4786' }};"></div>
+                            {{ form.color }}
+                        </div>
+                        {% if form.color.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.color.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Couleurs prédéfinies -->
+                        <div class="predefined-colors">
+                            <div class="predefined-color" data-color="#0d4786" style="background-color: #0d4786;"></div>
+                            <div class="predefined-color" data-color="#dc3545" style="background-color: #dc3545;"></div>
+                            <div class="predefined-color" data-color="#28a745" style="background-color: #28a745;"></div>
+                            <div class="predefined-color" data-color="#ffc107" style="background-color: #ffc107;"></div>
+                            <div class="predefined-color" data-color="#17a2b8" style="background-color: #17a2b8;"></div>
+                            <div class="predefined-color" data-color="#6f42c1" style="background-color: #6f42c1;"></div>
+                            <div class="predefined-color" data-color="#fd7e14" style="background-color: #fd7e14;"></div>
+                            <div class="predefined-color" data-color="#e83e8c" style="background-color: #e83e8c;"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left me-2"></i>Description
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="help-text">Description optionnelle pour expliquer l'usage de ce tag</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <div>
+                        <a href="{% url 'content_management:event_tag_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>{{ submit_text }}
+                        </button>
+                        {% if tag %}
+                        <a href="{% url 'content_management:event_tag_delete' tag.pk %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash me-2"></i>Supprimer
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const colorInput = document.getElementById('{{ form.color.id_for_label }}');
+    const colorPreview = document.getElementById('colorPreview');
+    const predefinedColors = document.querySelectorAll('.predefined-color');
+    const form = document.getElementById('tagForm');
+
+    // Mettre à jour l'aperçu de couleur
+    function updateColorPreview() {
+        const color = colorInput.value;
+        colorPreview.style.backgroundColor = color;
+        
+        // Mettre à jour la couleur active des couleurs prédéfinies
+        predefinedColors.forEach(predefinedColor => {
+            if (predefinedColor.dataset.color === color) {
+                predefinedColor.classList.add('active');
+            } else {
+                predefinedColor.classList.remove('active');
+            }
+        });
+    }
+
+    // Gérer le changement de couleur dans l'input
+    colorInput.addEventListener('input', updateColorPreview);
+
+    // Gérer le clic sur les couleurs prédéfinies
+    predefinedColors.forEach(predefinedColor => {
+        predefinedColor.addEventListener('click', function() {
+            const color = this.dataset.color;
+            colorInput.value = color;
+            updateColorPreview();
+        });
+    });
+
+    // Initialiser l'aperçu de couleur
+    updateColorPreview();
+
+    // Validation du formulaire
+    form.addEventListener('submit', function(e) {
+        const nameInput = document.getElementById('{{ form.name.id_for_label }}');
+        const name = nameInput.value.trim();
+        
+        if (!name) {
+            e.preventDefault();
+            nameInput.focus();
+            showNotification('Le nom du tag est obligatoire', 'error');
+            return false;
+        }
+        
+        if (name.length < 2) {
+            e.preventDefault();
+            nameInput.focus();
+            showNotification('Le nom du tag doit contenir au moins 2 caractères', 'error');
+            return false;
+        }
+        
+        return true;
+    });
+
+    // Fonction de notification
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                <span class="flex-grow-1">${message}</span>
+                <button type="button" class="btn-close" onclick="this.closest('.alert').remove()"></button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+
+        // Auto-remove après 5 secondes
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + S pour sauvegarder
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            form.submit();
+        }
+        
+        // Échap pour annuler
+        if (e.key === 'Escape') {
+            window.location.href = '{% url "content_management:event_tag_list" %}';
+        }
+    });
+});
+</script>
+{% endblock %}

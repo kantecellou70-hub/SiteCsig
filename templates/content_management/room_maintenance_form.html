@@ -1,0 +1,513 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}
+    {% if form.instance.pk %}Modifier la maintenance{% else %}Nouvelle maintenance{% endif %}
+{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:room_maintenance_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la maintenance
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="room-maintenance-form-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>
+                        <i class="fas fa-tools me-2"></i>
+                        {% if form.instance.pk %}Modifier la maintenance{% else %}Nouvelle maintenance{% endif %}
+                    </h3>
+                </div>
+                <div class="section-body">
+                    <!-- Messages Django -->
+                    {% if messages %}
+                        <div class="messages-container mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" class="room-maintenance-form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Salle -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.room.id_for_label }}" class="form-label">
+                                        <i class="fas fa-door-open me-2"></i>Salle *
+                                    </label>
+                                    {{ form.room }}
+                                    {% if form.room.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.room.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Salle concernée par la maintenance
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Type de maintenance -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.maintenance_type.id_for_label }}" class="form-label">
+                                        <i class="fas fa-tag me-2"></i>Type de maintenance *
+                                    </label>
+                                    {{ form.maintenance_type }}
+                                    {% if form.maintenance_type.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.maintenance_type.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Titre -->
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="{{ form.title.id_for_label }}" class="form-label">
+                                        <i class="fas fa-heading me-2"></i>Titre de la maintenance *
+                                    </label>
+                                    {{ form.title }}
+                                    {% if form.title.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.title.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Date de début -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.start_date.id_for_label }}" class="form-label">
+                                        <i class="fas fa-play me-2"></i>Date de début *
+                                    </label>
+                                    {{ form.start_date }}
+                                    {% if form.start_date.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.start_date.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Date de fin -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.end_date.id_for_label }}" class="form-label">
+                                        <i class="fas fa-stop me-2"></i>Date de fin *
+                                    </label>
+                                    {{ form.end_date }}
+                                    {% if form.end_date.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.end_date.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Priorité -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.priority.id_for_label }}" class="form-label">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Priorité *
+                                    </label>
+                                    {{ form.priority }}
+                                    {% if form.priority.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.priority.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Statut -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label">
+                                        <i class="fas fa-info-circle me-2"></i>Statut
+                                    </label>
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.status.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Description de la maintenance *
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Détails des travaux à effectuer
+                            </div>
+                        </div>
+                        
+                        <!-- Coût estimé -->
+                        <div class="form-group">
+                            <label for="{{ form.estimated_cost.id_for_label }}" class="form-label">
+                                <i class="fas fa-money-bill me-2"></i>Coût estimé (GNF)
+                            </label>
+                            {{ form.estimated_cost }}
+                            {% if form.estimated_cost.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.estimated_cost.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Coût estimé en Francs guinéens
+                            </div>
+                        </div>
+                        
+                        <!-- Notes -->
+                        <div class="form-group">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                <i class="fas fa-sticky-note me-2"></i>Notes additionnelles
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Informations complémentaires
+                            </div>
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>
+                                {% if form.instance.pk %}Mettre à jour{% else %}Créer la maintenance{% endif %}
+                            </button>
+                            <a href="{% url 'content_management:room_maintenance_list' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Informations utiles -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Types de maintenance</h3>
+                </div>
+                <div class="section-body">
+                    <div class="maintenance-types">
+                        <div class="type-item">
+                            <div class="type-icon scheduled">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="type-content">
+                                <h6>Planifiée</h6>
+                                <p>Maintenance régulière programmée à l'avance</p>
+                            </div>
+                        </div>
+                        
+                        <div class="type-item">
+                            <div class="type-icon emergency">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="type-content">
+                                <h6>Urgente</h6>
+                                <p>Réparation immédiate suite à un problème</p>
+                            </div>
+                        </div>
+                        
+                        <div class="type-item">
+                            <div class="type-icon preventive">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="type-content">
+                                <h6>Préventive</h6>
+                                <p>Maintenance pour éviter les pannes futures</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Priorités -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-flag me-2"></i>Niveaux de priorité</h3>
+                </div>
+                <div class="section-body">
+                    <div class="priority-levels">
+                        <div class="priority-item low">
+                            <span class="priority-badge">Faible</span>
+                            <p>Maintenance non urgente, peut être reportée</p>
+                        </div>
+                        
+                        <div class="priority-item medium">
+                            <span class="priority-badge">Moyenne</span>
+                            <p>Maintenance importante à planifier</p>
+                        </div>
+                        
+                        <div class="priority-item high">
+                            <span class="priority-badge">Élevée</span>
+                            <p>Maintenance critique, intervention rapide requise</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.room-maintenance-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.room-maintenance-form {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--box-shadow);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control, .form-select {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-text {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.invalid-feedback {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Types de maintenance */
+.maintenance-types {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.type-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.type-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.type-icon.scheduled {
+    background: var(--success-color);
+}
+
+.type-icon.emergency {
+    background: var(--danger-color);
+}
+
+.type-icon.preventive {
+    background: var(--warning-color);
+}
+
+.type-content h6 {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+}
+
+.type-content p {
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+/* Niveaux de priorité */
+.priority-levels {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.priority-item {
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.priority-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.priority-item.low .priority-badge {
+    background: var(--success-color);
+    color: white;
+}
+
+.priority-item.medium .priority-badge {
+    background: var(--warning-color);
+    color: white;
+}
+
+.priority-item.high .priority-badge {
+    background: var(--danger-color);
+    color: white;
+}
+
+.priority-item p {
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .room-maintenance-form {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+    
+    .type-item, .priority-item {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .room-maintenance-form {
+        padding: 0.75rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

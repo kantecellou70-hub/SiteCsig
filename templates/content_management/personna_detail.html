@@ -1,0 +1,675 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}{{ personna.name }}{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:personna_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux personnas
+    </a>
+    <a href="{% url 'content_management:personna_edit' personna.slug %}" class="btn btn-outline-warning">
+        <i class="fas fa-edit me-2"></i>Modifier
+    </a>
+    <a href="{% url 'content_management:personna_delete' personna.slug %}" class="btn btn-outline-danger">
+        <i class="fas fa-trash me-2"></i>Supprimer
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="personna-detail-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Informations principales -->
+            <div class="content-section">
+                <div class="personna-header">
+                    <div class="personna-info">
+                        <h1 class="personna-name">{{ personna.name }}</h1>
+                        <p class="personna-description">{{ personna.description }}</p>
+                        
+                        <div class="personna-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-blog me-2"></i>
+                                <span class="stat-value">{{ personna.blogs_count }}</span>
+                                <span class="stat-label">blog{{ personna.blogs_count|pluralize }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-calendar me-2"></i>
+                                <span class="stat-value">{{ personna.created_at|date:"d/m/Y" }}</span>
+                                <span class="stat-label">Créé le</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blogs associés -->
+            {% if personna.blogs.all %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-blog me-2"></i>Blogs associés</h3>
+                    <a href="{% url 'content_management:blog_list' %}?personna={{ personna.slug }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-external-link-alt me-1"></i>Voir tous
+                    </a>
+                </div>
+                <div class="section-body">
+                    <div class="blogs-grid">
+                        {% for blog in personna.blogs.all|slice:":3" %}
+                        <div class="blog-card">
+                            {% if blog.image %}
+                            <div class="blog-image">
+                                <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+                            </div>
+                            {% endif %}
+                            <div class="blog-content">
+                                <h6 class="blog-title">{{ blog.title }}</h6>
+                                <p class="blog-excerpt">{{ blog.excerpt|truncatewords:15 }}</p>
+                                <div class="blog-meta">
+                                    <span class="blog-status {{ blog.status }}">
+                                        <i class="fas fa-{% if blog.status == 'published' %}check-circle{% elif blog.status == 'draft' %}edit{% else %}clock{% endif %} me-1"></i>
+                                        {{ blog.get_status_display }}
+                                    </span>
+                                    <span class="blog-date">{{ blog.created_at|date:"d/m/Y" }}</span>
+                                </div>
+                                <a href="{% url 'content_management:blog_detail' blog.slug %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Lire
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Actions rapides -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-bolt me-2"></i>Actions rapides</h3>
+                </div>
+                <div class="section-body">
+                    <div class="quick-actions">
+                        <a href="{% url 'content_management:blog_create' %}?personna={{ personna.slug }}" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-plus me-2"></i>Nouveau blog
+                        </a>
+                        
+                        {% if personna.is_active %}
+                        <button class="btn btn-outline-secondary w-100 mb-2" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#deactivateConfirmModal">
+                            <i class="fas fa-pause me-2"></i>Désactiver
+                        </button>
+                        {% else %}
+                        <button class="btn btn-outline-success w-100 mb-2 toggle-status-btn" 
+                                data-personna-id="{{ personna.slug }}"
+                                data-current-status="false">
+                            <i class="fas fa-play me-2"></i>Activer
+                        </button>
+                        {% endif %}
+                        
+                        {% if personna.featured %}
+                        <button class="btn btn-outline-warning w-100 toggle-featured-btn"
+                                data-personna-id="{{ personna.slug }}"
+                                data-current-featured="true">
+                            <i class="fas fa-star me-2"></i>Retirer de l'avant
+                        </button>
+                        {% else %}
+                        <button class="btn btn-outline-info w-100" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#featuredConfirmModal">
+                            <i class="fas fa-star me-2"></i>Mettre en avant
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-chart-bar me-2"></i>Statistiques</h3>
+                </div>
+                <div class="section-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-blog"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>{{ personna.blogs_count }}</h4>
+                                <p>Total des blogs</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon {% if personna.is_active %}active{% else %}inactive{% endif %}">
+                                <i class="fas fa-{% if personna.is_active %}check-circle{% else %}times-circle{% endif %}"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>{{ personna.is_active|yesno:"Actif,Inactif" }}</h4>
+                                <p>Statut</p>
+                            </div>
+                        </div>
+
+                        {% if personna.featured %}
+                        <div class="stat-card">
+                            <div class="stat-icon featured">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>Oui</h4>
+                                <p>Mis en avant</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations système -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-cog me-2"></i>Informations système</h3>
+                </div>
+                <div class="section-body">
+                    <div class="system-info">
+                        <div class="info-item">
+                            <span class="info-label">ID :</span>
+                            <span class="info-value">{{ personna.id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Slug :</span>
+                            <span class="info-value">{{ personna.slug }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Créé le :</span>
+                            <span class="info-value">{{ personna.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% if personna.updated_at %}
+                        <div class="info-item">
+                            <span class="info-label">Modifié le :</span>
+                            <span class="info-value">{{ personna.updated_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour la suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le personna <strong>"{{ personna.name }}"</strong> ?</p>
+                <p class="text-muted mb-0">Cette action est irréversible et supprimera définitivement le personna et tous ses blogs associés.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <a href="{% url 'content_management:personna_delete' personna.slug %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Supprimer définitivement
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour la désactivation -->
+<div class="modal fade" id="deactivateConfirmModal" tabindex="-1" aria-labelledby="deactivateConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="deactivateConfirmModalLabel">
+                    <i class="fas fa-pause me-2"></i>Confirmer la désactivation
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir désactiver le personna <strong>"{{ personna.name }}"</strong> ?</p>
+                <p class="text-muted mb-0">Un personna désactivé ne sera plus visible et ne pourra plus être associé à de nouveaux blogs.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-warning" id="confirmDeactivateBtn">
+                    <i class="fas fa-pause me-2"></i>Désactiver
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour la mise en avant -->
+<div class="modal fade" id="featuredConfirmModal" tabindex="-1" aria-labelledby="featuredConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="featuredConfirmModalLabel">
+                    <i class="fas fa-star me-2"></i>Confirmer la mise en avant
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir mettre en avant le personna <strong>"{{ personna.name }}"</strong> ?</p>
+                <p class="text-muted mb-0">Ce personna sera affiché en priorité dans les listes et sera mis en évidence.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-info" id="confirmFeaturedBtn">
+                    <i class="fas fa-star me-2"></i>Mettre en avant
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.personna-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.personna-header {
+    padding: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.personna-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+.personna-info {
+    position: relative;
+    z-index: 2;
+}
+
+.personna-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.personna-description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 1.5rem 0;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.personna-stats {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.75rem 1rem;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.stat-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: white;
+    opacity: 0.95;
+}
+
+/* Blogs associés */
+.blogs-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.blog-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.blog-image {
+    flex-shrink: 0;
+}
+
+.blog-image img {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+}
+
+.blog-content {
+    flex: 1;
+}
+
+.blog-title {
+    color: var(--gray-800);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.blog-excerpt {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+}
+
+.blog-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+.blog-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.blog-status.published {
+    background: var(--success-color);
+    color: white;
+}
+
+.blog-status.draft {
+    background: var(--warning-color);
+    color: white;
+}
+
+.blog-status.pending {
+    background: var(--info-color);
+    color: white;
+}
+
+.blog-date {
+    color: var(--gray-500);
+    font-size: 0.75rem;
+}
+
+/* Actions rapides */
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Statistiques */
+.stats-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.stat-icon.active {
+    background: var(--success-color);
+}
+
+.stat-icon.inactive {
+    background: var(--danger-color);
+}
+
+.stat-icon.featured {
+    background: var(--warning-color);
+}
+
+.stat-content h4 {
+    color: var(--gray-800);
+    font-size: 1.25rem;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+}
+
+.stat-content p {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Informations système */
+.system-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.info-value {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    font-family: monospace;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .personna-header {
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .personna-name {
+        font-size: 2rem;
+    }
+    
+    .personna-stats {
+        justify-content: center;
+    }
+    
+    .blog-card {
+        flex-direction: column;
+    }
+    
+    .blog-image img {
+        width: 100%;
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .personna-header {
+        padding: 1rem;
+    }
+    
+    .personna-name {
+        font-size: 1.5rem;
+    }
+    
+    .personna-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle status (activation directe)
+    document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const personnaId = this.dataset.personnaId;
+            
+            fetch(`/content-management/personnas/${personnaId}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showCustomNotification(data.error || 'Erreur lors du changement de statut', 'error');
+                }
+            })
+            .catch(error => {
+                showCustomNotification('Erreur de connexion', 'error');
+            });
+        });
+    });
+    
+    // Toggle featured (retrait direct)
+    document.querySelectorAll('.toggle-featured-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const personnaId = this.dataset.personnaId;
+            
+            fetch(`/content-management/personnas/${personnaId}/toggle-featured/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showCustomNotification(data.error || 'Erreur lors du changement de mise en avant', 'error');
+                }
+            })
+            .catch(error => {
+                showCustomNotification('Erreur de connexion', 'error');
+            });
+        });
+    });
+    
+    // Confirmation de désactivation
+    document.getElementById('confirmDeactivateBtn').addEventListener('click', function() {
+        const personnaId = '{{ personna.slug }}';
+        
+        fetch(`/content-management/personnas/${personnaId}/toggle-status/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                showCustomNotification(data.error || 'Erreur lors du changement de statut', 'error');
+            }
+        })
+        .catch(error => {
+            showCustomNotification('Erreur de connexion', 'error');
+        });
+    });
+    
+    // Confirmation de mise en avant
+    document.getElementById('confirmFeaturedBtn').addEventListener('click', function() {
+        const personnaId = '{{ personna.slug }}';
+        
+        fetch(`/content-management/personnas/${personnaId}/toggle-featured/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                showCustomNotification(data.error || 'Erreur lors du changement de mise en avant', 'error');
+            }
+        })
+        .catch(error => {
+            showCustomNotification('Erreur de connexion', 'error');
+        });
+    });
+});
+</script>
+{% endblock %}

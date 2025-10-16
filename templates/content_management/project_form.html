@@ -1,0 +1,675 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Modifier le projet - {{ form.instance.title }}
+    {% else %}
+        Nouveau projet
+    {% endif %}
+    - CSIG
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.project-form-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.form-header {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.form-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.form-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.form-content {
+    padding: 2rem;
+}
+
+.content-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.content-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.content-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+}
+
+.content-section:hover::before {
+    width: 8px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: #0d4786;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.section-header i {
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-right: 1rem;
+    font-size: 1.8rem;
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-label {
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 0.75rem;
+    display: block;
+    font-size: 1rem;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: 700;
+}
+
+.form-label.optional::after {
+    content: " (optionnel)";
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.form-control:focus {
+    border-color: #0d4786;
+    box-shadow: 0 0 0 0.25rem rgba(13, 71, 134, 0.15);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.form-control:hover {
+    border-color: #0d4786;
+}
+
+.form-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-check:hover {
+    border-color: #0d4786;
+    background: #f8f9fa;
+}
+
+.form-check-input {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid #0d4786;
+    border-radius: 6px;
+}
+
+.form-check-label {
+    font-weight: 600;
+    color: #495057;
+    cursor: pointer;
+}
+
+.form-actions {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0a3a6b 0%, #155a9e 100%);
+    color: white;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border: 2px solid #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.btn-outline-info {
+    background: transparent;
+    border: 2px solid #0dcaf0;
+    color: #0dcaf0;
+}
+
+.btn-outline-info:hover {
+    background: #0dcaf0;
+    border-color: #0dcaf0;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-header {
+        padding: 1.5rem;
+    }
+    
+    .form-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .form-content {
+        padding: 1.5rem;
+    }
+    
+    .content-section {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.5rem;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 1rem;
+    }
+    
+    .section-header h3 {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .form-header {
+        padding: 1rem;
+    }
+    
+    .form-header h1 {
+        font-size: 1.25rem;
+    }
+    
+    .form-content {
+        padding: 1rem;
+    }
+    
+    .content-section {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        padding: 1rem;
+    }
+    
+    .btn {
+        padding: 0.875rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+    {% if form.instance.pk %}
+        <i class="fas fa-edit me-2"></i>Modifier le projet
+    {% else %}
+        <i class="fas fa-plus me-2"></i>Nouveau projet
+    {% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    {% if form.instance.pk %}
+        Modifiez les informations du projet "{{ form.instance.title }}"
+    {% else %}
+        Créez un nouveau projet pour enrichir votre contenu
+    {% endif %}
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:project_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <button type="submit" form="projectForm" class="btn btn-primary">
+        <i class="fas fa-save me-2"></i>
+        {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %}
+    </button>
+    {% if form.instance.pk %}
+        <a href="{% url 'content_management:project_detail' form.instance.pk %}" class="btn btn-outline-info">
+            <i class="fas fa-eye me-2"></i>Aperçu
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="project-form-container">
+    <form id="projectForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- En-tête du formulaire -->
+        <div class="form-header">
+            <h1>
+                {% if form.instance.pk %}
+                    <i class="fas fa-edit me-3"></i>Modifier le projet
+                {% else %}
+                    <i class="fas fa-plus me-3"></i>Nouveau projet
+                {% endif %}
+            </h1>
+            <p>
+                {% if form.instance.pk %}
+                    Modifiez les informations de votre projet
+                {% else %}
+                    Créez un nouveau projet pour votre organisation
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="form-content">
+            <!-- Informations de base -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle"></i>Informations de base</h3>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}" class="form-label required">
+                        <i class="fas fa-heading me-2"></i>Titre du projet
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.title.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Nom principal du projet (obligatoire)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.short_description.id_for_label }}" class="form-label optional">
+                        <i class="fas fa-align-left me-2"></i>Description courte
+                    </label>
+                    {{ form.short_description }}
+                    {% if form.short_description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.short_description.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Résumé court du projet (affiché dans les listes)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label required">
+                        <i class="fas fa-file-text me-2"></i>Description complète
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.description.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Description détaillée du projet (obligatoire)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Détails du projet -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-cog"></i>Détails du projet</h3>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.start_date.id_for_label }}" class="form-label required">
+                                <i class="fas fa-calendar me-2"></i>Date de début
+                            </label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.start_date.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.end_date.id_for_label }}" class="form-label optional">
+                                <i class="fas fa-calendar me-2"></i>Date de fin
+                            </label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.end_date.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.budget.id_for_label }}" class="form-label optional">
+                                <i class="fas fa-euro-sign me-2"></i>Budget
+                            </label>
+                            {{ form.budget }}
+                            {% if form.budget.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.budget.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Budget estimé du projet en GNF
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                <i class="fas fa-toggle-on me-2"></i>Statut
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.status.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.is_featured.id_for_label }}" class="form-label">
+                        <i class="fas fa-star me-2"></i>Mise en avant
+                    </label>
+                    <div class="form-check">
+                        {{ form.is_featured }}
+                        <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">
+                            Mettre ce projet en avant
+                        </label>
+                    </div>
+                    {% if form.is_featured.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.is_featured.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Médias -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-images"></i>Médias</h3>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.featured_image.id_for_label }}" class="form-label optional">
+                        <i class="fas fa-image me-2"></i>Image principale
+                    </label>
+                    {{ form.featured_image }}
+                    {% if form.featured_image.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.featured_image.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Image de couverture du projet (recommandé: 1200x630px)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Objectifs et résultats -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-bullseye"></i>Objectifs et résultats</h3>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.objectives.id_for_label }}" class="form-label optional">
+                        <i class="fas fa-target me-2"></i>Objectifs
+                    </label>
+                    {{ form.objectives }}
+                    {% if form.objectives.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.objectives.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Objectifs principaux du projet
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.results.id_for_label }}" class="form-label optional">
+                        <i class="fas fa-chart-line me-2"></i>Résultats
+                    </label>
+                    {{ form.results }}
+                    {% if form.results.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.results.errors %}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Résultats attendus ou obtenus du projet
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Actions du formulaire -->
+        <div class="form-actions">
+            <div>
+                <a href="{% url 'content_management:project_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>
+                    {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %}
+                </button>
+                
+                {% if form.instance.pk %}
+                    <a href="{% url 'content_management:project_detail' form.instance.pk %}" class="btn btn-outline-info">
+                        <i class="fas fa-eye me-2"></i>Aperçu
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            document.getElementById('projectForm').submit();
+        }
+    });
+    
+    // Validation en temps réel
+    const requiredFields = document.querySelectorAll('.form-label.required');
+    requiredFields.forEach(field => {
+        const input = field.nextElementSibling;
+        if (input) {
+            input.addEventListener('blur', function() {
+                if (!this.value.trim()) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        }
+    });
+    
+    // Prévisualisation de l'image
+    const imageInput = document.getElementById('{{ form.featured_image.id_for_label }}');
+    if (imageInput) {
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Ici vous pouvez ajouter une prévisualisation de l'image
+                    console.log('Image sélectionnée:', file.name);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

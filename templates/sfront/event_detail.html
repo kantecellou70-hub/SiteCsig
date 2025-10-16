@@ -1,0 +1,2152 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}{{ event.title }} - CSIG{% endblock %}
+
+{% block content %}
+ <!-- Hero Section -->
+ <section class="event-hero" {% if event.featured_image %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('{{ event.featured_image.url }}');"{% endif %}>
+     <div class="container">
+         <div class="row justify-content-center">
+             <div class="col-lg-10" data-aos="fade-up">
+                 <div class="event-hero-content">
+                    <div class="event-meta">
+                        <span class="event-type">{{ event.get_event_type_display }}</span>
+                        <span class="event-status">
+                            {% if event.start_date > now %}
+                                <span class="badge bg-success">À venir</span>
+                            {% elif event.end_date < now %}
+                                <span class="badge bg-secondary">Terminé</span>
+                            {% else %}
+                                <span class="badge bg-primary">En cours</span>
+                            {% endif %}
+                        </span>
+                        {% if tags %}
+                            {% for tag in tags %}
+                                <span class="event-tag" style="background-color: {{ tag.color }}">{{ tag.name }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <h1 class="event-title">{{ event.title }}</h1>
+                    <p class="event-excerpt">{{ event.description|truncatewords:30 }}</p>
+                    <div class="event-details-hero">
+                        <div class="event-detail-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <div class="detail-content">
+                                <span class="detail-label">Date</span>
+                                <span class="detail-value">
+                                    {% if is_multi_day %}
+                                        {{ event.start_date|date:"d/m/Y" }} - {{ event.end_date|date:"d/m/Y" }}
+                                        <small class="d-block">({{ duration_days }} jour{{ duration_days|pluralize:"s" }})</small>
+                                    {% else %}
+                                        {{ event.start_date|date:"d/m/Y" }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="event-detail-item">
+                            <i class="fas fa-clock"></i>
+                            <div class="detail-content">
+                                <span class="detail-label">Heure</span>
+                                <span class="detail-value">
+                                    {% if event.start_time %}
+                                        {{ event.start_time|time:"H:i" }} - {{ event.end_time|time:"H:i" }}
+                                    {% else %}
+                                        Toute la journée
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="event-detail-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="detail-content">
+                                <span class="detail-label">Lieu</span>
+                                <span class="detail-value">
+                                    {% if event.location %}
+                                        {{ event.location }}
+                                        {% if event.city %}, {{ event.city }}{% endif %}
+                                        {% if event.country %}, {{ event.country }}{% endif %}
+                                    {% else %}
+                                        Lieu à préciser
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="event-detail-item">
+                            <i class="fas fa-users"></i>
+                            <div class="detail-content">
+                                <span class="detail-label">Participants</span>
+                                <span class="detail-value">{{ event.max_participants|default:"Illimité" }}</span>
+                            </div>
+                        </div>
+                        {% if total_activities > 0 %}
+                        <div class="event-detail-item">
+                            <i class="fas fa-list-alt"></i>
+                            <div class="detail-content">
+                                <span class="detail-label">Activités</span>
+                                <span class="detail-value">{{ total_activities }} activité{{ total_activities|pluralize:"s" }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if total_intervenants > 0 %}
+                        <div class="event-detail-item">
+                            <i class="fas fa-microphone"></i>
+                            <div class="detail-content">
+                                <span class="detail-label">Intervenants</span>
+                                <span class="detail-value">{{ total_intervenants }} intervenant{{ total_intervenants|pluralize:"s" }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                                         <div class="event-actions-hero">
+                         {% if event.start_date > now %}
+                             {% if has_registration_form %}
+                                 {% if event.registration_form.is_registration_open %}
+                                     <button class="btn btn-primary btn-lg btn-registration" onclick="openRegistrationForm()">
+                                         <i class="fas fa-user-plus me-2"></i>S'inscrire à l'événement
+                                         {% if event.registration_form.max_registrations %}
+                                             <small class="d-block">({{ event.registration_form.total_registrations }}/{{ event.registration_form.max_registrations }} places)</small>
+                                         {% endif %}
+                                     </button>
+                                 {% else %}
+                                     <div class="registration-status">
+                                         {% if event.registration_form.max_registrations and event.registration_form.total_registrations >= event.registration_form.max_registrations %}
+                                             <span class="badge bg-warning">Complet</span>
+                                         {% elif event.registration_form.registration_deadline and event.registration_form.registration_deadline < now %}
+                                             <span class="badge bg-secondary">Inscriptions fermées</span>
+                                         {% else %}
+                                             <span class="badge bg-info">Inscriptions temporairement fermées</span>
+                                         {% endif %}
+                                     </div>
+                                 {% endif %}
+                             {% elif event.registration_link %}
+                                 <a href="{{ event.registration_link }}" class="btn btn-primary btn-lg btn-registration" target="_blank">
+                                     <i class="fas fa-user-plus me-2"></i>S'inscrire à l'événement
+                                 </a>
+                             {% endif %}
+                         {% endif %}
+                         <button class="btn btn-outline-primary btn-lg" onclick="shareEvent()">
+                             <i class="fas fa-share-alt me-2"></i>Partager
+                         </button>
+                         <button class="btn btn-outline-secondary btn-lg" onclick="addToCalendar()">
+                             <i class="fas fa-calendar-plus me-2"></i>Ajouter au calendrier
+                         </button>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Event Content -->
+<section class="event-content-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="event-content">
+                    <h2>Description de l'événement</h2>
+                    {{ event.description|safe }}
+                    
+                    {% if event.scientific_field %}
+                    <h2>Domaine scientifique</h2>
+                    <div class="event-scientific-field">
+                        <p><strong>{{ event.scientific_field }}</strong></p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if event.target_audience %}
+                    <h2>Public cible</h2>
+                    <div class="event-target-audience">
+                        <p>{{ event.target_audience }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Section prérequis - à implémenter dans le modèle Event si nécessaire -->
+                    <!--
+                    <h2>Prérequis</h2>
+                    <div class="event-requirements">
+                        {{ event.requirements|safe }}
+                    </div>
+                    -->
+                    
+                    <!-- Section matériel - à implémenter dans le modèle Event si nécessaire -->
+                    <!--
+                    <h2>Matériel nécessaire</h2>
+                    <div class="event-materials">
+                        {{ event.materials|safe }}
+                    </div>
+                    -->
+                    
+                    {% if event.website %}
+                    <h2>Site web officiel</h2>
+                    <div class="event-website">
+                        <a href="{{ event.website }}" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-2"></i>Visiter le site officiel
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Event Footer -->
+                <div class="event-footer">
+                    <div class="event-stats">
+                                            <div class="stat-item">
+                        <i class="fas fa-eye"></i>
+                        <span>Vues : 0</span>
+                    </div>
+                        <div class="stat-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Créé le {{ event.created_at|date:"d/m/Y" }}</span>
+                        </div>
+                                                 {% if organizers %}
+                         <div class="stat-item">
+                             <i class="fas fa-user-tie"></i>
+                             <span>Organisateurs : {{ organizers|length }} organisateur{{ organizers|length|pluralize:"s" }}</span>
+                         </div>
+                         {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="event-sidebar">
+                    <!-- Informations clés -->
+                    <div class="sidebar-widget">
+                        <h5>Informations clés</h5>
+                        <div class="key-info">
+                            <div class="info-item">
+                                <i class="fas fa-calendar text-primary"></i>
+                                <div>
+                                    <strong>Date de début</strong>
+                                                                         <p>
+                                         {% if event.start_time %}
+                                             {{ event.start_date|date:"d/m/Y" }} {{ event.start_time|time:"H:i" }}
+                                         {% else %}
+                                             {{ event.start_date|date:"d/m/Y" }}
+                                         {% endif %}
+                                     </p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-calendar-check text-success"></i>
+                                <div>
+                                    <strong>Date de fin</strong>
+                                                                         <p>
+                                         {% if event.end_time %}
+                                             {{ event.end_date|date:"d/m/Y" }} {{ event.end_time|time:"H:i" }}
+                                         {% else %}
+                                             {{ event.end_date|date:"d/m/Y" }}
+                                         {% endif %}
+                                     </p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <div>
+                                    <strong>Lieu</strong>
+                                    <p>
+                                    {% if event.location %}
+                                        {{ event.location }}
+                                        {% if event.city %}, {{ event.city }}{% endif %}
+                                        {% if event.country %}, {{ event.country }}{% endif %}
+                                    {% else %}
+                                        À préciser
+                                    {% endif %}
+                                </p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-users text-info"></i>
+                                <div>
+                                    <strong>Participants max</strong>
+                                    <p>{{ event.max_participants|default:"Illimité" }}</p>
+                                </div>
+                            </div>
+                                                         {% if event.price %}
+                             <div class="info-item">
+                                 <i class="fas fa-tag text-warning"></i>
+                                 <div>
+                                     <strong>Prix</strong>
+                                     <p>{{ event.price }}</p>
+                                 </div>
+                             </div>
+                             {% endif %}
+                            {% if event.language %}
+                            <div class="info-item">
+                                <i class="fas fa-language text-info"></i>
+                                <div>
+                                    <strong>Langue</strong>
+                                    <p>{{ event.get_language_display }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                                         <!-- Inscription -->
+                     {% if event.start_date > now %}
+                     <div class="sidebar-widget">
+                         <h5>Inscription</h5>
+                         <p>Réservez votre place pour cet événement</p>
+                         
+                         {% if has_registration_form %}
+                             {% if event.registration_form.is_registration_open %}
+                                 <button class="btn btn-primary w-100" onclick="openRegistrationForm()">
+                                     <i class="fas fa-user-plus me-2"></i>S'inscrire
+                                 </button>
+                                 
+                                 <!-- Informations sur le formulaire -->
+                                 <div class="registration-info mt-3">
+                                     {% if event.registration_form.max_registrations %}
+                                         <div class="info-row">
+                                             <i class="fas fa-users text-info"></i>
+                                             <span>{{ event.registration_form.total_registrations }}/{{ event.registration_form.max_registrations }} places occupées</span>
+                                         </div>
+                                     {% endif %}
+                                     {% if event.registration_form.registration_deadline %}
+                                         <div class="info-row">
+                                             <i class="fas fa-clock text-warning"></i>
+                                             <span>Date limite : {{ event.registration_form.registration_deadline|date:"d/m/Y H:i" }}</span>
+                                         </div>
+                                     {% endif %}
+                                     {% if event.registration_form.allow_multiple_registrations %}
+                                         <div class="info-row">
+                                             <i class="fas fa-check-circle text-success"></i>
+                                             <span>Inscriptions multiples autorisées</span>
+                                         </div>
+                                     {% endif %}
+                                 </div>
+                             {% else %}
+                                 <div class="registration-status-disabled">
+                                     {% if event.registration_form.max_registrations and event.registration_form.total_registrations >= event.registration_form.max_registrations %}
+                                         <div class="alert alert-warning">
+                                             <i class="fas fa-exclamation-triangle me-2"></i>
+                                             <strong>Complet</strong><br>
+                                             <small>Toutes les places ont été réservées</small>
+                                         </div>
+                                     {% elif event.registration_form.registration_deadline and event.registration_form.registration_deadline < now %}
+                                         <div class="alert alert-secondary">
+                                             <i class="fas fa-calendar-times me-2"></i>
+                                             <strong>Inscriptions fermées</strong><br>
+                                             <small>La date limite est dépassée</small>
+                                         </div>
+                                     {% else %}
+                                         <div class="alert alert-info">
+                                             <i class="fas fa-info-circle me-2"></i>
+                                             <strong>Inscriptions temporairement fermées</strong>
+                                         </div>
+                                     {% endif %}
+                                 </div>
+                             {% endif %}
+                         {% elif event.registration_link %}
+                             <a href="{{ event.registration_link }}" class="btn btn-primary w-100" target="_blank">
+                                 <i class="fas fa-user-plus me-2"></i>S'inscrire
+                             </a>
+                             <small class="text-muted d-block mt-2">
+                                 <i class="fas fa-external-link-alt me-1"></i>Lien externe
+                             </small>
+                         {% else %}
+                             <p class="text-muted">Inscription à venir</p>
+                         {% endif %}
+                         
+                         {% if event.max_participants %}
+                             <small class="text-muted d-block mt-2">
+                                 Places limitées : {{ event.max_participants }}
+                             </small>
+                         {% endif %}
+                     </div>
+                     {% endif %}
+                    
+                    <!-- Événements similaires -->
+                    {% if similar_events %}
+                    <div class="sidebar-widget">
+                        <h5>Événements similaires</h5>
+                        <div class="similar-events">
+                            {% for similar in similar_events %}
+                            <div class="similar-event">
+                                <div class="similar-event-image">
+                                    {% if similar.featured_image %}
+                                        <img src="{{ similar.featured_image.url }}" alt="{{ similar.title }}" class="img-fluid">
+                                    {% else %}
+                                        <div class="similar-placeholder">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="similar-event-content">
+                                    <h6><a href="{% url 'sfront:event_detail' similar.slug %}">{{ similar.title }}</a></h6>
+                                    <span class="similar-date">{{ similar.start_date|date:"d/m/Y" }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Partager -->
+                    <div class="sidebar-widget">
+                        <h5>Partager cet événement</h5>
+                        <div class="social-share">
+                            <a href="#" class="social-share-btn facebook" onclick="shareOnFacebook()">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="social-share-btn twitter" onclick="shareOnTwitter()">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="social-share-btn linkedin" onclick="shareOnLinkedIn()">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="social-share-btn whatsapp" onclick="shareOnWhatsApp()">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Agenda détaillé -->
+{% if days %}
+<section class="event-agenda-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10" data-aos="fade-up">
+                <div class="section-header-modern">
+                    <h2 class="section-title">Programme détaillé</h2>
+                    <div class="section-stats">
+                        <div class="stat-badge">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>{{ days|length }} jour{{ days|length|pluralize:"s" }}</span>
+                        </div>
+                        <div class="stat-badge">
+                            <i class="fas fa-list-check"></i>
+                            <span>{{ total_activities }} activité{{ total_activities|pluralize:"s" }}</span>
+                        </div>
+                        <div class="stat-badge">
+                            <i class="fas fa-users"></i>
+                            <span>{{ total_intervenants }} intervenant{{ total_intervenants|pluralize:"s" }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="event-agenda-timeline">
+                    {% for day in days %}
+                    <div class="agenda-day" data-aos="fade-up" data-aos-delay="100">
+                        <div class="day-header">
+                            <div class="day-number">
+                                <span class="day-circle">{{ day.day_number }}</span>
+                            </div>
+                            <div class="day-info">
+                                <h3>{{ day.date|date:"l d/m/Y"|title }}</h3>
+                                {% if day.title %}
+                                    <p class="day-subtitle">{{ day.title }}</p>
+                                {% endif %}
+                                {% if day.description %}
+                                    <p class="day-description">{{ day.description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="day-activities">
+                            {% for activity in day.activities.all %}
+                            <div class="activity-item" data-aos="fade-up" data-aos-delay="50">
+                                <div class="activity-time">
+                                    <div class="time-badge">
+                                        <span class="start-time">{{ activity.start_time|time:"H:i" }}</span>
+                                        <span class="time-separator">-</span>
+                                        <span class="end-time">{{ activity.end_time|time:"H:i" }}</span>
+                                    </div>
+                                    <div class="duration-badge">
+                                        {% if activity.start_time and activity.end_time %}
+                                            Durée calculée
+                                        {% else %}
+                                            Durée à préciser
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-header">
+                                        <h4>{{ activity.activity }}</h4>
+                                        <span class="activity-type-badge activity-type-{{ activity.activity_type }}">
+                                            <i class="fas fa-{% if activity.activity_type == 'keynote' %}star{% elif activity.activity_type == 'workshop' %}tools{% elif activity.activity_type == 'session' %}presentation{% elif activity.activity_type == 'break' %}coffee{% elif activity.activity_type == 'lunch' %}utensils{% elif activity.activity_type == 'networking' %}handshake{% else %}circle{% endif %} me-1"></i>
+                                            {{ activity.get_activity_type_display }}
+                                        </span>
+                                    </div>
+                                    {% if activity.description %}
+                                        <p class="activity-description">{{ activity.description }}</p>
+                                    {% endif %}
+                                    {% if activity.location %}
+                                        <p class="activity-location">
+                                            <i class="fas fa-map-marker-alt me-2"></i>{{ activity.location }}
+                                        </p>
+                                    {% endif %}
+                                    
+                                    {% if activity.intervenants.all %}
+                                    <div class="activity-intervenants">
+                                        <h6><i class="fas fa-microphone me-2"></i>Intervenants :</h6>
+                                        <div class="intervenants-grid">
+                                            {% for intervenant in activity.intervenants.all %}
+                                            <div class="intervenant-card">
+                                                {% if intervenant.photo %}
+                                                    <img src="{{ intervenant.photo.url }}" alt="{{ intervenant.nom }}" class="intervenant-photo">
+                                                {% else %}
+                                                    <div class="intervenant-photo-placeholder">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div class="intervenant-info">
+                                                    <h6>{{ intervenant.nom }}</h6>
+                                                    <p class="intervenant-profession">{{ intervenant.profession }}</p>
+                                                    {% if intervenant.biographie %}
+                                                        <p class="intervenant-bio">{{ intervenant.biographie|truncatewords:20 }}</p>
+                                                    {% endif %}
+                                                    <div class="intervenant-quick-links">
+                                                        {% if intervenant.email %}
+                                                            <a href="mailto:{{ intervenant.email }}" class="quick-link" title="Email">
+                                                                <i class="fas fa-envelope"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                        {% if intervenant.linkedin %}
+                                                            <a href="{{ intervenant.linkedin }}" class="quick-link" title="LinkedIn" target="_blank">
+                                                                <i class="fab fa-linkedin"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Intervenants principaux -->
+{% if days %}
+<section class="event-intervenants-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10" data-aos="fade-up">
+                <div class="section-header-modern">
+                    <h2 class="section-title">Intervenants</h2>
+                    <div class="section-stats">
+                        <div class="stat-badge">
+                            <i class="fas fa-microphone"></i>
+                            <span>{{ total_intervenants }} intervenant{{ total_intervenants|pluralize:"s" }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="intervenants-showcase">
+                    {% for day in days %}
+                        {% for activity in day.activities.all %}
+                            {% for intervenant in activity.intervenants.all %}
+                                {% if forloop.first or forloop.parentloop.first %}
+                                <div class="intervenant-showcase-card" data-aos="fade-up" data-aos-delay="100">
+                                    <div class="intervenant-photo-large">
+                                        {% if intervenant.photo %}
+                                            <img src="{{ intervenant.photo.url }}" alt="{{ intervenant.nom }}" class="img-fluid">
+                                        {% else %}
+                                            <div class="intervenant-photo-placeholder-large">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="intervenant-details">
+                                        <div class="intervenant-header">
+                                            <h3>{{ intervenant.nom }}</h3>
+                                            <span class="intervenant-badge">{{ intervenant.profession }}</span>
+                                        </div>
+                                        {% if intervenant.biographie %}
+                                            <p class="intervenant-biography">{{ intervenant.biographie }}</p>
+                                        {% endif %}
+                                        
+                                        <div class="intervenant-contact-info">
+                                            {% if intervenant.email %}
+                                                <div class="contact-item">
+                                                    <i class="fas fa-envelope"></i>
+                                                    <a href="mailto:{{ intervenant.email }}">{{ intervenant.email }}</a>
+                                                </div>
+                                            {% endif %}
+                                            {% if intervenant.telephone %}
+                                                <div class="contact-item">
+                                                    <i class="fas fa-phone"></i>
+                                                    <a href="tel:{{ intervenant.telephone }}">{{ intervenant.telephone }}</a>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="intervenant-social">
+                                            {% if intervenant.linkedin %}
+                                                <a href="{{ intervenant.linkedin }}" class="social-link linkedin" target="_blank" title="LinkedIn">
+                                                    <i class="fab fa-linkedin"></i>
+                                                </a>
+                                            {% endif %}
+                                            {% if intervenant.twitter %}
+                                                <a href="{{ intervenant.twitter }}" class="social-link twitter" target="_blank" title="Twitter">
+                                                    <i class="fab fa-twitter"></i>
+                                                </a>
+                                            {% endif %}
+                                            {% if intervenant.youtube %}
+                                                <a href="{{ intervenant.youtube }}" class="social-link youtube" target="_blank" title="YouTube">
+                                                    <i class="fab fa-youtube"></i>
+                                                </a>
+                                            {% endif %}
+                                            {% if intervenant.facebook %}
+                                                <a href="{{ intervenant.facebook }}" class="social-link facebook" target="_blank" title="Facebook">
+                                                    <i class="fab fa-facebook"></i>
+                                                </a>
+                                            {% endif %}
+                                            {% if intervenant.website %}
+                                                <a href="{{ intervenant.website }}" class="social-link website" target="_blank" title="Site web">
+                                                    <i class="fas fa-globe"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- FAQ -->
+{% if faqs %}
+<section class="event-faq-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10" data-aos="fade-up">
+                <div class="section-header-modern">
+                    <h2 class="section-title">Questions fréquentes</h2>
+                    <div class="section-stats">
+                        <div class="stat-badge">
+                            <i class="fas fa-question-circle"></i>
+                            <span>{{ faqs|length }} question{{ faqs|length|pluralize:"s" }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation par catégorie -->
+                <div class="faq-categories-nav">
+                    <button class="category-btn active" data-category="all">
+                        <i class="fas fa-th-large me-2"></i>Toutes
+                    </button>
+                    {% comment "Navigation par catégorie temporairement désactivée" %}
+                    {% for category in faqs|get_unique_categories %}
+                    <button class="category-btn" data-category="{{ category }}">
+                        <i class="fas fa-{% if category == 'general' %}info-circle{% elif category == 'registration' %}user-plus{% elif category == 'logistics' %}route{% elif category == 'scientific' %}flask{% elif category == 'technical' %}cog{% else %}question{% endif %} me-2"></i>
+                        {% if category == 'general' %}Général
+                        {% elif category == 'registration' %}Inscription
+                        {% elif category == 'logistics' %}Logistique
+                        {% elif category == 'scientific' %}Scientifique
+                        {% elif category == 'technical' %}Technique
+                        {% else %}Autre
+                        {% endif %}
+                    </button>
+                    {% endfor %}
+                    {% endcomment %}
+                </div>
+                
+                <div class="faq-accordion" id="eventFAQ">
+                    {% for faq in faqs %}
+                    <div class="faq-item" data-category="{{ faq.category }}">
+                        <div class="faq-header" id="faq{{ faq.pk }}">
+                            <button class="faq-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse{{ faq.pk }}" aria-expanded="false" aria-controls="faqCollapse{{ faq.pk }}">
+                                <div class="faq-question-content">
+                                    <span class="faq-category-badge faq-category-{{ faq.category }}">
+                                        {{ faq.get_category_display }}
+                                    </span>
+                                    <span class="faq-question">{{ faq.question }}</span>
+                                </div>
+                                <i class="fas fa-chevron-down faq-icon"></i>
+                            </button>
+                        </div>
+                        <div id="faqCollapse{{ faq.pk }}" class="faq-collapse collapse" aria-labelledby="faq{{ faq.pk }}" data-bs-parent="#eventFAQ">
+                            <div class="faq-body">
+                                {{ faq.answer|safe }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Organisateurs -->
+{% if organizers %}
+<section class="event-organizers-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10" data-aos="fade-up">
+                <h2 class="section-title">Organisateurs</h2>
+                <div class="organizers-grid">
+                    {% for organizer in organizers %}
+                    <div class="organizer-card" data-aos="fade-up" data-aos-delay="100">
+                        {% if organizer.logo %}
+                            <div class="organizer-logo">
+                                <img src="{{ organizer.logo.url }}" alt="{{ organizer.name }}" class="img-fluid">
+                            </div>
+                        {% endif %}
+                        <div class="organizer-info">
+                            <h4>{{ organizer.name }}</h4>
+                            {% if organizer.role %}
+                                <p class="organizer-role">{{ organizer.role }}</p>
+                            {% endif %}
+                            {% if organizer.description %}
+                                <p class="organizer-description">{{ organizer.description }}</p>
+                            {% endif %}
+                            <div class="organizer-contact">
+                                {% if organizer.contact_email %}
+                                    <a href="mailto:{{ organizer.contact_email }}" class="contact-link">
+                                        <i class="fas fa-envelope me-2"></i>{{ organizer.contact_email }}
+                                    </a>
+                                {% endif %}
+                                {% if organizer.contact_phone %}
+                                    <a href="tel:{{ organizer.contact_phone }}" class="contact-link">
+                                        <i class="fas fa-phone me-2"></i>{{ organizer.contact_phone }}
+                                    </a>
+                                {% endif %}
+                                {% if organizer.website %}
+                                    <a href="{{ organizer.website }}" class="contact-link" target="_blank">
+                                        <i class="fas fa-globe me-2"></i>Site web
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Événements connexes -->
+{% if similar_events %}
+<section class="related-events-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10" data-aos="fade-up">
+                <h2 class="section-title">Événements connexes</h2>
+                <div class="row g-4">
+                    {% for related in similar_events %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="related-event-card">
+                            <div class="related-event-image">
+                                {% if related.featured_image %}
+                                    <img src="{{ related.featured_image.url }}" alt="{{ related.title }}" class="img-fluid">
+                                {% else %}
+                                    <div class="related-placeholder">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="related-event-content">
+                                <h5><a href="{% url 'sfront:event_detail' related.slug %}">{{ related.title }}</a></h5>
+                                <p>{{ related.description|truncatewords:15 }}</p>
+                                <div class="related-event-meta">
+                                    <span class="related-date">{{ related.start_date|date:"d/m/Y" }}</span>
+                                    <a href="{% url 'sfront:event_detail' related.slug %}" class="btn btn-sm btn-outline-primary">
+                                        Voir détails
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center" data-aos="fade-up">
+                <div class="cta-content">
+                    <h2>Restez informé</h2>
+                    <p>
+                        Abonnez-vous à notre newsletter pour recevoir les informations 
+                        sur nos prochains événements et formations.
+                    </p>
+                    <a href="{% url 'sfront:events' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-calendar-alt me-2"></i>Voir tous les événements
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+ <!-- Modal d'inscription -->
+ {% if has_registration_form %}
+ <div class="modal fade" id="registrationModal" tabindex="-1">
+     <div class="modal-dialog modal-lg">
+         <div class="modal-content">
+             <div class="modal-header">
+                 <h5 class="modal-title">
+                     <i class="fas fa-user-plus me-2"></i>
+                     Inscription à l'événement
+                 </h5>
+                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+             </div>
+             <div class="modal-body">
+                 <!-- Informations sur l'événement -->
+                 <div class="event-summary mb-4">
+                     <h6>{{ event.title }}</h6>
+                     <div class="event-meta-summary">
+                         <span><i class="fas fa-calendar me-1"></i>{{ event.start_date|date:"d/m/Y" }}</span>
+                         {% if event.location %}<span><i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}</span>{% endif %}
+                     </div>
+                 </div>
+                 
+                 <!-- Informations sur le formulaire -->
+                 {% if registration_form %}
+                 <div class="form-info mb-4">
+                     <h6>Informations sur l'inscription</h6>
+                     <div class="form-details">
+                         {% if registration_form.description %}
+                             <p class="form-description">{{ registration_form.description }}</p>
+                         {% endif %}
+                         
+                         <div class="form-stats">
+                             {% if registration_form.max_registrations %}
+                                 <div class="stat-item">
+                                     <i class="fas fa-users text-info"></i>
+                                     <span>{{ registration_form.total_registrations }}/{{ registration_form.max_registrations }} places occupées</span>
+                                 </div>
+                             {% endif %}
+                             {% if registration_form.registration_deadline %}
+                                 <div class="stat-item">
+                                     <i class="fas fa-clock text-warning"></i>
+                                     <span>Date limite : {{ registration_form.registration_deadline|date:"d/m/Y H:i" }}</span>
+                                 </div>
+                             {% endif %}
+                             {% if registration_form.allow_multiple_registrations %}
+                                 <div class="stat-item">
+                                     <i class="fas fa-check-circle text-success"></i>
+                                     <span>Inscriptions multiples autorisées</span>
+                                 </div>
+                             {% endif %}
+                         </div>
+                     </div>
+                 </div>
+                 {% endif %}
+                 
+                 <!-- Message principal -->
+                 <div class="alert alert-info">
+                     <i class="fas fa-info-circle me-2"></i>
+                     <strong>Note :</strong> Cette fonctionnalité est en cours de développement. 
+                     Pour le moment, veuillez utiliser le lien d'inscription fourni par les organisateurs.
+                 </div>
+                 
+                 <!-- Lien d'inscription externe si disponible -->
+                 {% if event.registration_link %}
+                 <div class="external-registration mt-3">
+                     <a href="{{ event.registration_link }}" class="btn btn-primary w-100" target="_blank">
+                         <i class="fas fa-external-link-alt me-2"></i>
+                         S'inscrire via le lien externe
+                     </a>
+                 </div>
+                 {% endif %}
+             </div>
+             <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+             </div>
+         </div>
+     </div>
+ </div>
+ {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+ .event-hero {
+     background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+     color: white;
+     padding: 4rem 0;
+     background-size: cover;
+     background-position: center;
+     background-repeat: no-repeat;
+     position: relative;
+ }
+
+.event-hero-content {
+    text-align: center;
+}
+
+.event-meta {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.event-type {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.event-status .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+.event-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    line-height: 1.3;
+}
+
+.event-excerpt {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+.event-details-hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.event-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+}
+
+.event-detail-item i {
+    font-size: 1.5rem;
+    opacity: 0.8;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.detail-value {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+ .event-actions-hero {
+     display: flex;
+     justify-content: center;
+     gap: 1rem;
+     flex-wrap: wrap;
+ }
+ 
+ .btn-registration {
+     transform: scale(1.1);
+     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+     animation: pulse 2s infinite;
+     position: relative;
+     z-index: 2;
+ }
+ 
+ .registration-status {
+     text-align: center;
+     margin-bottom: 1rem;
+ }
+ 
+ .registration-status .badge {
+     font-size: 1rem;
+     padding: 0.75rem 1.5rem;
+ }
+ 
+ .registration-info {
+     background: var(--gray-50);
+     border-radius: var(--radius);
+     padding: 1rem;
+     border-left: 4px solid var(--csig-primary);
+ }
+ 
+ .info-row {
+     display: flex;
+     align-items: center;
+     gap: 0.5rem;
+     margin-bottom: 0.5rem;
+     font-size: 0.9rem;
+     color: var(--gray-700);
+ }
+ 
+ .info-row:last-child {
+     margin-bottom: 0;
+ }
+ 
+ .info-row i {
+     width: 16px;
+     text-align: center;
+ }
+ 
+ .registration-status-disabled .alert {
+     margin-bottom: 0;
+     text-align: center;
+ }
+ 
+ .registration-status-disabled .alert i {
+     font-size: 1.2rem;
+     margin-bottom: 0.5rem;
+ }
+ 
+ /* Styles pour le modal d'inscription */
+ .event-summary h6 {
+     color: var(--csig-primary);
+     margin-bottom: 0.5rem;
+     font-weight: 600;
+ }
+ 
+ .event-meta-summary {
+     display: flex;
+     gap: 1rem;
+     flex-wrap: wrap;
+     font-size: 0.9rem;
+     color: var(--gray-600);
+ }
+ 
+ .event-meta-summary span {
+     display: flex;
+     align-items: center;
+     gap: 0.25rem;
+ }
+ 
+ .form-info h6 {
+     color: var(--csig-primary);
+     margin-bottom: 1rem;
+     font-weight: 600;
+ }
+ 
+ .form-description {
+     color: var(--gray-700);
+     margin-bottom: 1rem;
+     font-style: italic;
+ }
+ 
+ .form-stats {
+     display: flex;
+     flex-direction: column;
+     gap: 0.5rem;
+ }
+ 
+ .form-stats .stat-item {
+     display: flex;
+     align-items: center;
+     gap: 0.5rem;
+     font-size: 0.9rem;
+     color: var(--gray-700);
+ }
+ 
+ .form-stats .stat-item i {
+     width: 16px;
+     text-align: center;
+ }
+ 
+ .external-registration {
+     text-align: center;
+     padding: 1rem;
+     background: var(--gray-50);
+     border-radius: var(--radius);
+     border: 2px dashed var(--csig-primary);
+ }
+
+.event-image-section {
+    padding: 3rem 0;
+}
+
+.event-image-container {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.event-image {
+    width: 100%;
+    height: auto;
+}
+
+.event-content-section {
+    padding: 4rem 0;
+}
+
+.event-content h2 {
+    color: var(--csig-primary);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+.event-content h2:first-child {
+    margin-top: 0;
+}
+
+.event-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--gray-700);
+    margin-bottom: 3rem;
+}
+
+.event-content p {
+    margin-bottom: 1.5rem;
+}
+
+.event-content ul,
+.event-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.event-content li {
+    margin-bottom: 0.5rem;
+}
+
+.event-agenda,
+.event-requirements,
+.event-materials {
+    background: var(--gray-50);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+}
+
+.event-footer {
+    padding: 2rem 0;
+    border-top: 1px solid var(--gray-200);
+}
+
+.event-stats {
+    display: flex;
+    gap: 2rem;
+    color: var(--gray-600);
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.event-sidebar {
+    position: sticky;
+    top: 2rem;
+}
+
+.sidebar-widget {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+
+.sidebar-widget h5 {
+    color: var(--csig-primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.key-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--radius);
+}
+
+.info-item i {
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+}
+
+.info-item strong {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item p {
+    margin: 0;
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.similar-events {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.similar-event {
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.similar-event:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.similar-event-image {
+    width: 80px;
+    height: 60px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.similar-event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.similar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-500);
+}
+
+.similar-event-content h6 {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.similar-event-content h6 a {
+    color: var(--gray-800);
+    text-decoration: none;
+}
+
+.similar-event-content h6 a:hover {
+    color: var(--csig-primary);
+}
+
+.similar-date {
+    font-size: 0.8rem;
+    color: var(--gray-500);
+}
+
+.social-share {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.social-share-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.social-share-btn:hover {
+    transform: translateY(-2px);
+    color: white;
+}
+
+.social-share-btn.facebook {
+    background: #1877f2;
+}
+
+.social-share-btn.twitter {
+    background: #1da1f2;
+}
+
+.social-share-btn.linkedin {
+    background: #0077b5;
+}
+
+.social-share-btn.whatsapp {
+    background: #25d366;
+}
+
+.related-events-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.section-title {
+    color: var(--csig-primary);
+    text-align: center;
+    margin-bottom: 3rem;
+    font-size: 2rem;
+}
+
+.related-event-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.related-event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+.related-event-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.related-event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.related-event-card:hover .related-event-image img {
+    transform: scale(1.05);
+}
+
+.related-event-content {
+    padding: 1.5rem;
+}
+
+.related-event-content h5 {
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.related-event-content h5 a {
+    color: var(--gray-800);
+    text-decoration: none;
+}
+
+.related-event-content h5 a:hover {
+    color: var(--csig-primary);
+}
+
+.related-event-content p {
+    color: var(--gray-600);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.related-event-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.related-date {
+    color: var(--gray-500);
+    font-size: 0.9rem;
+}
+
+.cta-section {
+    padding: 4rem 0;
+}
+
+.cta-content h2 {
+    color: var(--csig-primary);
+    margin-bottom: 1rem;
+}
+
+.cta-content p {
+    color: var(--gray-600);
+    margin-bottom: 2rem;
+}
+
+.event-agenda-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.event-agenda-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.agenda-day {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.day-header h3 {
+    color: var(--csig-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.day-subtitle {
+    color: var(--gray-600);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.day-description {
+    color: var(--gray-700);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.day-activities {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.activity-time {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    min-width: 80px;
+}
+
+.start-time, .end-time {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.activity-content {
+    flex-grow: 1;
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.activity-header h4 {
+    color: var(--csig-primary);
+    font-size: 1.2rem;
+    margin-bottom: 0;
+}
+
+.activity-type-badge {
+    background-color: var(--csig-primary-light);
+    color: var(--csig-primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.activity-type-training { background-color: var(--csig-success-light); color: var(--csig-success); }
+.activity-type-workshop { background-color: var(--csig-info-light); color: var(--csig-info); }
+.activity-type-conference { background-color: var(--csig-warning-light); color: var(--csig-warning); }
+.activity-type-networking { background-color: var(--csig-secondary-light); color: var(--csig-secondary); }
+
+.activity-description {
+    color: var(--gray-700);
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.activity-location {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+}
+
+.activity-intervenants {
+    margin-top: 1.5rem;
+}
+
+.activity-intervenants h6 {
+    color: var(--csig-primary);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.intervenants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.intervenant-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.intervenant-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.intervenant-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.intervenant-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-500);
+}
+
+.intervenant-info {
+    flex-grow: 1;
+}
+
+.intervenant-info h6 {
+    color: var(--gray-800);
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.intervenant-profession {
+    color: var(--gray-600);
+    font-size: 0.8rem;
+}
+
+.intervenant-bio {
+    color: var(--gray-700);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.event-intervenants-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.intervenants-showcase {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.intervenant-showcase-card {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.intervenant-showcase-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+.intervenant-photo-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.intervenant-photo-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.intervenant-photo-placeholder-large {
+    width: 100%;
+    height: 100%;
+    background: var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-500);
+}
+
+.intervenant-details {
+    flex-grow: 1;
+}
+
+.intervenant-details h3 {
+    color: var(--csig-primary);
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.intervenant-title {
+    color: var(--gray-600);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.intervenant-biography {
+    color: var(--gray-700);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.intervenant-social {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-link {
+    color: var(--gray-600);
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.social-link:hover {
+    color: var(--csig-primary);
+}
+
+.event-faq-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+/* Navigation par catégorie */
+.faq-categories-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.category-btn {
+    background: white;
+    border: 2px solid var(--gray-200);
+    color: var(--gray-600);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-btn:hover {
+    border-color: var(--csig-primary);
+    color: var(--csig-primary);
+    transform: translateY(-2px);
+}
+
+.category-btn.active {
+    background: var(--csig-primary);
+    border-color: var(--csig-primary);
+    color: white;
+    box-shadow: var(--shadow);
+}
+
+.faq-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.faq-item {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.faq-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    cursor: pointer;
+    background-color: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.faq-button {
+    background: none;
+    border: none;
+    color: var(--gray-800);
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+}
+
+.faq-question-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.faq-category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.faq-category-general {
+    background: var(--blue-100);
+    color: var(--blue-700);
+}
+
+.faq-category-registration {
+    background: var(--green-100);
+    color: var(--green-700);
+}
+
+.faq-category-logistics {
+    background: var(--orange-100);
+    color: var(--orange-700);
+}
+
+.faq-category-scientific {
+    background: var(--purple-100);
+    color: var(--purple-700);
+}
+
+.faq-category-technical {
+    background: var(--red-100);
+    color: var(--red-700);
+}
+
+.faq-button:focus {
+    outline: none;
+}
+
+.faq-button .faq-icon {
+    transition: transform 0.3s ease;
+}
+
+.faq-button.collapsed .faq-icon {
+    transform: rotate(-90deg);
+}
+
+.faq-collapse {
+    padding: 0 1.5rem 1.5rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.faq-body {
+    color: var(--gray-700);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.event-organizers-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.organizers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.organizer-card {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.organizer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+.organizer-logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.organizer-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.organizer-info {
+    flex-grow: 1;
+}
+
+.organizer-info h4 {
+    color: var(--csig-primary);
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.organizer-role {
+    color: var(--gray-600);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.organizer-description {
+    color: var(--gray-700);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.organizer-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.contact-link {
+    display: flex;
+    align-items: center;
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.contact-link:hover {
+    color: var(--csig-primary);
+}
+
+.contact-link i {
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .event-title {
+        font-size: 2rem;
+    }
+    
+    .event-details-hero {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .event-actions-hero {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+     .event-actions-hero .btn {
+         width: 100%;
+         max-width: 300px;
+     }
+     
+     .btn-registration {
+         transform: scale(1.1);
+         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+         animation: pulse 2s infinite;
+     }
+    
+    .event-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .event-sidebar {
+        position: static;
+        margin-top: 2rem;
+    }
+
+    .intervenants-showcase {
+        grid-template-columns: 1fr;
+    }
+
+    .intervenant-showcase-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .intervenant-photo-large {
+        width: 120px;
+        height: 120px;
+    }
+
+    .faq-categories-nav {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .category-btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+    
+    .faq-accordion {
+        padding: 0 1rem;
+    }
+
+    .faq-header {
+        padding: 1rem;
+    }
+
+    .faq-button {
+        font-size: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .faq-question-content {
+        width: 100%;
+    }
+
+    .faq-body {
+        padding: 0 1rem 1rem;
+    }
+}
+
+ /* Animations */
+ @keyframes fadeInUp {
+     from {
+         opacity: 0;
+         transform: translateY(20px);
+     }
+     to {
+         opacity: 1;
+         transform: translateY(0);
+     }
+ }
+ 
+ @keyframes pulse {
+     0% {
+         transform: scale(1.1);
+         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+     }
+     50% {
+         transform: scale(1.15);
+         box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+     }
+     100% {
+         transform: scale(1.1);
+         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+     }
+ }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function registerForEvent() {
+    const modal = new bootstrap.Modal(document.getElementById('registrationModal'));
+    modal.show();
+}
+
+function openRegistrationForm() {
+    const modal = new bootstrap.Modal(document.getElementById('registrationModal'));
+    modal.show();
+}
+
+function shareEvent() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ event.title }}',
+            text: '{{ event.description|truncatewords:20 }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback
+        const url = window.location.href;
+        const text = '{{ event.title }} - {{ event.description|truncatewords:20 }}';
+        const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        window.open(shareUrl, '_blank');
+    }
+}
+
+function addToCalendar() {
+         const event = {
+         title: '{{ event.title }}',
+         start: '{{ event.start_date|date:"Y-m-d" }}{% if event.start_time %}T{{ event.start_time|time:"H:i:s" }}{% endif %}',
+         end: '{{ event.end_date|date:"Y-m-d" }}{% if event.end_time %}T{{ event.end_time|time:"H:i:s" }}{% endif %}',
+         location: '{% if event.location %}{{ event.location }}{% if event.city %}, {{ event.city }}{% endif %}{% if event.country %}, {{ event.country }}{% endif %}{% else %}Lieu à préciser{% endif %}',
+         description: '{{ event.description|truncatewords:30 }}'
+     };
+    
+    // Créer un fichier .ics
+    const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'BEGIN:VEVENT',
+        `DTSTART:${event.start}`,
+        `DTEND:${event.end}`,
+        `SUMMARY:${event.title}`,
+        `DESCRIPTION:${event.description}`,
+        `LOCATION:${event.location}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+    ].join('\r\n');
+    
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '{{ event.title|slugify }}.ics';
+    link.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function shareOnFacebook() {
+    const url = encodeURIComponent(window.location.href);
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+}
+
+function shareOnTwitter() {
+    const text = encodeURIComponent('{{ event.title }}');
+    const url = encodeURIComponent(window.location.href);
+    const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+}
+
+function shareOnLinkedIn() {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent('{{ event.title }}');
+    const summary = encodeURIComponent('{{ event.description|truncatewords:20 }}');
+    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}&summary=${summary}`;
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+}
+
+function shareOnWhatsApp() {
+    const text = encodeURIComponent('{{ event.title }} - {{ event.description|truncatewords:20 }}');
+    const url = encodeURIComponent(window.location.href);
+    const shareUrl = `https://wa.me/?text=${text}%20${url}`;
+    window.open(shareUrl, '_blank');
+}
+
+// Gestion du filtrage des FAQ par catégorie
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    categoryBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            
+            // Mise à jour des boutons actifs
+            categoryBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filtrage des éléments FAQ
+            faqItems.forEach(item => {
+                if (category === 'all' || item.getAttribute('data-category') === category) {
+                    item.style.display = 'block';
+                    item.style.animation = 'fadeInUp 0.5s ease-out';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

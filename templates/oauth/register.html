@@ -1,0 +1,382 @@
+{% extends 'oauth/base.html' %}
+{% load static %}
+
+{% block title %}Inscription - CSIG{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-card-header text-center">
+        <h2 class="auth-title">
+            <i class="fas fa-user-plus me-2"></i>Inscription
+        </h2>
+        <p class="auth-description">Créez votre compte pour accéder à la gestion de contenu</p>
+    </div>
+    
+    <div class="auth-card-body">
+        <form method="post" class="auth-form" data-validate>
+            {% csrf_token %}
+            
+            <!-- Nom d'utilisateur -->
+            <div class="form-group mb-3">
+                <label for="{{ form.username.id_for_label }}" class="form-label">
+                    <i class="fas fa-user me-2"></i>Nom d'utilisateur
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    {{ form.username }}
+                </div>
+                {% if form.username.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.username.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>150 caractères maximum. Lettres, chiffres et @/./+/-/_ uniquement.
+                </small>
+            </div>
+            
+            <!-- Prénom -->
+            <div class="form-group mb-3">
+                <label for="first_name" class="form-label">
+                    <i class="fas fa-user me-2"></i>Prénom
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <input type="text" name="first_name" id="first_name" class="form-control" placeholder="Votre prénom">
+                </div>
+            </div>
+            
+            <!-- Nom -->
+            <div class="form-group mb-3">
+                <label for="last_name" class="form-label">
+                    <i class="fas fa-user me-2"></i>Nom
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <input type="text" name="last_name" id="last_name" class="form-control" placeholder="Votre nom">
+                </div>
+            </div>
+            
+            <!-- Email -->
+            <div class="form-group mb-3">
+                <label for="email" class="form-label">
+                    <i class="fas fa-envelope me-2"></i>Adresse email
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                    <input type="email" name="email" id="email" class="form-control" placeholder="votre.email@exemple.com" required>
+                </div>
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>Nous ne partagerons jamais votre email.
+                </small>
+            </div>
+            
+            <!-- Mot de passe -->
+            <div class="form-group mb-3">
+                <label for="{{ form.password1.id_for_label }}" class="form-label">
+                    <i class="fas fa-lock me-2"></i>Mot de passe
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    {{ form.password1 }}
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                {% if form.password1.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.password1.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>Votre mot de passe doit contenir au moins 8 caractères.
+                </small>
+            </div>
+            
+            <!-- Confirmation du mot de passe -->
+            <div class="form-group mb-3">
+                <label for="{{ form.password2.id_for_label }}" class="form-label">
+                    <i class="fas fa-lock me-2"></i>Confirmation du mot de passe
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    {{ form.password2 }}
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword2">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                {% if form.password2.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.password2.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>Entrez le même mot de passe que précédemment, pour vérification.
+                </small>
+            </div>
+            
+            <!-- Conditions d'utilisation -->
+            <div class="form-group mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                    <label class="form-check-label" for="agreeTerms">
+                        J'accepte les <a href="{% url 'oauth:terms' %}" target="_blank" class="auth-link">conditions d'utilisation</a> 
+                        et la <a href="{% url 'oauth:privacy' %}" target="_blank" class="auth-link">politique de confidentialité</a>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Newsletter -->
+            <div class="form-group mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="newsletter" checked>
+                    <label class="form-check-label" for="newsletter">
+                        Je souhaite recevoir la newsletter CSIG (optionnel)
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Bouton d'inscription -->
+            <div class="form-group mb-3">
+                <button type="submit" class="btn btn-primary btn-lg w-100 auth-submit-btn">
+                    <i class="fas fa-user-plus me-2"></i>Créer mon compte
+                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                </button>
+            </div>
+            
+            <!-- Séparateur -->
+            <div class="text-center mb-3">
+                <span class="separator-text">ou</span>
+            </div>
+            
+            <!-- Inscription rapide -->
+            <div class="quick-register-options">
+                <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="demoRegister">
+                    <i class="fas fa-rocket me-2"></i>Créer un compte démo
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="auth-card-footer text-center">
+        <p class="mb-0">
+            Déjà un compte ? 
+            <a href="{% url 'oauth:login' %}" class="auth-link">
+                Se connecter
+            </a>
+        </p>
+    </div>
+</div>
+
+<!-- Modal d'inscription démo -->
+<div class="modal fade" id="demoRegisterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-rocket me-2"></i>Compte démo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Voulez-vous créer un compte de démonstration ?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Compte démo :</strong><br>
+                    <strong>Utilisateur :</strong> demo<br>
+                    <strong>Email :</strong> demo@csig.gn<br>
+                    <strong>Mot de passe :</strong> demo123
+                </div>
+                <p class="text-muted small">
+                    Ce compte vous permettra de tester toutes les fonctionnalités de la plateforme.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="confirmDemoRegister">
+                    <i class="fas fa-rocket me-2"></i>Créer le compte démo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Toggle password visibility
+    $('#togglePassword1, #togglePassword2').on('click', function() {
+        const passwordField = $(this).siblings('input');
+        const icon = $(this).find('i');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            passwordField.attr('type', 'password');
+            icon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+    
+    // Demo registration
+    $('#demoRegister').on('click', function() {
+        $('#demoRegisterModal').modal('show');
+    });
+    
+    $('#confirmDemoRegister').on('click', function() {
+        $('#demoRegisterModal').modal('hide');
+        
+        // Remplir automatiquement les champs
+        $('#{{ form.username.id_for_label }}').val('demo');
+        $('#first_name').val('Demo');
+        $('#last_name').val('User');
+        $('#email').val('demo@csig.gn');
+        $('#{{ form.password1.id_for_label }}').val('demo123');
+        $('#{{ form.password2.id_for_label }}').val('demo123');
+        $('#agreeTerms').prop('checked', true);
+        
+        // Soumettre le formulaire
+        $('.auth-form').submit();
+    });
+    
+    // Form validation
+    $('.auth-form').on('submit', function(e) {
+        const submitBtn = $(this).find('.auth-submit-btn');
+        const spinner = submitBtn.find('.spinner-border');
+        const btnText = submitBtn.find('span:not(.spinner-border)');
+        
+        // Show loading state
+        submitBtn.prop('disabled', true);
+        spinner.removeClass('d-none');
+        btnText.addClass('d-none');
+        
+        // Re-enable after 3 seconds if form is invalid
+        setTimeout(function() {
+            if (!$(this).hasClass('was-validated')) {
+                submitBtn.prop('disabled', false);
+                spinner.addClass('d-none');
+                btnText.removeClass('d-none');
+            }
+        }.bind(this), 3000);
+    });
+    
+    // Auto-focus on username field
+    $('#{{ form.username.id_for_label }}').focus();
+    
+    // Password strength indicator
+    $('#{{ form.password1.id_for_label }}').on('input', function() {
+        const password = $(this).val();
+        const strength = calculatePasswordStrength(password);
+        updatePasswordStrengthIndicator(strength);
+    });
+    
+    // Real-time validation
+    $('#{{ form.password2.id_for_label }}').on('input', function() {
+        const password1 = $('#{{ form.password1.id_for_label }}').val();
+        const password2 = $(this).val();
+        
+        if (password2 && password1 !== password2) {
+            $(this).addClass('is-invalid');
+            showPasswordMismatchError();
+        } else {
+            $(this).removeClass('is-invalid');
+            hidePasswordMismatchError();
+        }
+    });
+});
+
+// Calculate password strength
+function calculatePasswordStrength(password) {
+    let score = 0;
+    
+    if (password.length >= 8) score++;
+    if (password.match(/[a-z]/)) score++;
+    if (password.match(/[A-Z]/)) score++;
+    if (password.match(/[0-9]/)) score++;
+    if (password.match(/[^a-zA-Z0-9]/)) score++;
+    
+    if (score <= 2) return 'weak';
+    if (score <= 3) return 'medium';
+    return 'strong';
+}
+
+// Update password strength indicator
+function updatePasswordStrengthIndicator(strength) {
+    const strengthBar = $('.password-strength-bar');
+    if (strengthBar.length === 0) {
+        // Create strength indicator if it doesn't exist
+        const indicator = $(`
+            <div class="password-strength mt-2">
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">Force du mot de passe:</small>
+                    <small class="strength-text"></small>
+                </div>
+                <div class="progress mt-1" style="height: 4px;">
+                    <div class="password-strength-bar progress-bar" role="progressbar"></div>
+                </div>
+            </div>
+        `);
+        
+        $('#{{ form.password1.id_for_label }}').parent().parent().after(indicator);
+    }
+    
+    const strengthBar = $('.password-strength-bar');
+    const strengthText = $('.strength-text');
+    
+    strengthBar.removeClass('bg-danger bg-warning bg-success');
+    strengthText.removeClass('text-danger text-warning text-success');
+    
+    switch (strength) {
+        case 'weak':
+            strengthBar.addClass('bg-danger').css('width', '33%');
+            strengthText.addClass('text-danger').text('Faible');
+            break;
+        case 'medium':
+            strengthBar.addClass('bg-warning').css('width', '66%');
+            strengthText.addClass('text-warning').text('Moyenne');
+            break;
+        case 'strong':
+            strengthBar.addClass('bg-success').css('width', '100%');
+            strengthText.addClass('text-success').text('Forte');
+            break;
+    }
+}
+
+// Show password mismatch error
+function showPasswordMismatchError() {
+    const errorDiv = $('.password-mismatch-error');
+    if (errorDiv.length === 0) {
+        const error = $(`
+            <div class="invalid-feedback password-mismatch-error">
+                <i class="fas fa-exclamation-circle me-1"></i>Les mots de passe ne correspondent pas.
+            </div>
+        `);
+        $('#{{ form.password2.id_for_label }}').parent().parent().after(error);
+    }
+}
+
+// Hide password mismatch error
+function hidePasswordMismatchError() {
+    $('.password-mismatch-error').remove();
+}
+</script>
+{% endblock %}

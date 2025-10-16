@@ -1,0 +1,259 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Accessibilité - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="accessibility-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h1 class="hero-title">Accessibilité</h1>
+                <p class="hero-subtitle">
+                    Nous nous engageons à rendre notre site web accessible à tous les utilisateurs, 
+                    y compris ceux ayant des besoins spéciaux.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="accessibility-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="accessibility-container">
+                    
+                    <div class="accessibility-section">
+                        <h2><i class="fas fa-universal-access text-primary me-2"></i>Notre engagement</h2>
+                        <p>
+                            Le CSIG s'engage à fournir un site web accessible à tous les utilisateurs, 
+                            conformément aux standards internationaux d'accessibilité web (WCAG 2.1). 
+                            Nous travaillons continuellement à améliorer l'accessibilité de notre site.
+                        </p>
+                    </div>
+                    
+                    <div class="accessibility-section">
+                        <h2><i class="fas fa-keyboard text-primary me-2"></i>Navigation au clavier</h2>
+                        <p>
+                            Notre site est entièrement navigable au clavier. Utilisez la touche Tab pour naviguer 
+                            entre les éléments et Entrée pour activer les liens et boutons. 
+                            Les raccourcis clavier suivants sont disponibles :
+                        </p>
+                        <ul class="accessibility-list">
+                            <li><strong>Alt + H :</strong> Retour à l'accueil</li>
+                            <li><strong>Alt + M :</strong> Menu principal</li>
+                            <li><strong>Alt + C :</strong> Page de contact</li>
+                            <li><strong>Alt + S :</strong> Barre de recherche</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="accessibility-section">
+                        <h2><i class="fas fa-eye text-primary me-2"></i>Contraste et lisibilité</h2>
+                        <p>
+                            Nous avons optimisé le contraste des couleurs pour assurer une excellente lisibilité. 
+                            Tous nos textes respectent un ratio de contraste minimum de 4.5:1, 
+                            conformément aux recommandations WCAG.
+                        </p>
+                    </div>
+                    
+                    <div class="accessibility-section">
+                        <h2><i class="fas fa-image text-primary me-2"></i>Images et médias</h2>
+                        <p>
+                            Toutes nos images contiennent des textes alternatifs descriptifs. 
+                            Les vidéos incluent des sous-titres et des transcriptions. 
+                            Les éléments décoratifs sont marqués comme tels pour les lecteurs d'écran.
+                        </p>
+                    </div>
+                    
+                    <div class="accessibility-section">
+                        <h2><i class="fas fa-font text-primary me-2"></i>Typographie</h2>
+                        <p>
+                            Nous utilisons des polices lisibles et des tailles de texte appropriées. 
+                            Les utilisateurs peuvent ajuster la taille du texte via les paramètres de leur navigateur 
+                            (Ctrl + "+" pour agrandir, Ctrl + "-" pour réduire).
+                        </p>
+                    </div>
+                    
+                    <div class="accessibility-section">
+                        <h2><i class="fas fa-mobile-alt text-primary me-2"></i>Responsive design</h2>
+                        <p>
+                            Notre site s'adapte automatiquement à tous les écrans et appareils. 
+                            Il est optimisé pour les ordinateurs de bureau, tablettes et smartphones, 
+                            garantissant une expérience utilisateur cohérente sur tous les supports.
+                        </p>
+                    </div>
+                    
+                    <div class="accessibility-section">
+                        <h2><i class="fas fa-headphones text-primary me-2"></i>Technologies d'assistance</h2>
+                        <p>
+                            Notre site est compatible avec les principales technologies d'assistance :
+                        </p>
+                        <ul class="accessibility-list">
+                            <li>Lecteurs d'écran (JAWS, NVDA, VoiceOver)</li>
+                            <li>Logiciels de reconnaissance vocale</li>
+                            <li>Logiciels de grossissement d'écran</li>
+                            <li>Dispositifs de navigation alternative</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="accessibility-section">
+                        <h2><i class="fas fa-exclamation-triangle text-primary me-2"></i>Limitations connues</h2>
+                        <p>
+                            Bien que nous nous efforcions de maintenir un niveau d'accessibilité élevé, 
+                            certaines limitations peuvent exister dans certaines sections du site. 
+                            Nous travaillons activement à les résoudre.
+                        </p>
+                    </div>
+                    
+                    <div class="accessibility-section">
+                        <h2><i class="fas fa-comments text-primary me-2"></i>Signaler un problème</h2>
+                        <p>
+                            Si vous rencontrez des difficultés d'accessibilité sur notre site, 
+                            n'hésitez pas à nous contacter. Votre retour nous aide à améliorer 
+                            l'expérience de tous les utilisateurs.
+                        </p>
+                        <div class="contact-info">
+                            <p><strong>Email :</strong> accessibility@csig.gn</p>
+                            <p><strong>Téléphone :</strong> +224 XXX XXX XXX</p>
+                        </div>
+                    </div>
+                    
+                    <div class="accessibility-footer">
+                        <p class="text-muted">
+                            <small>Dernière mise à jour de cette page : {% now "F Y" %}</small>
+                        </p>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.accessibility-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.accessibility-content {
+    padding: 4rem 0;
+}
+
+.accessibility-container {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.accessibility-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.accessibility-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.accessibility-section h2 {
+    color: var(--csig-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.accessibility-section h2 i {
+    font-size: 1.3rem;
+    margin-right: 0.75rem;
+}
+
+.accessibility-section p {
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.accessibility-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.accessibility-list li {
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    position: relative;
+}
+
+.accessibility-list li:before {
+    content: "•";
+    color: var(--csig-primary);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.contact-info {
+    background: var(--gray-50);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    margin-top: 1rem;
+}
+
+.contact-info p {
+    margin-bottom: 0.5rem;
+}
+
+.contact-info p:last-child {
+    margin-bottom: 0;
+}
+
+.accessibility-footer {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .accessibility-container {
+        padding: 2rem;
+    }
+    
+    .accessibility-section h2 {
+        font-size: 1.3rem;
+    }
+}
+</style>
+{% endblock %}

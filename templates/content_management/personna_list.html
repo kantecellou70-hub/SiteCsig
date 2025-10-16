@@ -1,0 +1,407 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}Gestion des Personnas{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:personna_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouveau personna
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="personna-list-container">
+    <!-- En-tête avec statistiques -->
+    <div class="stats-header">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ total_count }}</h3>
+                        <p>Total des personnas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon active">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ active_count }}</h3>
+                        <p>Personnas actifs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon featured">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ featured_count }}</h3>
+                        <p>Mis en avant</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="filters-section">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="get" class="search-form">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Rechercher un personna..." value="{{ request.GET.search }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des personnas -->
+    <div class="personna-grid">
+        {% if personnas %}
+            <div class="row">
+                {% for personna in personnas %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="personna-card">
+                        <div class="personna-header">
+                            <div class="personna-status">
+                                {% if personna.is_active %}
+                                    <span class="status-badge active">
+                                        <i class="fas fa-check-circle me-1"></i>Actif
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge inactive">
+                                        <i class="fas fa-times-circle me-1"></i>Inactif
+                                    </span>
+                                {% endif %}
+                                
+                                {% if personna.featured %}
+                                    <span class="featured-badge">
+                                        <i class="fas fa-star me-1"></i>Mis en avant
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="personna-body">
+                            <h5 class="personna-name">{{ personna.name }}</h5>
+                            <p class="personna-description">{{ personna.description|truncatewords:20 }}</p>
+                            
+                            <div class="personna-stats">
+                                <span class="stat-item">
+                                    <i class="fas fa-blog me-1"></i>
+                                    {{ personna.blogs_count }} blog{{ personna.blogs_count|pluralize }}
+                                </span>
+                                <span class="stat-item">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ personna.created_at|date:"d/m/Y" }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="personna-footer">
+                            <div class="personna-actions">
+                                <a href="{% url 'content_management:personna_detail' personna.slug %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>Voir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h4>Aucun personna trouvé</h4>
+                <p>Commencez par créer votre premier personna pour organiser vos blogs.</p>
+                <a href="{% url 'content_management:personna_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Créer un personna
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination-section">
+        <nav aria-label="Navigation des personnas">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.personna-list-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.stats-header {
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--box-shadow);
+    text-align: center;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto 1rem;
+}
+
+.stat-icon.active {
+    background: var(--success-color);
+}
+
+.stat-icon.featured {
+    background: var(--warning-color);
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gray-800);
+}
+
+.stat-content p {
+    margin: 0;
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+.filters-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    margin-bottom: 2rem;
+    box-shadow: var(--box-shadow);
+}
+
+.search-form .input-group {
+    max-width: 400px;
+}
+
+.personna-grid {
+    margin-bottom: 2rem;
+}
+
+.personna-card {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    transition: var(--transition);
+    height: 100%;
+}
+
+.personna-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+.personna-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    position: relative;
+}
+
+.personna-status {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.status-badge, .featured-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.active {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.inactive {
+    background: var(--danger-color);
+    color: white;
+}
+
+.featured-badge {
+    background: var(--warning-color);
+    color: white;
+}
+
+.personna-body {
+    padding: 1.5rem;
+}
+
+.personna-name {
+    margin: 0 0 1rem 0;
+    color: var(--gray-800);
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.personna-description {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0 0 1rem 0;
+}
+
+.personna-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.personna-footer {
+    padding: 1rem 1.5rem;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+}
+
+.personna-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.personna-toggle-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: white;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--gray-400);
+    margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+    color: var(--gray-600);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: var(--gray-500);
+    margin-bottom: 1.5rem;
+}
+
+.pagination-section {
+    margin-top: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .personna-actions, .personna-toggle-actions {
+        flex-direction: column;
+    }
+    
+    .personna-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>
+
+
+{% endblock %}

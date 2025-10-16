@@ -1,0 +1,441 @@
+{% extends 'content_management/external_organization_form.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}Modifier l'organisation{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:external_organization_detail' organization.slug %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+    </a>
+    <a href="{% url 'content_management:external_organization_delete' organization.slug %}" class="btn btn-outline-danger">
+        <i class="fas fa-trash me-2"></i>Supprimer
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="external-organization-form-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>
+                        <i class="fas fa-edit me-2"></i>Modifier l'organisation
+                    </h3>
+                    <div class="edit-info">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Modifiez les informations de l'organisation "{{ organization.name }}"
+                        </small>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <form method="post" class="external-organization-form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Nom de l'organisation -->
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        <i class="fas fa-building me-2"></i>Nom de l'organisation *
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Type d'organisation -->
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.organization_type.id_for_label }}" class="form-label">
+                                        <i class="fas fa-tag me-2"></i>Type *
+                                    </label>
+                                    {{ form.organization_type }}
+                                    {% if form.organization_type.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.organization_type.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Personne de contact -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.contact_person.id_for_label }}" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Personne de contact
+                                    </label>
+                                    {{ form.contact_person }}
+                                    {% if form.contact_person.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.contact_person.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                                        <i class="fas fa-envelope me-2"></i>Email
+                                    </label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Téléphone -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                        <i class="fas fa-phone me-2"></i>Téléphone
+                                    </label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Site web -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.website.id_for_label }}" class="form-label">
+                                        <i class="fas fa-globe me-2"></i>Site web
+                                    </label>
+                                    {{ form.website }}
+                                    {% if form.website.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.website.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Ex: https://www.exemple.com
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Adresse -->
+                        <div class="form-group">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">
+                                <i class="fas fa-map-marker-alt me-2"></i>Adresse
+                            </label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.address.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Numéro fiscal -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.tax_id.id_for_label }}" class="form-label">
+                                        <i class="fas fa-id-card me-2"></i>Numéro fiscal (NIF)
+                                    </label>
+                                    {{ form.tax_id }}
+                                    {% if form.tax_id.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.tax_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Statut -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.is_active.id_for_label }}" class="form-label">
+                                        <i class="fas fa-toggle-on me-2"></i>Statut
+                                    </label>
+                                    <div class="form-check form-switch">
+                                        {{ form.is_active }}
+                                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                            Organisation active
+                                        </label>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.is_active.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notes -->
+                        <div class="form-group">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                <i class="fas fa-sticky-note me-2"></i>Notes
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Informations complémentaires sur cette organisation
+                            </div>
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Mettre à jour
+                            </button>
+                            <a href="{% url 'content_management:external_organization_detail' organization.slug %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Informations utiles -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Informations utiles</h3>
+                </div>
+                <div class="section-body">
+                    <div class="info-list">
+                        <div class="info-item">
+                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                            <div>
+                                <strong>Champs obligatoires</strong>
+                                <p class="mb-0">Nom et type d'organisation</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-envelope me-2 text-primary"></i>
+                            <div>
+                                <strong>Contact</strong>
+                                <p class="mb-0">Renseignez au moins un moyen de contact</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-id-card me-2 text-success"></i>
+                            <div>
+                                <strong>Numéro fiscal</strong>
+                                <p class="mb-0">Important pour la facturation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Types d'organisation -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-tags me-2"></i>Types d'organisation</h3>
+                </div>
+                <div class="section-body">
+                    <div class="organization-types">
+                        <div class="type-item">
+                            <span class="type-badge">Entreprise</span>
+                            <p>Sociétés privées, startups, PME</p>
+                        </div>
+                        
+                        <div class="type-item">
+                            <span class="type-badge">Association</span>
+                            <p>Organisations à but non lucratif</p>
+                        </div>
+                        
+                        <div class="type-item">
+                            <span class="type-badge">Institution</span>
+                            <p>Établissements publics, écoles</p>
+                        </div>
+                        
+                        <div class="type-item">
+                            <span class="type-badge">Autre</span>
+                            <p>Autres types d'organisations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions rapides -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-bolt me-2"></i>Actions rapides</h3>
+                </div>
+                <div class="section-body">
+                    <div class="quick-actions-list">
+                        <a href="{% url 'content_management:external_organization_detail' organization.slug %}" 
+                           class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Voir les détails</h5>
+                                <p>Consulter les informations complètes</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:room_booking_create' %}?organization={{ organization.id }}" 
+                           class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-calendar-plus"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Nouvelle réservation</h5>
+                                <p>Réserver une salle pour cette organisation</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:external_organization_delete' organization.slug %}" 
+                           class="quick-action-item danger">
+                            <div class="action-icon">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Supprimer</h5>
+                                <p>Supprimer définitivement cette organisation</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.edit-info {
+    margin-top: 0.5rem;
+}
+
+.quick-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.quick-actions-list .quick-action-item {
+    padding: 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition);
+    background: var(--white);
+}
+
+.quick-actions-list .quick-action-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--box-shadow);
+    text-decoration: none;
+    color: inherit;
+}
+
+.quick-actions-list .quick-action-item.danger:hover {
+    border-color: var(--danger-color);
+}
+
+.action-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+
+.quick-action-item.danger .action-icon {
+    background: var(--danger-color);
+}
+
+.action-text h5 {
+    margin: 0 0 0.25rem 0;
+    color: var(--gray-800);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.action-text p {
+    margin: 0;
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.action-arrow {
+    color: var(--gray-400);
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .quick-actions-list .quick-action-item {
+        padding: 0.75rem;
+    }
+    
+    .action-text h5 {
+        font-size: 0.8rem;
+    }
+    
+    .action-text p {
+        font-size: 0.7rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,347 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+{% if action == 'Créer' %}Nouvelle campagne de newsletter{% else %}Modifier la campagne{% endif %} - CSIG
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.newsletter-form-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.form-header {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 2rem;
+}
+
+.form-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.form-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.form-content {
+    padding: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section h3 {
+    color: #0d4786;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #0d4786;
+    box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+}
+
+.form-actions {
+    background: #f8f9fa;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-envelope me-2"></i>
+{% if action == 'Créer' %}Nouvelle campagne de newsletter{% else %}Modifier la campagne{% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    {% if action == 'Créer' %}
+        Créez une nouvelle campagne de newsletter pour communiquer avec vos abonnés
+    {% else %}
+        Modifiez les paramètres de cette campagne de newsletter
+    {% endif %}
+</p>
+{% endblock %}
+
+{% block content %}
+<div class="newsletter-form-container">
+    <!-- En-tête -->
+    <div class="form-header">
+        <h1>
+            <i class="fas fa-envelope me-3"></i>
+            {% if action == 'Créer' %}Nouvelle campagne de newsletter{% else %}Modifier la campagne{% endif %}
+        </h1>
+        <p>
+            {% if action == 'Créer' %}
+                Créez une nouvelle campagne de newsletter pour communiquer avec vos abonnés
+            {% else %}
+                Modifiez les paramètres de cette campagne de newsletter
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Formulaire -->
+    <form method="post" class="form-content">
+        {% csrf_token %}
+        
+        <!-- Informations générales -->
+        <div class="form-section">
+            <h3>
+                <i class="fas fa-info-circle me-2"></i>
+                Informations générales
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="title" class="form-label">Titre de la campagne *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ campaign.title|default:'' }}" required>
+                        <small class="form-text text-muted">Titre interne de la campagne</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="subject" class="form-label">Sujet de l'email *</label>
+                        <input type="text" class="form-control" id="subject" name="subject" 
+                               value="{{ campaign.subject|default:'' }}" required>
+                        <small class="form-text text-muted">Sujet qui apparaîtra dans l'email</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="template_name" class="form-label">Template</label>
+                <select class="form-control" id="template_name" name="template_name">
+                    <option value="newsletter_default.html" {% if campaign.template_name == 'newsletter_default.html' %}selected{% endif %}>
+                        Template par défaut
+                    </option>
+                    <option value="newsletter_modern.html" {% if campaign.template_name == 'newsletter_modern.html' %}selected{% endif %}>
+                        Template moderne
+                    </option>
+                    <option value="newsletter_simple.html" {% if campaign.template_name == 'newsletter_simple.html' %}selected{% endif %}>
+                        Template simple
+                    </option>
+                </select>
+                <small class="form-text text-muted">Template HTML utilisé pour l'email</small>
+            </div>
+        </div>
+
+        <!-- Contenu -->
+        <div class="form-section">
+            <h3>
+                <i class="fas fa-edit me-2"></i>
+                Contenu de la newsletter
+            </h3>
+            
+            <div class="form-group">
+                <label for="content" class="form-label">Contenu *</label>
+                <textarea class="form-control" id="content" name="content" rows="15" required>{{ campaign.content|default:'' }}</textarea>
+                <small class="form-text text-muted">Contenu HTML de votre newsletter</small>
+            </div>
+        </div>
+
+        <!-- Paramètres d'envoi -->
+        <div class="form-section">
+            <h3>
+                <i class="fas fa-cog me-2"></i>
+                Paramètres d'envoi
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="target_language" class="form-label">Langue cible</label>
+                        <select class="form-control" id="target_language" name="target_language">
+                            <option value="all" {% if campaign.target_language == 'all' %}selected{% endif %}>
+                                Toutes les langues
+                            </option>
+                            <option value="fr" {% if campaign.target_language == 'fr' %}selected{% endif %}>
+                                Français
+                            </option>
+                            <option value="en" {% if campaign.target_language == 'en' %}selected{% endif %}>
+                                English
+                            </option>
+                        </select>
+                        <small class="form-text text-muted">Langue des abonnés ciblés</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="target_active_only" name="target_active_only" 
+                                   {% if campaign.target_active_only %}checked{% endif %}>
+                            <label class="form-check-label" for="target_active_only">
+                                Abonnés actifs uniquement
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Envoyer uniquement aux abonnés actifs</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+            <div class="breadcrumb-nav">
+                <a href="{% url 'content_management:newsletter_campaign_list' %}" class="text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>
+                    {% if action == 'Créer' %}Créer la campagne{% else %}Enregistrer les modifications{% endif %}
+                </button>
+                
+                {% if action == 'Modifier' %}
+                <a href="{% url 'content_management:newsletter_campaign_detail' campaign.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-eye me-2"></i>Voir la campagne
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation du formulaire
+    const form = document.querySelector('form');
+    const titleInput = document.getElementById('title');
+    const subjectInput = document.getElementById('subject');
+    const contentInput = document.getElementById('content');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validation du titre
+        if (!titleInput.value.trim()) {
+            titleInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            titleInput.classList.remove('is-invalid');
+        }
+        
+        // Validation du sujet
+        if (!subjectInput.value.trim()) {
+            subjectInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            subjectInput.classList.remove('is-invalid');
+        }
+        
+        // Validation du contenu
+        if (!contentInput.value.trim()) {
+            contentInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            contentInput.classList.remove('is-invalid');
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Veuillez remplir tous les champs obligatoires.');
+        }
+    });
+    
+    // Prévisualisation du contenu (optionnel)
+    const previewBtn = document.createElement('button');
+    previewBtn.type = 'button';
+    previewBtn.className = 'btn btn-outline-info mt-2';
+    previewBtn.innerHTML = '<i class="fas fa-eye me-2"></i>Prévisualiser';
+    previewBtn.onclick = function() {
+        const content = contentInput.value;
+        if (content.trim()) {
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Prévisualisation de la newsletter</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .preview-header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="preview-header">
+                        <h2>Prévisualisation de la newsletter</h2>
+                        <p><strong>Sujet:</strong> ${subjectInput.value}</p>
+                    </div>
+                    ${content}
+                </body>
+                </html>
+            `);
+        } else {
+            alert('Veuillez d\'abord saisir du contenu pour prévisualiser.');
+        }
+    };
+    
+    contentInput.parentNode.appendChild(previewBtn);
+});
+</script>
+{% endblock %}

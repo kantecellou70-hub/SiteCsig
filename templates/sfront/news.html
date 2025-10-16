@@ -1,0 +1,519 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Actualités - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="news-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h1 class="hero-title">Actualités</h1>
+                <p class="hero-subtitle">
+                    Restez informé des dernières nouvelles, découvertes et innovations 
+                    du Centre de Services Informatiques de Guinée.
+                </p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ articles.count }}</div>
+                        <div class="stat-label">Articles</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">4</div>
+                        <div class="stat-label">Catégories</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">À jour</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filtres et recherche -->
+<section class="filters-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="search-filters" data-aos="fade-up">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="search-box">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="newsSearch" class="form-control" placeholder="Rechercher un article...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="categoryFilter" class="form-select">
+                                <option value="">Toutes les catégories</option>
+                                <option value="technology">Technologie</option>
+                                <option value="research">Recherche</option>
+                                <option value="innovation">Innovation</option>
+                                <option value="events">Événements</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="featuredFilter" class="form-select">
+                                <option value="">Tous les articles</option>
+                                <option value="featured">Mis en avant</option>
+                                <option value="regular">Réguliers</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Grille des articles -->
+<section class="news-grid-section">
+    <div class="container">
+        <div class="row g-4" id="newsGrid">
+            {% for article in articles %}
+            <div class="col-lg-4 col-md-6 news-card" 
+                 data-title="{{ article.title|lower }}" 
+                 data-category="{{ article.category }}"
+                 data-featured="{{ article.is_featured|yesno:'featured,regular' }}"
+                 data-aos="fade-up" 
+                 data-aos-delay="{% if forloop.counter == 1 %}100{% elif forloop.counter == 2 %}200{% elif forloop.counter == 3 %}300{% elif forloop.counter == 4 %}400{% elif forloop.counter == 5 %}500{% else %}600{% endif %}">
+                <div class="news-item">
+                    <div class="news-image">
+                        {% if article.featured_image %}
+                            <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="news-placeholder">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        {% endif %}
+                        <div class="news-overlay">
+                            <div class="news-actions">
+                                <a href="{% url 'sfront:article_detail' article.slug %}" class="btn btn-light btn-sm">
+                                    <i class="fas fa-eye me-2"></i>Lire l'article
+                                </a>
+                            </div>
+                        </div>
+                        {% if article.is_featured %}
+                        <div class="featured-badge">
+                            <i class="fas fa-star"></i> À la une
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="news-content">
+                        <div class="news-meta">
+                            <span class="news-category">{{ article.get_category_display }}</span>
+                            <span class="news-date">{{ article.published_at|date:"d/m/Y" }}</span>
+                        </div>
+                        <h3 class="news-title">
+                            <a href="{% url 'sfront:article_detail' article.slug %}">{{ article.title }}</a>
+                        </h3>
+                        <p class="news-excerpt">{{ article.excerpt|truncatewords:20 }}</p>
+                        <div class="news-footer">
+                            <div class="news-author">
+                                <i class="fas fa-user me-2"></i>
+                                {{ article.author.get_full_name|default:article.author.username }}
+                            </div>
+                            <div class="news-read-more">
+                                <a href="{% url 'sfront:article_detail' article.slug %}" class="btn btn-outline-primary btn-sm">
+                                    Lire la suite
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="no-news" data-aos="fade-up">
+                    <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                    <h3>Aucun article disponible</h3>
+                    <p class="text-muted">Aucun article n'a été publié pour le moment.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-section" data-aos="fade-up">
+            <nav aria-label="Navigation des articles">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center" data-aos="fade-up">
+                <div class="cta-content">
+                    <h2>Restez connecté</h2>
+                    <p>
+                        Abonnez-vous à notre newsletter pour recevoir les dernières actualités 
+                        directement dans votre boîte email.
+                    </p>
+                    <form class="newsletter-form">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Votre adresse email">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane me-2"></i>S'abonner
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.news-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.filters-section {
+    padding: 3rem 0;
+    background: var(--gray-50);
+}
+
+.search-filters {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-500);
+    z-index: 2;
+}
+
+.search-box .form-control {
+    padding-left: 2.5rem;
+}
+
+.news-grid-section {
+    padding: 4rem 0;
+}
+
+.news-item {
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.news-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+.news-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.news-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.news-item:hover .news-image img {
+    transform: scale(1.05);
+}
+
+.news-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-500);
+    font-size: 3rem;
+}
+
+.news-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(13, 71, 134, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.news-item:hover .news-overlay {
+    opacity: 1;
+}
+
+.featured-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--csig-primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.news-content {
+    padding: 1.5rem;
+}
+
+.news-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.news-category {
+    background: var(--csig-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.news-date {
+    color: var(--gray-500);
+    font-size: 0.85rem;
+}
+
+.news-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.news-title a {
+    color: var(--gray-800);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.news-title a:hover {
+    color: var(--csig-primary);
+}
+
+.news-excerpt {
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.news-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.news-author {
+    color: var(--gray-500);
+    font-size: 0.85rem;
+}
+
+.no-news {
+    padding: 4rem 2rem;
+}
+
+.no-news i {
+    color: var(--gray-400);
+}
+
+.pagination-section {
+    margin-top: 3rem;
+}
+
+.cta-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.cta-content h2 {
+    color: var(--csig-primary);
+    margin-bottom: 1rem;
+}
+
+.cta-content p {
+    color: var(--gray-600);
+    margin-bottom: 2rem;
+}
+
+.newsletter-form .input-group {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-stats {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .search-filters {
+        padding: 1.5rem;
+    }
+    
+    .news-content {
+        padding: 1rem;
+    }
+    
+    .news-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('newsSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const featuredFilter = document.getElementById('featuredFilter');
+    const newsGrid = document.getElementById('newsGrid');
+    
+    function filterNews() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+        const selectedFeatured = featuredFilter.value;
+        
+        const newsCards = newsGrid.querySelectorAll('.news-card');
+        
+        newsCards.forEach(card => {
+            const title = card.dataset.title;
+            const category = card.dataset.category;
+            const featured = card.dataset.featured;
+            
+            const matchesSearch = title.includes(searchTerm);
+            const matchesCategory = !selectedCategory || category === selectedCategory;
+            const matchesFeatured = !selectedFeatured || featured === selectedFeatured;
+            
+            if (matchesSearch && matchesCategory && matchesFeatured) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    searchInput.addEventListener('input', filterNews);
+    categoryFilter.addEventListener('change', filterNews);
+    featuredFilter.addEventListener('change', filterNews);
+});
+</script>
+{% endblock %}

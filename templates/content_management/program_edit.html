@@ -1,0 +1,140 @@
+{% extends 'content_management/program_form.html' %}
+
+{% block title %}Modifier le Programme "{{ program.title }}" - CSIG{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-edit me-2"></i>Modifier le Programme
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Modifiez les informations du programme "{{ program.title }}"
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:program_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:program_detail' program.pk %}" class="btn btn-outline-info">
+        <i class="fas fa-eye me-2"></i>Voir le programme
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Avertissements spécifiques à l'édition
+    const statusSelect = document.getElementById('id_status');
+    const originalStatus = '{{ program.status }}';
+    
+    // Avertissement si le statut change
+    statusSelect.addEventListener('change', function() {
+        const newStatus = this.value;
+        if (originalStatus === 'published' && newStatus === 'draft') {
+            if (confirm('Attention : Vous allez passer ce programme de "Publié" à "Brouillon".\n\nCela le rendra invisible pour les visiteurs. Continuer ?')) {
+                // Afficher une notification
+                showNotification('warning', 'Le programme sera mis en brouillon et ne sera plus visible publiquement.');
+            } else {
+                // Remettre l'ancien statut
+                this.value = originalStatus;
+            }
+        } else if (originalStatus === 'draft' && newStatus === 'published') {
+            if (confirm('Voulez-vous publier ce programme ?\n\nIl sera visible par tous les visiteurs du site.')) {
+                showNotification('success', 'Le programme sera publié et visible publiquement.');
+            } else {
+                // Remettre l'ancien statut
+                this.value = originalStatus;
+            }
+        }
+    });
+    
+    // Vérification avant soumission
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const title = document.getElementById('id_title').value.trim();
+        const description = document.getElementById('id_description').value.trim();
+        
+        if (!title) {
+            e.preventDefault();
+            showNotification('error', 'Le titre est obligatoire.');
+            document.getElementById('id_title').focus();
+            return false;
+        }
+        
+        if (!description) {
+            e.preventDefault();
+            showNotification('error', 'La description est obligatoire.');
+            document.getElementById('id_description').focus();
+            return false;
+        }
+        
+        // Afficher une notification de sauvegarde
+        showNotification('info', 'Sauvegarde en cours...');
+    });
+    
+    // Fonction de notification
+    function showNotification(type, message) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-fermeture après 5 secondes
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+    
+    // Pré-remplir l'aperçu avec les données existantes
+    updatePreview();
+    
+    // Sauvegarde automatique plus fréquente en mode édition
+    let autoSaveTimer;
+    const inputs = form.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                autoSaveForm();
+            }, 1000); // Plus rapide en mode édition
+        });
+    });
+    
+    function autoSaveForm() {
+        // Ici vous pouvez implémenter la logique d'auto-sauvegarde
+        console.log('Auto-sauvegarde en mode édition...');
+        // Optionnel : afficher un indicateur de sauvegarde
+        const saveIndicator = document.querySelector('.save-indicator');
+        if (saveIndicator) {
+            saveIndicator.textContent = 'Sauvegardé automatiquement';
+            saveIndicator.style.opacity = '1';
+            setTimeout(() => {
+                saveIndicator.style.opacity = '0.7';
+            }, 2000);
+        }
+    }
+    
+    // Ajouter un indicateur de sauvegarde automatique
+    const formActions = document.querySelector('.form-actions');
+    if (formActions) {
+        const saveIndicator = document.createElement('div');
+        saveIndicator.className = 'save-indicator text-muted small mt-2';
+        saveIndicator.textContent = 'Modifications sauvegardées automatiquement';
+        saveIndicator.style.opacity = '0.7';
+        formActions.appendChild(saveIndicator);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,716 @@
+{% extends 'content_management/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Détails de la réservation" %} - {{ booking.event_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    
+    .booking-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+    }
+    
+    .booking-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        margin-top: 0.5rem;
+    }
+    
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    .status-confirmed { background-color: #d1ecf1; color: #0c5460; }
+    .status-cancelled { background-color: #f8d7da; color: #721c24; }
+    .status-completed { background-color: #d4edda; color: #155724; }
+    .status-rejected { background-color: #f5c6cb; color: #721c24; }
+    
+    .info-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        color: #495057;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    .payment-status {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .payment-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .payment-paid { background-color: #d4edda; color: #155724; }
+    .payment-unpaid { background-color: #f8d7da; color: #721c24; }
+    
+    .quick-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .payments-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .payment-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+    }
+    
+    .payment-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .payment-amount {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #28a745;
+    }
+    
+    .payment-date {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .payment-method {
+        font-size: 0.85rem;
+        color: #495057;
+        font-weight: 500;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.75rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.5rem;
+        top: 0.25rem;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: #007bff;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #007bff;
+    }
+    
+    .timeline-content {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .timeline-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .timeline-title {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+    
+    .timeline-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .alert-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .alert {
+        border-radius: 8px;
+        border: none;
+        padding: 1rem 1.5rem;
+    }
+    
+    .alert-warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #a8e6cf 100%);
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .alert-success {
+        background: linear-gradient(135deg, #d4edda 0%, #b8f2e6 100%);
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+    
+    @media (max-width: 768px) {
+        .booking-header {
+            padding: 1.5rem;
+        }
+        
+        .booking-title {
+            font-size: 1.5rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .quick-actions {
+            flex-direction: column;
+        }
+        
+        .quick-actions .btn {
+            width: 100%;
+        }
+        
+        .payment-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+    
+    /* Styles pour les modals */
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid #f0f0f0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .modal-header .btn-close {
+        filter: invert(1);
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        border-top: 1px solid #f0f0f0;
+        padding: 1rem 1.5rem;
+    }
+    
+    /* Styles pour les notifications */
+    .alert {
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+    }
+    
+    .alert-success {
+        background: linear-gradient(135deg, #d4edda 0%, #b8f2e6 100%);
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #a8e6cf 100%);
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête de la réservation -->
+    <div class="booking-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="booking-title">{{ booking.event_title }}</h1>
+                <p class="booking-subtitle">
+                    {{ booking.room.name }} • {{ booking.organization.name }}
+                </p>
+                <span class="status-badge status-{{ booking.status }}">
+                    {{ booking.get_status_display }}
+                </span>
+            </div>
+            <div class="text-end">
+                <h3 class="text-white mb-0">{{ booking.total_price|floatformat:0 }} GNF</h3>
+                <small class="opacity-75">{% trans "Prix total" %}</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <a href="{% url 'content_management:room_booking_edit' booking.pk %}" class="btn btn-warning btn-lg">
+            <i class="fas fa-edit me-2"></i>{% trans "Modifier la réservation" %}
+        </a>
+        <a href="{% url 'content_management:room_booking_create' %}?room={{ booking.room.id }}" class="btn btn-success btn-lg">
+            <i class="fas fa-plus me-2"></i>{% trans "Nouvelle réservation pour cette salle" %}
+        </a>
+        <a href="{% url 'content_management:room_booking_create' %}?organization={{ booking.organization.id }}" class="btn btn-info btn-lg">
+            <i class="fas fa-building me-2"></i>{% trans "Nouvelle réservation pour cette organisation" %}
+        </a>
+        
+        <!-- Actions de statut -->
+        {% if booking.status == 'pending' %}
+        <button type="button" class="btn btn-success btn-lg" onclick="confirmStatusChange('confirmed', '{% trans "Confirmer" %}', '{% trans "Êtes-vous sûr de vouloir confirmer cette réservation ?" %}')">
+            <i class="fas fa-check me-2"></i>{% trans "Confirmer" %}
+        </button>
+        {% elif booking.status == 'confirmed' %}
+        <button type="button" class="btn btn-info btn-lg" onclick="confirmStatusChange('completed', '{% trans "Terminer" %}', '{% trans "Êtes-vous sûr de vouloir marquer cette réservation comme terminée ?" %}')">
+            <i class="fas fa-flag-checkered me-2"></i>{% trans "Terminer" %}
+        </button>
+        {% endif %}
+        
+        <button type="button" class="btn btn-danger btn-lg" onclick="confirmDelete()">
+            <i class="fas fa-trash me-2"></i>{% trans "Supprimer" %}
+        </button>
+    </div>
+
+    <!-- Informations principales -->
+    <div class="info-section">
+        <h4 class="mb-3">{% trans "Informations de la réservation" %}</h4>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">{% trans "Salle" %}</span>
+                <span class="info-value">{{ booking.room.name }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">{% trans "Organisation" %}</span>
+                <span class="info-value">{{ booking.organization.name }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">{% trans "Date de début" %}</span>
+                <span class="info-value">{{ booking.start_time|date:"d/m/Y H:i" }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">{% trans "Date de fin" %}</span>
+                <span class="info-value">{{ booking.end_time|date:"d/m/Y H:i" }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">{% trans "Durée" %}</span>
+                <span class="info-value">{{ booking.duration_hours|floatformat:1 }} heures</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">{% trans "Nombre de participants" %}</span>
+                <span class="info-value">{{ booking.attendees_count }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">{% trans "Prix par heure" %}</span>
+                <span class="info-value">{{ booking.room.price_per_hour|floatformat:0 }} GNF</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">{% trans "Prix par jour" %}</span>
+                <span class="info-value">{{ booking.room.price_per_day|floatformat:0 }} GNF</span>
+            </div>
+        </div>
+        
+        <!-- Statut des paiements -->
+        <div class="payment-status">
+            <span class="payment-badge {% if booking.deposit_paid %}payment-paid{% else %}payment-unpaid{% endif %}">
+                <i class="fas {% if booking.deposit_paid %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                {% if booking.deposit_paid %}{% trans "Acompte payé" %}{% else %}{% trans "Acompte en attente" %}{% endif %}
+            </span>
+            <span class="payment-badge {% if booking.full_payment_paid %}payment-paid{% else %}payment-unpaid{% endif %}">
+                <i class="fas {% if booking.full_payment_paid %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                {% if booking.full_payment_paid %}{% trans "Paiement complet" %}{% else %}{% trans "Paiement en attente" %}{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Description et exigences -->
+    {% if booking.event_description or booking.special_requirements %}
+    <div class="info-section">
+        <h4 class="mb-3">{% trans "Détails de l'événement" %}</h4>
+        
+        {% if booking.event_description %}
+        <div class="mb-3">
+            <h6>{% trans "Description" %}</h6>
+            <p class="mb-0">{{ booking.event_description|linebreaks }}</p>
+        </div>
+        {% endif %}
+        
+        {% if booking.special_requirements %}
+        <div>
+            <h6>{% trans "Exigences spéciales" %}</h6>
+            <p class="mb-0">{{ booking.special_requirements|linebreaks }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Notes administrateur -->
+    {% if booking.admin_notes %}
+    <div class="info-section">
+        <h4 class="mb-3">{% trans "Notes administrateur" %}</h4>
+        <div class="alert alert-info">
+            {{ booking.admin_notes|linebreaks }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Historique des paiements -->
+    {% if payments %}
+    <div class="payments-section">
+        <h4 class="mb-3">{% trans "Historique des paiements" %}</h4>
+        {% for payment in payments %}
+        <div class="payment-item">
+            <div class="payment-info">
+                <span class="payment-amount">{{ payment.amount|floatformat:0 }} GNF</span>
+                <span class="payment-date">{{ payment.created_at|date:"d/m/Y H:i" }}</span>
+                <span class="payment-method">{{ payment.get_payment_method_display }}</span>
+            </div>
+            <div class="text-end">
+                <span class="badge {% if payment.status == 'completed' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                    {{ payment.get_status_display }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Chronologie de la réservation -->
+    <div class="info-section">
+        <h4 class="mb-3">{% trans "Chronologie" %}</h4>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-date">{{ booking.created_at|date:"d/m/Y H:i" }}</div>
+                    <div class="timeline-title">{% trans "Réservation créée" %}</div>
+                                            <div class="timeline-description">{% trans "La réservation a été créée" %}</div>
+                </div>
+            </div>
+            
+            {% if booking.confirmed_at %}
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-date">{{ booking.confirmed_at|date:"d/m/Y H:i" }}</div>
+                    <div class="timeline-title">{% trans "Réservation confirmée" %}</div>
+                    <div class="timeline-description">{% trans "Confirmée par" %} {{ booking.confirmed_by.get_full_name|default:booking.confirmed_by.username }}</div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-date">{{ booking.updated_at|date:"d/m/Y H:i" }}</div>
+                    <div class="timeline-title">{% trans "Dernière modification" %}</div>
+                    <div class="timeline-description">{% trans "Dernière mise à jour de la réservation" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations techniques -->
+    <div class="info-section">
+        <h4 class="mb-3">{% trans "Informations techniques" %}</h4>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">{% trans "ID de la réservation" %}</span>
+                <span class="info-value">{{ booking.pk }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">{% trans "Créée le" %}</span>
+                <span class="info-value">{{ booking.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">{% trans "Modifiée le" %}</span>
+                <span class="info-value">{{ booking.updated_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            
+            {% if booking.confirmed_by %}
+            <div class="info-item">
+                <span class="info-label">{% trans "Confirmée par" %}</span>
+                <span class="info-value">{{ booking.confirmed_by.get_full_name|default:booking.confirmed_by.username }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">{% trans "Confirmer la suppression" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Êtes-vous sûr de vouloir supprimer la réservation" %} <strong>{{ booking.event_title }}</strong> ?</p>
+                <p class="text-danger">{% trans "Cette action est irréversible." %}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Annuler" %}</button>
+                <a href="{% url 'content_management:room_booking_delete' booking.pk %}" class="btn btn-danger">{% trans "Supprimer" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de changement de statut -->
+<div class="modal fade" id="statusChangeModal" tabindex="-1" aria-labelledby="statusChangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusChangeModalLabel">{% trans "Confirmer le changement de statut" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="statusChangeMessage"></p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>{% trans "Note:" %}</strong> {% trans "Cette action modifiera le statut de la réservation et sera enregistrée dans l'historique." %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Annuler" %}</button>
+                <button type="button" class="btn btn-primary" id="confirmStatusChangeBtn">{% trans "Confirmer" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales pour le changement de statut
+let currentStatusChange = null;
+let currentStatusMessage = '';
+
+// Fonction pour confirmer la suppression
+function confirmDelete() {
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+// Fonction pour confirmer le changement de statut
+function confirmStatusChange(newStatus, actionText, message) {
+    currentStatusChange = newStatus;
+    currentStatusMessage = message;
+    
+    // Mettre à jour le modal
+    document.getElementById('statusChangeMessage').textContent = message;
+    document.getElementById('confirmStatusChangeBtn').textContent = actionText;
+    
+    // Afficher le modal
+    const statusModal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+    statusModal.show();
+}
+
+// Gestionnaire pour le bouton de confirmation de changement de statut
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmStatusBtn = document.getElementById('confirmStatusChangeBtn');
+    
+    confirmStatusBtn.addEventListener('click', function() {
+        if (currentStatusChange) {
+            // Effectuer le changement de statut
+            changeBookingStatus(currentStatusChange);
+            
+            // Fermer le modal
+            const statusModal = bootstrap.Modal.getInstance(document.getElementById('statusChangeModal'));
+            statusModal.hide();
+        }
+    });
+});
+
+// Fonction pour changer le statut de la réservation
+function changeBookingStatus(newStatus) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Afficher un indicateur de chargement
+    const confirmBtn = document.getElementById('confirmStatusChangeBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>{% trans "Traitement..." %}';
+    confirmBtn.disabled = true;
+    
+    fetch(`/content-management/reservations/{{ booking.pk }}/toggle-status/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Afficher un message de succès
+            showNotification('{% trans "Statut modifié avec succès !" %}', 'success');
+            
+            // Recharger la page après un court délai
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            // Afficher un message d'erreur
+            showNotification(data.error || '{% trans "Erreur lors du changement de statut" %}', 'error');
+            
+            // Restaurer le bouton
+            confirmBtn.innerHTML = originalText;
+            confirmBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        
+        // Afficher un message d'erreur
+        showNotification('{% trans "Erreur lors du changement de statut" %}', 'error');
+        
+        // Restaurer le bouton
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    });
+}
+
+// Fonction pour afficher des notifications
+function showNotification(message, type = 'info') {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+    
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    // Ajouter au body
+    document.body.appendChild(notification);
+    
+    // Auto-suppression après 5 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Ajouter le token CSRF si nécessaire
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!csrfToken) {
+        const token = document.createElement('input');
+        token.type = 'hidden';
+        token.name = 'csrfmiddlewaretoken';
+        token.value = '{{ csrf_token }}';
+        document.body.appendChild(token);
+    }
+});
+</script>
+{% endblock %}

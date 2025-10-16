@@ -1,0 +1,1545 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ article.title }} - Détails de l'article - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.article-detail-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.article-detail-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0d4786, #1a6bb8, #0d4786);
+    background-size: 200% 100%;
+    animation: gradientMove 3s ease-in-out infinite;
+}
+
+@keyframes gradientMove {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.article-header {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 50%, #0d4786 100%);
+    color: white;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.article-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.2;
+}
+
+.article-title {
+    margin: 0 0 2.5rem 0;
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    color: white;
+    display: block;
+    width: 100%;
+    max-width: 800px;
+}
+
+.article-meta {
+    margin: 0;
+    opacity: 0.95;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    color: white;
+    max-width: 900px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    color: white;
+    white-space: nowrap;
+}
+
+.meta-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.meta-item i {
+    font-size: 1.2rem;
+    color: white;
+}
+
+.meta-item span {
+    color: white;
+    font-weight: 500;
+}
+
+.article-content {
+    padding: 3rem 2.5rem;
+}
+
+.article-section {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #f1f3f4;
+    position: relative;
+}
+
+.article-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.article-section::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, #0d4786, #1a6bb8);
+    border-radius: 1px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d4786;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #0d4786, #1a6bb8);
+    border-radius: 2px;
+}
+
+.section-title i {
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.8rem;
+}
+
+.article-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.info-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+}
+
+.info-card:hover::before {
+    width: 8px;
+}
+
+.info-card h4 {
+    color: #495057;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-card h4 i {
+    color: #0d4786;
+    font-size: 1.2rem;
+}
+
+.info-card p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.status-draft {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+    border-color: #ffeaa7;
+}
+
+.status-published {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+.status-archived {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.article-actions {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem 2.5rem;
+    border-top: 2px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.action-btn {
+    padding: 1rem 2rem;
+    border-radius: 15px;
+    border: none;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.action-btn:hover::before {
+    left: 100%;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    text-decoration: none;
+}
+
+.action-btn.edit {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+}
+
+.action-btn.delete {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    color: #d32f2f;
+}
+
+.action-btn.back {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+}
+
+.related-articles {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 3rem 2.5rem;
+    border-top: 2px solid #e9ecef;
+}
+
+.related-articles h3 {
+    color: #495057;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-align: center;
+    position: relative;
+}
+
+.related-articles h3::after {
+    content: '';
+    position: absolute;
+    bottom: -0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #0d4786, #1a6bb8);
+    border-radius: 2px;
+}
+
+.related-article {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.related-article::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.related-article:hover {
+    border-color: #0d4786;
+    box-shadow: 0 8px 32px rgba(13, 71, 134, 0.15);
+    transform: translateY(-3px);
+}
+
+.related-article:hover::before {
+    width: 8px;
+}
+
+.related-article h4 {
+    margin: 0 0 1rem 0;
+    color: #0d4786;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.related-article h4 a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.related-article h4 a:hover {
+    color: #1a6bb8;
+}
+
+.related-article p {
+    margin: 0 0 1rem 0;
+    color: #6c757d;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.related-article .meta {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #adb5bd;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.related-article .meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+
+/* Styles pour le modal de changement de statut */
+.status-options .form-check {
+    border: 2px solid #e9ecef;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.status-options .form-check::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.status-options .form-check:hover {
+    border-color: #0d4786;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(13, 71, 134, 0.1);
+}
+
+.status-options .form-check:hover::before {
+    width: 8px;
+}
+
+.status-options .form-check-input:checked + .form-check-label {
+    color: #0d4786;
+    font-weight: 700;
+}
+
+.status-options .form-check-input:checked + .form-check-label .status-badge {
+    transform: scale(1.05);
+}
+
+.status-options .form-check-label {
+    cursor: pointer;
+    width: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.status-options .form-check-label small {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #6c757d;
+}
+
+/* Animation pour le modal */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Styles pour les conteneurs de contenu */
+.content-container,
+.excerpt-container {
+    position: relative;
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid #e9ecef;
+}
+
+.content-preview,
+.excerpt-preview {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #495057;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.content-full,
+.excerpt-full {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #495057;
+}
+
+.content-actions,
+.excerpt-actions {
+    text-align: center;
+}
+
+.content-actions .btn,
+.excerpt-actions .btn {
+    transition: all 0.3s ease;
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border: 2px solid transparent;
+}
+
+.content-actions .btn:hover,
+.excerpt-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+/* Amélioration de l'affichage des badges de statut dans le header */
+.article-header .status-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.article-header .status-badge.status-draft {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: rgba(255, 193, 7, 0.5);
+}
+
+.article-header .status-badge.status-published {
+    background: rgba(13, 202, 240, 0.2);
+    border-color: rgba(13, 202, 240, 0.5);
+}
+
+.article-header .status-badge.status-archived {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .article-info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .article-header {
+        padding: 2.5rem 2rem;
+    }
+    
+    .article-title {
+        font-size: 2rem;
+    }
+    
+    .article-meta {
+        gap: 1.5rem;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .meta-item {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+    
+    .article-content {
+        padding: 2.5rem 2rem;
+    }
+    
+    .article-info-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .article-actions {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .action-btn {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .related-articles {
+        padding: 2.5rem 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .article-detail-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .article-header {
+        padding: 2rem 1.5rem;
+    }
+    
+    .article-title {
+        font-size: 1.8rem;
+        line-height: 1.3;
+    }
+    
+    .article-meta {
+        gap: 1rem;
+    }
+    
+    .meta-item {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .article-content {
+        padding: 2rem 1.5rem;
+    }
+    
+    .article-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .info-card {
+        padding: 1.5rem;
+    }
+    
+    .content-container,
+    .excerpt-container {
+        padding: 1.5rem;
+    }
+    
+    .related-articles {
+        padding: 2rem 1.5rem;
+    }
+    
+    .related-articles h3 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .article-header {
+        padding: 1.5rem 1rem;
+    }
+    
+    .article-title {
+        font-size: 1.5rem;
+    }
+    
+    .meta-item {
+        width: 100%;
+        max-width: none;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .article-content {
+        padding: 1.5rem 1rem;
+    }
+    
+    .article-section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+    }
+    
+    .info-card {
+        padding: 1rem;
+    }
+    
+    .content-container,
+    .excerpt-container {
+        padding: 1rem;
+    }
+    
+    .action-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .related-articles {
+        padding: 1.5rem 1rem;
+    }
+    
+    .related-articles h3 {
+        font-size: 1.3rem;
+    }
+    
+    .related-article {
+        padding: 1rem;
+    }
+}
+
+/* Animations d'entrée */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.article-detail-container {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.article-section {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.article-section:nth-child(1) { animation-delay: 0.1s; }
+.article-section:nth-child(2) { animation-delay: 0.2s; }
+.article-section:nth-child(3) { animation-delay: 0.3s; }
+.article-section:nth-child(4) { animation-delay: 0.4s; }
+
+.info-card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.info-card:nth-child(1) { animation-delay: 0.2s; }
+.info-card:nth-child(2) { animation-delay: 0.3s; }
+.info-card:nth-child(3) { animation-delay: 0.4s; }
+.info-card:nth-child(4) { animation-delay: 0.5s; }
+
+/* Responsive pour la zone hero */
+@media (max-width: 768px) {
+    .article-header {
+        padding: 2rem 1.5rem;
+        min-height: 250px;
+    }
+    
+    .article-title {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .article-meta {
+        gap: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .meta-item {
+        justify-content: center;
+        padding: 0.6rem 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .article-header {
+        padding: 1.5rem 1rem;
+        min-height: 200px;
+    }
+    
+    .article-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .meta-item {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Styles pour les notifications personnalisées */
+.custom-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border: none;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.custom-notification .alert {
+    margin: 0;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+}
+
+.custom-notification .btn-close {
+    background-size: 1.2em;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.custom-notification .btn-close:hover {
+    opacity: 1;
+}
+
+/* Styles pour la boîte de dialogue de confirmation personnalisée */
+.custom-confirm-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.custom-confirm-modal .modal-header {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
+    padding: 1.5rem 2rem 1rem;
+}
+
+.custom-confirm-modal .modal-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.custom-confirm-modal .modal-body {
+    padding: 2rem;
+    text-align: center;
+}
+
+.custom-confirm-modal .modal-footer {
+    padding: 1rem 2rem 1.5rem;
+    border-top: 1px solid #f1f3f4;
+}
+
+.custom-confirm-modal .btn {
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.custom-confirm-modal .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.custom-confirm-modal .btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+}
+
+.custom-confirm-modal .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.custom-confirm-modal .btn-primary {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    border: 2px solid transparent;
+}
+
+.custom-confirm-modal .btn-primary:hover {
+    background: linear-gradient(135deg, #0a3a6b 0%, #145a9b 100%);
+    border-color: transparent;
+}
+
+/* Animation pour l'icône d'avertissement */
+.custom-confirm-modal .fa-exclamation-triangle {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-eye me-2"></i>Détails de l'article
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Consultez les informations détaillées de l'article "{{ article.title }}"
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:article_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:article_edit' article.pk %}" class="btn btn-primary">
+        <i class="fas fa-edit me-2"></i>Modifier
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="article-detail-container">
+    <!-- Token CSRF caché pour les requêtes AJAX -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    
+    <!-- En-tête de l'article -->
+    <div class="article-header">
+        <h1 class="article-title">{{ article.title }}</h1>
+        
+        <div class="article-meta">
+            <div class="meta-item">
+                <i class="fas fa-user"></i>
+                <span>{{ article.author.get_full_name|default:article.author.username }}</span>
+            </div>
+            
+            {% if article.category %}
+            <div class="meta-item">
+                <i class="fas fa-folder"></i>
+                <span>{{ article.category.name }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="meta-item">
+                <i class="fas fa-calendar"></i>
+                <span>Créé le {{ article.created_at|date:"d/m/Y à H:i" }}</span>
+            </div>
+            
+            {% if article.published_at %}
+            <div class="meta-item">
+                <i class="fas fa-globe"></i>
+                <span>Publié le {{ article.published_at|date:"d/m/Y à H:i" }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="meta-item">
+                <i class="fas fa-eye"></i>
+                <span>{{ article.views_count|default:0 }} vue(s)</span>
+            </div>
+            
+            <div class="meta-item">
+                <i class="fas fa-toggle-on"></i>
+                <span class="status-badge status-{{ article.status }}">
+                    {{ article.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="article-content">
+        <!-- Informations générales -->
+        <div class="article-section">
+            <h3 class="section-title">
+                <i class="fas fa-info-circle"></i>Informations générales
+            </h3>
+            
+            <div class="article-info-grid">
+                <div class="info-card">
+                    <h4>Statut</h4>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="status-badge status-{{ article.status }}">
+                            {{ article.get_status_display }}
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#statusChangeModal">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h4>Catégorie</h4>
+                    <p>{{ article.category.name }}</p>
+                </div>
+                
+                <div class="info-card">
+                    <h4>Auteur</h4>
+                    <p>{{ article.author.get_full_name|default:article.author.username }}</p>
+                </div>
+                
+                <div class="info-card">
+                    <h4>Mise en avant</h4>
+                    <p>{% if article.is_featured %}Oui{% else %}Non{% endif %}</p>
+                </div>
+                
+                <div class="info-card">
+                    <h4>Date de création</h4>
+                    <p>{{ article.created_at|date:"d/m/Y H:i" }}</p>
+                </div>
+                
+                {% if article.published_at %}
+                <div class="info-card">
+                    <h4>Date de publication</h4>
+                    <p>{{ article.published_at|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Extrait -->
+        {% if article.excerpt %}
+        <div class="article-section">
+            <h3 class="section-title">
+                <i class="fas fa-align-left"></i>Extrait
+            </h3>
+            <div class="excerpt-container">
+                <div class="excerpt-preview" id="excerptPreview">
+                    {{ article.excerpt|truncatechars:200 }}
+                </div>
+                <div class="excerpt-full" id="excerptFull" style="display: none;">
+                    {{ article.excerpt }}
+                </div>
+                <div class="excerpt-actions mt-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="toggleExcerpt">
+                        <i class="fas fa-eye me-2"></i>Voir tout
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Contenu -->
+        {% if article.content %}
+        <div class="article-section">
+            <h3 class="section-title">
+                <i class="fas fa-file-text"></i>Contenu
+            </h3>
+            <div class="content-container">
+                <div class="content-preview" id="contentPreview">
+                    {{ article.content|safe|truncatechars_html:500 }}
+                </div>
+                <div class="content-full" id="contentFull" style="display: none;">
+                    {{ article.content|safe }}
+                </div>
+                <div class="content-actions mt-3">
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="toggleContent">
+                        <i class="fas fa-eye me-2"></i>Voir tout
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Médias -->
+        {% if article.featured_image or article.images.all %}
+        <div class="article-section">
+            <h3 class="section-title">
+                <i class="fas fa-images"></i>Médias
+            </h3>
+            
+            {% if article.featured_image %}
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="color: #495057; margin-bottom: 0.5rem;">Image principale</h4>
+                <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" 
+                     style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e9ecef;">
+            </div>
+            {% endif %}
+            
+            {% if article.images.all %}
+            <div>
+                <h4 style="color: #495057; margin-bottom: 0.5rem;">Images supplémentaires</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                    {% for image in article.images.all %}
+                    <img src="{{ image.image.url }}" alt="Image {{ forloop.counter }}" 
+                         style="width: 100%; height: auto; border-radius: 8px; border: 1px solid #e9ecef;">
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Informations SEO -->
+        {% if article.slug or article.meta_title or article.meta_description %}
+        <div class="article-section">
+            <h3 class="section-title">
+                <i class="fas fa-search"></i>Informations SEO
+            </h3>
+            
+            {% if article.slug %}
+            <div style="margin-bottom: 1rem;">
+                <strong>Slug:</strong> <code>{{ article.slug }}</code>
+            </div>
+            {% endif %}
+            
+            {% if article.meta_title %}
+            <div style="margin-bottom: 1rem;">
+                <strong>Meta titre:</strong> {{ article.meta_title }}
+            </div>
+            {% endif %}
+            
+            {% if article.meta_description %}
+            <div>
+                <strong>Meta description:</strong> {{ article.meta_description }}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Articles liés -->
+    {% if related_articles %}
+    <div class="related-articles">
+        <h3>
+            <i class="fas fa-link me-2"></i>Articles liés
+        </h3>
+        {% for related in related_articles %}
+        <div class="related-article">
+            <h4>
+                <a href="{% url 'content_management:article_detail' related.pk %}" 
+                   style="color: inherit; text-decoration: none;">
+                    {{ related.title }}
+                </a>
+            </h4>
+            {% if related.excerpt %}
+            <p>{{ related.excerpt|truncatewords:20 }}</p>
+            {% endif %}
+            <div class="meta">
+                <i class="fas fa-calendar me-1"></i>{{ related.created_at|date:"d/m/Y" }}
+                <i class="fas fa-user ms-2 me-1"></i>{{ related.author.get_full_name|default:related.author.username }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="article-actions">
+        <div>
+            <a href="{% url 'content_management:article_list' %}" class="action-btn back">
+                <i class="fas fa-arrow-left"></i>Retour à la liste
+            </a>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <a href="{% url 'content_management:article_edit' article.pk %}" class="action-btn edit">
+                <i class="fas fa-edit"></i>Modifier
+            </a>
+            
+            <a href="{% url 'content_management:article_delete' article.pk %}" class="action-btn delete">
+                <i class="fas fa-trash"></i>Supprimer
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de changement de statut -->
+<div class="modal fade" id="statusChangeModal" tabindex="-1" aria-labelledby="statusChangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusChangeModalLabel">
+                    <i class="fas fa-toggle-on me-2"></i>Changer le statut de l'article
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Choisissez le nouveau statut pour l'article <strong>"{{ article.title }}"</strong> :</p>
+                
+                <div class="status-options">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="newStatus" id="statusDraft" value="draft" {% if article.status == 'draft' %}checked{% endif %}>
+                        <label class="form-check-label" for="statusDraft">
+                            <span class="status-badge status-draft">Brouillon</span>
+                            <small class="text-muted d-block">Article en cours de rédaction, non visible publiquement</small>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="newStatus" id="statusPublished" value="published" {% if article.status == 'published' %}checked{% endif %}>
+                        <label class="form-check-label" for="statusPublished">
+                            <span class="status-badge status-published">Publié</span>
+                            <small class="text-muted d-block">Article visible publiquement sur le site</small>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="newStatus" id="statusArchived" value="archived" {% if article.status == 'archived' %}checked{% endif %}>
+                        <label class="form-check-label" for="statusArchived">
+                            <span class="status-badge status-archived">Archivé</span>
+                            <small class="text-muted d-block">Article conservé mais non visible publiquement</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-primary" id="saveStatusChange">
+                    <i class="fas fa-save me-2"></i>Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal fade" id="confirmStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle me-2 text-success"></i>Statut modifié
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Le statut de l'article a été modifié avec succès !</p>
+                <p class="text-muted">La page va se recharger pour afficher les changements.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="location.reload()">
+                    <i class="fas fa-refresh me-2"></i>Recharger
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des boutons "Voir tout"
+    initContentToggles();
+    
+    // Gestion du changement de statut
+    const saveStatusBtn = document.getElementById('saveStatusChange');
+    const statusChangeModal = document.getElementById('statusChangeModal');
+    const confirmStatusModal = document.getElementById('confirmStatusModal');
+    
+    if (saveStatusBtn) {
+        saveStatusBtn.addEventListener('click', function() {
+            const selectedStatus = document.querySelector('input[name="newStatus"]:checked');
+            
+            if (!selectedStatus) {
+                showNotification('Veuillez sélectionner un statut.', 'warning');
+                return;
+            }
+            
+            const newStatus = selectedStatus.value;
+            const currentStatus = '{{ article.status }}';
+            
+            if (newStatus === currentStatus) {
+                showNotification('Le statut sélectionné est identique au statut actuel.', 'info');
+                return;
+            }
+            
+            // Afficher une confirmation personnalisée
+            showConfirmDialog(
+                `Changer le statut de l'article`,
+                `Êtes-vous sûr de vouloir changer le statut de l'article de "${getStatusDisplay(currentStatus)}" à "${getStatusDisplay(newStatus)}" ?`,
+                () => changeArticleStatus(newStatus)
+            );
+        });
+    }
+    
+    // Fonction pour initialiser les toggles de contenu
+    function initContentToggles() {
+        // Toggle pour l'extrait
+        const toggleExcerptBtn = document.getElementById('toggleExcerpt');
+        if (toggleExcerptBtn) {
+            toggleExcerptBtn.addEventListener('click', function() {
+                const preview = document.getElementById('excerptPreview');
+                const full = document.getElementById('excerptFull');
+                const btn = this;
+                
+                if (full.style.display === 'none') {
+                    preview.style.display = 'none';
+                    full.style.display = 'block';
+                    btn.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Voir moins';
+                } else {
+                    preview.style.display = 'block';
+                    full.style.display = 'none';
+                    btn.innerHTML = '<i class="fas fa-eye me-2"></i>Voir tout';
+                }
+            });
+        }
+        
+        // Toggle pour le contenu
+        const toggleContentBtn = document.getElementById('toggleContent');
+        if (toggleContentBtn) {
+            toggleContentBtn.addEventListener('click', function() {
+                const preview = document.getElementById('contentPreview');
+                const full = document.getElementById('contentFull');
+                const btn = this;
+                
+                if (full.style.display === 'none') {
+                    preview.style.display = 'none';
+                    full.style.display = 'block';
+                    btn.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Voir moins';
+                } else {
+                    preview.style.display = 'block';
+                    full.style.display = 'none';
+                    btn.innerHTML = '<i class="fas fa-eye me-2"></i>Voir tout';
+                }
+            });
+        }
+    }
+    
+    // Fonction pour changer le statut
+    function changeArticleStatus(newStatus) {
+        const formData = new FormData();
+        formData.append('status', newStatus);
+        
+        fetch('{% url "content_management:article_status_change" article.pk %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Fermer le modal de changement de statut
+                const modal = bootstrap.Modal.getInstance(statusChangeModal);
+                modal.hide();
+                
+                // Afficher le modal de confirmation
+                const confirmModal = new bootstrap.Modal(confirmStatusModal);
+                confirmModal.show();
+                
+                // Mettre à jour l'affichage du statut
+                updateStatusDisplay(newStatus);
+                
+                // Afficher une notification de succès
+                showNotification('Statut modifié avec succès !', 'success');
+            } else {
+                showNotification('Erreur lors du changement de statut : ' + (data.message || 'Erreur inconnue'), 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showNotification('Erreur lors du changement de statut. Veuillez réessayer.', 'error');
+        });
+    }
+    
+    // Fonction pour mettre à jour l'affichage du statut
+    function updateStatusDisplay(newStatus) {
+        // Mettre à jour le badge dans la carte d'information
+        const statusBadge = document.querySelector('.info-card .status-badge');
+        if (statusBadge) {
+            statusBadge.className = `status-badge status-${newStatus}`;
+            statusBadge.textContent = getStatusDisplay(newStatus);
+        }
+        
+        // Mettre à jour le badge dans l'en-tête si il existe
+        const headerStatusBadge = document.querySelector('.article-header .status-badge');
+        if (headerStatusBadge) {
+            headerStatusBadge.className = `status-badge status-${newStatus}`;
+            headerStatusBadge.textContent = getStatusDisplay(newStatus);
+        }
+    }
+    
+    // Fonction pour obtenir l'affichage du statut
+    function getStatusDisplay(status) {
+        const statusMap = {
+            'draft': 'Brouillon',
+            'published': 'Publié',
+            'archived': 'Archivé'
+        };
+        return statusMap[status] || status;
+    }
+    
+    // Fonction pour afficher des notifications élégantes
+    function showNotification(message, type = 'info') {
+        // Créer l'élément de notification
+        const notification = document.createElement('div');
+        notification.className = `custom-notification`;
+        notification.innerHTML = `
+            <div class="alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show">
+                <div class="d-flex align-items-center">
+                    <i class="${getNotificationIcon(type)} me-3" style="color: ${getNotificationColor(type)}; font-size: 1.2rem;"></i>
+                    <span class="flex-grow-1">${message}</span>
+                    <button type="button" class="btn-close ms-2" onclick="this.closest('.custom-notification').remove()"></button>
+                </div>
+            </div>
+        `;
+        
+        // Ajouter au DOM
+        document.body.appendChild(notification);
+        
+        // Auto-suppression après 5 secondes
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+    
+    // Fonction pour obtenir l'icône de notification
+    function getNotificationIcon(type) {
+        const icons = {
+            'success': 'fas fa-check-circle',
+            'error': 'fas fa-exclamation-circle',
+            'warning': 'fas fa-exclamation-triangle',
+            'info': 'fas fa-info-circle'
+        };
+        return icons[type] || icons.info;
+    }
+    
+    // Fonction pour obtenir la couleur de notification
+    function getNotificationColor(type) {
+        const colors = {
+            'success': '#28a745',
+            'error': '#dc3545',
+            'warning': '#ffc107',
+            'info': '#17a2b8'
+        };
+        return colors[type] || colors.info;
+    }
+    
+    // Fonction pour afficher une boîte de dialogue de confirmation personnalisée
+    function showConfirmDialog(title, message, onConfirm) {
+        // Créer le modal de confirmation
+        const confirmModal = document.createElement('div');
+        confirmModal.className = 'modal fade custom-confirm-modal';
+        confirmModal.style.cssText = 'z-index: 9999;';
+        confirmModal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-question-circle me-2"></i>${title}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                        </div>
+                        <p class="mb-0">${message}</p>
+                    </div>
+                    <div class="modal-footer justify-content-center gap-3">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </button>
+                        <button type="button" class="btn btn-primary" id="confirmActionBtn">
+                            <i class="fas fa-check me-2"></i>Confirmer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Ajouter au DOM
+        document.body.appendChild(confirmModal);
+        
+        // Créer et afficher le modal Bootstrap
+        const modal = new bootstrap.Modal(confirmModal);
+        modal.show();
+        
+        // Gérer la confirmation
+        const confirmBtn = confirmModal.querySelector('#confirmActionBtn');
+        confirmBtn.addEventListener('click', function() {
+            modal.hide();
+            setTimeout(() => {
+                if (onConfirm && typeof onConfirm === 'function') {
+                    onConfirm();
+                }
+                // Nettoyer le DOM
+                if (confirmModal.parentNode) {
+                    confirmModal.remove();
+                }
+            }, 300);
+        });
+        
+        // Nettoyer le DOM quand le modal est fermé
+        confirmModal.addEventListener('hidden.bs.modal', function() {
+            if (confirmModal.parentNode) {
+                confirmModal.remove();
+            }
+        });
+    }
+    
+    // Ajouter le token CSRF au template
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken) {
+        const meta = document.createElement('meta');
+        meta.name = 'csrf-token';
+        meta.content = '{{ csrf_token }}';
+        document.head.appendChild(meta);
+    }
+});
+</script>
+{% endblock %}

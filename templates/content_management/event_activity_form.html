@@ -1,0 +1,357 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - {{ day.title|default:"Jour "|add:day.day_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .form-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .form-body {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .day-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #0d4786;
+        text-align: center;
+    }
+    
+    .day-number {
+        background: linear-gradient(135deg, #0d4786, #1a6bb8);
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+    }
+    
+    .day-date {
+        color: #0d4786;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .day-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #0d4786;
+        box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        border: none;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        border: none;
+        color: white;
+    }
+    
+    .time-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .activity-type-info {
+        background: #e3f2fd;
+        border: 1px solid #bbdefb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .activity-type-info h6 {
+        color: #0d47a1;
+        margin-bottom: 0.5rem;
+    }
+    
+    .activity-type-info ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: #1565c0;
+    }
+    
+    @media (max-width: 768px) {
+        .form-header {
+            padding: 1.5rem;
+        }
+        
+        .form-body {
+            padding: 1.5rem;
+        }
+        
+        .time-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="form-container">
+        <!-- Header -->
+        <div class="form-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fas fa-clock me-3"></i>{{ title }}
+                    </h1>
+                    <h3 class="mb-0 opacity-75">{{ event.title }}</h3>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{% url 'content_management:event_day_activities' event.pk day.pk %}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Retour aux activités
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="form-body">
+            <!-- Informations sur le jour -->
+            <div class="day-info">
+                <div class="day-number">{{ day.day_number }}</div>
+                <div class="day-date">{{ day.date|date:"d/m/Y" }}</div>
+                <div class="day-title">{{ day.title|default:"Jour "|add:day.day_number|add:" - "|add:day.date|date:"d/m" }}</div>
+            </div>
+
+            <!-- Informations sur les types d'activités -->
+            <div class="activity-type-info">
+                <h6><i class="fas fa-info-circle me-2"></i>Types d'activités disponibles</h6>
+                <ul>
+                    <li><strong>Conférence plénière :</strong> Présentations principales de l'événement</li>
+                    <li><strong>Session :</strong> Sessions thématiques ou parallèles</li>
+                    <li><strong>Atelier :</strong> Sessions pratiques et interactives</li>
+                    <li><strong>Pause :</strong> Temps de pause entre les sessions</li>
+                    <li><strong>Déjeuner :</strong> Pause déjeuner</li>
+                    <li><strong>Networking :</strong> Sessions de mise en réseau</li>
+                    <li><strong>Session poster :</strong> Présentations de posters</li>
+                    <li><strong>Autre :</strong> Autres types d'activités</li>
+                </ul>
+            </div>
+
+            <!-- Formulaire -->
+            <form method="post" id="activityForm">
+                {% csrf_token %}
+                
+                <div class="time-row">
+                    <div class="form-group">
+                        <label for="{{ form.start_time.id_for_label }}" class="form-label">
+                            <i class="fas fa-clock me-2"></i>{{ form.start_time.label }} *
+                        </label>
+                        {{ form.start_time }}
+                        {% if form.start_time.errors %}
+                            <div class="text-danger small mt-1">{{ form.start_time.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.end_time.id_for_label }}" class="form-label">
+                            <i class="fas fa-clock me-2"></i>{{ form.end_time.label }} *
+                        </label>
+                        {{ form.end_time }}
+                        {% if form.end_time.errors %}
+                            <div class="text-danger small mt-1">{{ form.end_time.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.activity.id_for_label }}" class="form-label">
+                        <i class="fas fa-tasks me-2"></i>{{ form.activity.label }} *
+                    </label>
+                    {{ form.activity }}
+                    {% if form.activity.errors %}
+                        <div class="text-danger small mt-1">{{ form.activity.errors.0 }}</div>
+                    {% endif %}
+                    <small class="form-text text-muted">Ex: Conférence d'ouverture, Atelier pratique, Pause café</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.location.id_for_label }}" class="form-label">
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ form.location.label }}
+                    </label>
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                        <div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>
+                    {% endif %}
+                    <small class="form-text text-muted">Ex: Salle principale, Auditorium A, Espace networking</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.activity_type.id_for_label }}" class="form-label">
+                        <i class="fas fa-tag me-2"></i>{{ form.activity_type.label }} *
+                    </label>
+                    {{ form.activity_type }}
+                    {% if form.activity_type.errors %}
+                        <div class="text-danger small mt-1">{{ form.activity_type.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">
+                        <i class="fas fa-align-left me-2"></i>{{ form.description.label }}
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                    <small class="form-text text-muted">Description détaillée de l'activité (optionnel)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.order.id_for_label }}" class="form-label">
+                        <i class="fas fa-sort-numeric-up me-2"></i>{{ form.order.label }}
+                    </label>
+                    {{ form.order }}
+                    {% if form.order.errors %}
+                        <div class="text-danger small mt-1">{{ form.order.errors.0 }}</div>
+                    {% endif %}
+                    <small class="form-text text-muted">Ordre d'affichage (0 = premier, 1 = deuxième, etc.)</small>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'content_management:event_day_activities' event.pk day.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>{{ submit_text }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation des heures
+    const startTimeInput = document.getElementById('{{ form.start_time.id_for_label }}');
+    const endTimeInput = document.getElementById('{{ form.end_time.id_for_label }}');
+    
+    function validateTimes() {
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+        
+        if (startTime && endTime) {
+            if (startTime >= endTime) {
+                endTimeInput.setCustomValidity('L\'heure de fin doit être postérieure à l\'heure de début');
+            } else {
+                endTimeInput.setCustomValidity('');
+            }
+        }
+    }
+    
+    startTimeInput.addEventListener('change', validateTimes);
+    endTimeInput.addEventListener('change', validateTimes);
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + S pour sauvegarder
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            document.getElementById('activityForm').submit();
+        }
+        
+        // Échap pour annuler
+        if (e.key === 'Escape') {
+            window.location.href = '{% url "content_management:event_day_activities" event.pk day.pk %}';
+        }
+    });
+    
+    // Auto-complétion de l'ordre si vide
+    const orderInput = document.getElementById('{{ form.order.id_for_label }}');
+    if (!orderInput.value) {
+        // Trouver le plus grand ordre existant et ajouter 1
+        const existingOrders = Array.from(document.querySelectorAll('.activity-item')).map(item => {
+            const orderText = item.querySelector('.activity-order')?.textContent;
+            return orderText ? parseInt(orderText) : 0;
+        });
+        const maxOrder = Math.max(0, ...existingOrders);
+        orderInput.value = maxOrder + 1;
+    }
+});
+</script>
+{% endblock %}

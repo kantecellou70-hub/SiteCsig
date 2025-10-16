@@ -1,0 +1,163 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Politique de confidentialité - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="privacy-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h1 class="hero-title">Politique de confidentialité</h1>
+                <p class="hero-subtitle">
+                    Découvrez comment nous protégeons vos données personnelles 
+                    et respectons votre vie privée.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="privacy-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="privacy-container">
+                    <div class="privacy-section">
+                        <h2>Collecte des informations</h2>
+                        <p>
+                            Nous collectons uniquement les informations nécessaires au bon fonctionnement 
+                            de nos services : nom, email, téléphone et autres informations que vous 
+                            choisissez de nous fournir.
+                        </p>
+                    </div>
+                    
+                    <div class="privacy-section">
+                        <h2>Utilisation des informations</h2>
+                        <p>
+                            Vos informations sont utilisées pour : répondre à vos demandes, 
+                            vous informer de nos programmes et événements, améliorer nos services.
+                        </p>
+                    </div>
+                    
+                    <div class="privacy-section">
+                        <h2>Protection des données</h2>
+                        <p>
+                            Nous mettons en place des mesures de sécurité appropriées pour protéger 
+                            vos informations personnelles contre tout accès non autorisé.
+                        </p>
+                    </div>
+                    
+                    <div class="privacy-section">
+                        <h2>Partage des informations</h2>
+                        <p>
+                            Nous ne vendons, n'échangeons ni ne louons vos informations personnelles 
+                            à des tiers sans votre consentement explicite.
+                        </p>
+                    </div>
+                    
+                    <div class="privacy-section">
+                        <h2>Vos droits</h2>
+                        <p>
+                            Vous avez le droit de : accéder à vos données, les modifier, 
+                            les supprimer ou vous opposer à leur traitement.
+                        </p>
+                    </div>
+                    
+                    <div class="privacy-section">
+                        <h2>Contact</h2>
+                        <p>
+                            Pour toute question concernant cette politique de confidentialité, 
+                            contactez-nous à : <strong>privacy@csig.gn</strong>
+                        </p>
+                    </div>
+                    
+                    <div class="privacy-footer">
+                        <p class="text-muted">
+                            <small>Dernière mise à jour : {% now "F Y" %}</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.privacy-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.privacy-content {
+    padding: 4rem 0;
+}
+
+.privacy-container {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.privacy-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.privacy-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.privacy-section h2 {
+    color: var(--csig-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.privacy-section p {
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.privacy-footer {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .privacy-container {
+        padding: 2rem;
+    }
+}
+</style>
+{% endblock %}

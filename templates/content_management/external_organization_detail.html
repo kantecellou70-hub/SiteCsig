@@ -1,0 +1,662 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}{{ organization.name }}{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:external_organization_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux organisations
+    </a>
+    <a href="{% url 'content_management:external_organization_edit' organization.slug %}" class="btn btn-outline-primary">
+        <i class="fas fa-edit me-2"></i>Modifier
+    </a>
+    <a href="{% url 'content_management:external_organization_delete' organization.slug %}" class="btn btn-outline-danger">
+        <i class="fas fa-trash me-2"></i>Supprimer
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="external-organization-detail-container">
+    <!-- En-tête de l'organisation -->
+    <div class="organization-header-detail">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="organization-main-info">
+                    <h1 class="organization-title-large">{{ organization.name }}</h1>
+                    <div class="organization-subtitle">
+                        <span class="type-badge-large">
+                            <i class="fas fa-tag me-2"></i>{{ organization.get_organization_type_display }}
+                        </span>
+                        
+                        {% if organization.is_active %}
+                            <span class="status-badge status-active">
+                                <i class="fas fa-check-circle me-2"></i>Active
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-inactive">
+                                <i class="fas fa-times-circle me-2"></i>Inactive
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Informations de contact principales -->
+                    <div class="contact-main-info">
+                        {% if organization.contact_person %}
+                        <div class="contact-item-main">
+                            <i class="fas fa-user me-2"></i>
+                            <span><strong>Contact :</strong> {{ organization.contact_person }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if organization.email %}
+                        <div class="contact-item-main">
+                            <i class="fas fa-envelope me-2"></i>
+                            <span><strong>Email :</strong> <a href="mailto:{{ organization.email }}">{{ organization.email }}</a></span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if organization.phone %}
+                        <div class="contact-item-main">
+                            <i class="fas fa-phone me-2"></i>
+                            <span><strong>Téléphone :</strong> <a href="tel:{{ organization.phone }}">{{ organization.phone }}</a></span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Actions rapides -->
+                <div class="quick-actions">
+                    <a href="{% url 'content_management:room_booking_create' %}?organization={{ organization.id }}" 
+                       class="btn btn-success btn-lg w-100 mb-3">
+                        <i class="fas fa-calendar-plus me-2"></i>Réserver une salle
+                    </a>
+                    
+                    <a href="{% url 'content_management:external_organization_edit' organization.slug %}" 
+                       class="btn btn-outline-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </a>
+                    
+                    <a href="{% url 'content_management:external_organization_delete' organization.slug %}" 
+                       class="btn btn-outline-danger btn-lg w-100"
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette organisation ?')">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations détaillées -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Informations complètes -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Informations complètes</h3>
+                </div>
+                <div class="section-body">
+                    <div class="info-grid">
+                        {% if organization.address %}
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="info-content">
+                                <h6>Adresse</h6>
+                                <p>{{ organization.address }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if organization.website %}
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="info-content">
+                                <h6>Site web</h6>
+                                <p><a href="{{ organization.website }}" target="_blank">{{ organization.website }}</a></p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if organization.tax_id %}
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div class="info-content">
+                                <h6>Numéro fiscal (NIF)</h6>
+                                <p>{{ organization.tax_id }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if organization.notes %}
+                        <div class="info-item full-width">
+                            <div class="info-icon">
+                                <i class="fas fa-sticky-note"></i>
+                            </div>
+                            <div class="info-content">
+                                <h6>Notes</h6>
+                                <p>{{ organization.notes }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Réservations récentes -->
+            {% if recent_bookings %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-calendar-alt me-2"></i>Réservations récentes</h3>
+                </div>
+                <div class="section-body">
+                    <div class="bookings-list">
+                        {% for booking in recent_bookings %}
+                        <div class="booking-item">
+                            <div class="booking-date">
+                                <div class="date-main">{{ booking.start_time|date:"d" }}</div>
+                                <div class="date-month">{{ booking.start_time|date:"M" }}</div>
+                                <div class="date-year">{{ booking.start_time|date:"Y" }}</div>
+                            </div>
+                            
+                            <div class="booking-info">
+                                <h6 class="booking-title">{{ booking.event_title }}</h6>
+                                <div class="booking-details">
+                                    <span class="booking-room">
+                                        <i class="fas fa-door-open me-1"></i>
+                                        {{ booking.room.name }}
+                                    </span>
+                                    <span class="booking-time">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                                    </span>
+                                    <span class="booking-status">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        {{ booking.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="booking-actions">
+                                <a href="{% url 'content_management:room_booking_detail' booking.pk %}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Voir
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Statistiques des réservations -->
+            {% if booking_stats %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-chart-bar me-2"></i>Statistiques des réservations</h3>
+                </div>
+                <div class="section-body">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ booking_stats.total_bookings }}</div>
+                            <div class="stat-label">Total réservations</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ booking_stats.total_hours }}</div>
+                            <div class="stat-label">Heures totales</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ booking_stats.total_revenue|floatformat:0 }} GNF</div>
+                            <div class="stat-label">Chiffre d'affaires</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ booking_stats.avg_attendees|floatformat:0 }}</div>
+                            <div class="stat-label">Participants moyens</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Informations techniques -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-cogs me-2"></i>Informations techniques</h3>
+                </div>
+                <div class="section-body">
+                    <div class="tech-info-list">
+                        <div class="tech-info-item">
+                            <span class="info-label">Créée le</span>
+                            <span class="info-value">{{ organization.created_at|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="tech-info-item">
+                            <span class="info-label">Dernière modification</span>
+                            <span class="info-value">{{ organization.updated_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="tech-info-item">
+                            <span class="info-label">Slug</span>
+                            <span class="info-value">{{ organization.slug }}</span>
+                        </div>
+                        <div class="tech-info-item">
+                            <span class="info-label">ID</span>
+                            <span class="info-value">{{ organization.id }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Historique des modifications -->
+            {% if organization.updated_at != organization.created_at %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-history me-2"></i>Historique</h3>
+                </div>
+                <div class="section-body">
+                    <div class="history-item">
+                        <div class="history-date">
+                            <i class="fas fa-calendar me-2"></i>
+                            {{ organization.updated_at|date:"d/m/Y H:i" }}
+                        </div>
+                        <div class="history-action">
+                            Dernière modification
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-date">
+                            <i class="fas fa-calendar me-2"></i>
+                            {{ organization.created_at|date:"d/m/Y H:i" }}
+                        </div>
+                        <div class="history-action">
+                            Création
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.external-organization-detail-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* En-tête de l'organisation */
+.organization-header-detail {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--gray-200);
+}
+
+.organization-title-large {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 1rem;
+}
+
+.organization-subtitle {
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.type-badge-large {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.status-badge {
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.status-badge.status-active {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.status-inactive {
+    background: var(--danger-color);
+    color: white;
+}
+
+.contact-main-info {
+    margin-top: 1.5rem;
+}
+
+.contact-item-main {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--gray-700);
+}
+
+.contact-item-main i {
+    color: var(--primary-color);
+    width: 25px;
+    text-align: center;
+}
+
+.contact-item-main a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.contact-item-main a:hover {
+    text-decoration: underline;
+}
+
+/* Actions rapides */
+.quick-actions {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Grille d'informations */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.info-content h6 {
+    color: var(--gray-800);
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+}
+
+.info-content p {
+    color: var(--gray-600);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Liste des réservations */
+.bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.booking-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    background: var(--white);
+    transition: var(--transition);
+}
+
+.booking-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--box-shadow);
+}
+
+.booking-date {
+    text-align: center;
+    flex-shrink: 0;
+    width: 80px;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+}
+
+.date-main {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.date-month {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.date-year {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 0.25rem;
+}
+
+.booking-info {
+    flex: 1;
+}
+
+.booking-title {
+    margin: 0 0 0.75rem 0;
+    color: var(--gray-800);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.booking-details {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.booking-room, .booking-time, .booking-status {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+}
+
+.booking-actions {
+    flex-shrink: 0;
+}
+
+/* Grille des statistiques */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+/* Informations techniques */
+.tech-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tech-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+}
+
+.info-label {
+    color: var(--gray-700);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.info-value {
+    color: var(--gray-800);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Historique */
+.history-item {
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+    margin-bottom: 1rem;
+}
+
+.history-date {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.history-action {
+    color: var(--gray-800);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .organization-header-detail {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .organization-title-large {
+        font-size: 2rem;
+        text-align: center;
+    }
+    
+    .organization-subtitle {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .contact-main-info {
+        text-align: center;
+    }
+    
+    .contact-item-main {
+        justify-content: center;
+    }
+    
+    .quick-actions {
+        margin-top: 2rem;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .booking-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .booking-date {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .organization-title-large {
+        font-size: 1.75rem;
+    }
+    
+    .organization-header-detail {
+        padding: 0.75rem;
+    }
+    
+    .type-badge-large, .status-badge {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .info-item {
+        padding: 1rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .info-icon {
+        margin: 0 auto;
+    }
+}
+</style>
+{% endblock %}

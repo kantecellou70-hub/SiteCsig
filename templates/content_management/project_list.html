@@ -1,0 +1,981 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Gestion des projets - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.project-list-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.project-filters {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+}
+
+.project-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.project-table th {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.project-table td {
+    padding: 1rem 0.75rem;
+    border: none;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+.project-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.project-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+}
+
+.project-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.project-title {
+    font-weight: 700;
+    color: #0d4786;
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.project-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.project-date {
+    text-align: center;
+    font-weight: 600;
+}
+
+.project-date .date {
+    color: #0d4786;
+    font-size: 1.1rem;
+}
+
+.project-date .time {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.project-budget {
+    text-align: center;
+    font-weight: 600;
+}
+
+.project-budget .amount {
+    color: #0d4786;
+    font-size: 1.1rem;
+}
+
+.project-budget .currency {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.project-team {
+    text-align: center;
+    font-weight: 600;
+}
+
+.project-team .count {
+    color: #0d4786;
+    font-size: 1.1rem;
+}
+
+.project-team .label {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.project-status {
+    text-align: center;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.status-planning {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1565c0;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    color: #2e7d32;
+}
+
+.status-completed {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    color: #7b1fa2;
+}
+
+.status-on_hold {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%);
+    color: #ef6c00;
+}
+
+.project-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.action-btn.view {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+}
+
+.action-btn.edit {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.action-btn.delete {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    color: #d32f2f;
+}
+
+.project-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+}
+
+.stat-card:hover::before {
+    width: 8px;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0d4786;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+}
+
+.stat-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    color: #0d4786;
+    opacity: 0.3;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .filter-row {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 992px) {
+    .project-table {
+        font-size: 0.9rem;
+    }
+    
+    .project-table th,
+    .project-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .project-image {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    .project-filters {
+        padding: 1.5rem;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .project-table {
+        font-size: 0.8rem;
+    }
+    
+    .project-table th,
+    .project-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .project-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    
+    /* Masquer certaines colonnes sur mobile */
+    .project-table th:nth-child(4),
+    .project-table td:nth-child(4),
+    .project-table th:nth-child(6),
+    .project-table td:nth-child(6) {
+        display: none;
+    }
+    
+    /* Ajuster les largeurs des colonnes restantes */
+    .checkbox-cell {
+        width: 40px;
+        min-width: 40px;
+    }
+    
+    .image-cell {
+        width: 60px;
+        min-width: 60px;
+    }
+    
+    .project-info-cell {
+        min-width: 0;
+        width: auto;
+    }
+    
+    .project-budget {
+        width: 80px;
+        min-width: 80px;
+    }
+    
+    .project-status {
+        width: 80px;
+        min-width: 80px;
+    }
+    
+    .project-actions {
+        width: 50px;
+        min-width: 50px;
+    }
+    
+    /* Ajuster les stats sur mobile */
+    .project-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .project-list-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .project-filters {
+        padding: 1rem;
+    }
+    
+    .project-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    /* Masquer encore plus de colonnes sur très petit écran */
+    .project-table th:nth-child(5),
+    .project-table td:nth-child(5) {
+        display: none;
+    }
+    
+    /* Ajuster les largeurs finales */
+    .checkbox-cell {
+        width: 35px;
+        min-width: 35px;
+    }
+    
+    .image-cell {
+        width: 50px;
+        min-width: 50px;
+    }
+    
+    .project-info-cell {
+        width: auto;
+        min-width: 0;
+    }
+    
+    .project-actions {
+        width: 45px;
+        min-width: 45px;
+    }
+    
+    /* Réduire encore plus le padding */
+    .project-table th,
+    .project-table td {
+        padding: 0.4rem 0.2rem;
+    }
+    
+    .project-image {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .project-title {
+        font-size: 0.85rem;
+        line-height: 1.2;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .project-meta {
+        font-size: 0.7rem;
+    }
+    
+    .project-meta span {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.65rem;
+    }
+    
+    .status-badge {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.6rem;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    /* Ajuster les filtres sur très petit écran */
+    .filter-group label {
+        font-size: 0.8rem;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .filter-actions .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajuster la pagination */
+    .pagination .page-link {
+        padding: 0.4rem 0.6rem;
+        margin: 0 0.1rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajuster les actions en masse */
+    .bulk-actions .card-body {
+        padding: 1rem;
+    }
+    
+    .bulk-actions .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .bulk-actions select {
+        width: 100%;
+    }
+    
+    .bulk-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Styles spécifiques pour les très petits écrans */
+@media (max-width: 480px) {
+    .project-table {
+        font-size: 0.75rem;
+    }
+    
+    .project-table th,
+    .project-table td {
+        padding: 0.3rem 0.15rem;
+    }
+    
+    .project-title {
+        font-size: 0.8rem;
+        -webkit-line-clamp: 1;
+    }
+    
+    .project-meta {
+        display: none;
+    }
+    
+    .checkbox-custom {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .action-btn {
+        width: 25px;
+        height: 25px;
+        font-size: 0.65rem;
+    }
+    
+    .stat-card {
+        padding: 0.8rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-project-diagram me-2"></i>Gestion des projets
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Gérez tous vos projets de recherche et développement
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'content_management:project_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouveau projet
+    </a>
+    <button class="btn btn-outline-secondary" id="toggleFilters">
+        <i class="fas fa-filter me-2"></i>Filtres
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="project-list-container">
+    <!-- Statistiques -->
+    <div class="project-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <div class="stat-number">{{ page_obj.paginator.count|default:0 }}</div>
+            <div class="stat-label">Total projets</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-number">{{ page_obj.object_list|length }}</div>
+            <div class="stat-label">Projets affichés</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-number">{{ page_obj.object_list|length }}</div>
+            <div class="stat-label">À la une</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number">{{ page_obj.object_list|length }}</div>
+            <div class="stat-label">Membres d'équipe</div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="project-filters" id="projectFilters" style="display: none;">
+        <form method="get" class="filter-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="status">Statut</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="">Tous les statuts</option>
+                        <option value="planning" {% if request.GET.status == 'planning' %}selected{% endif %}>
+                            Planification
+                        </option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>
+                            Actif
+                        </option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>
+                            Terminé
+                        </option>
+                        <option value="on_hold" {% if request.GET.status == 'on_hold' %}selected{% endif %}>
+                            En attente
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="search">Recherche</label>
+                    <input type="text" name="search" id="search" class="form-control" 
+                           placeholder="Titre, description..." 
+                           value="{{ request.GET.search|default:'' }}">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="featured">Mis en avant</label>
+                    <select name="featured" id="featured" class="form-control">
+                        <option value="">Tous</option>
+                        <option value="true" {% if request.GET.featured == 'true' %}selected{% endif %}>
+                            Oui
+                        </option>
+                        <option value="false" {% if request.GET.featured == 'false' %}selected{% endif %}>
+                            Non
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="date_from">Date de début</label>
+                    <input type="date" name="date_from" id="date_from" class="form-control" 
+                           value="{{ request.GET.date_from }}">
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Filtrer
+                </button>
+                <a href="{% url 'content_management:project_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tableau des projets -->
+    <div class="table-responsive">
+        <table class="project-table">
+            <thead>
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom" id="headerCheckbox">
+                    </th>
+                    <th>Image</th>
+                    <th>Projet</th>
+                    <th>Date de début</th>
+                    <th>Budget</th>
+                    <th>Équipe</th>
+                    <th>Statut</th>
+                    <th>Détails</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in page_obj %}
+                <tr>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom project-checkbox" value="{{ project.pk }}">
+                    </td>
+                    
+                    <td class="image-cell">
+                        {% if project.featured_image %}
+                        <img src="{{ project.featured_image.url }}" alt="{{ project.title }}" class="project-image">
+                        {% else %}
+                        <div class="project-image d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-project-diagram text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="project-info-cell">
+                        <div class="project-info">
+                            <div class="project-title">{{ project.title }}</div>
+                            <div class="project-meta">
+                                <span>{{ project.short_description|truncatechars:60 }}</span>
+                                {% if project.is_featured %}
+                                <span class="badge bg-warning ms-2">
+                                    <i class="fas fa-star me-1"></i>À la une
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td class="project-date">
+                        <div class="date">{{ project.start_date|date:"d/m/Y" }}</div>
+                        {% if project.end_date %}
+                        <div class="time">{{ project.end_date|date:"d/m/Y" }}</div>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="project-budget">
+                        {% if project.budget %}
+                        <div class="amount">{{ project.budget|floatformat:0 }}</div>
+                        <div class="currency">GNF</div>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="project-team">
+                        {% if project.team_members.exists %}
+                        <div class="count">{{ project.team_members.count }}</div>
+                        <div class="label">membre(s)</div>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="project-status">
+                        <span class="status-badge status-{{ project.status }}">
+                            {% if project.status == 'planning' %}
+                                Planification
+                            {% elif project.status == 'active' %}
+                                Actif
+                            {% elif project.status == 'completed' %}
+                                Terminé
+                            {% elif project.status == 'on_hold' %}
+                                En attente
+                            {% else %}
+                                {{ project.get_status_display }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    
+                    <td class="project-actions">
+                        <a href="{% url 'content_management:project_detail' project.pk %}" 
+                           class="action-btn view" title="Voir les détails">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        
+                       
+                        
+                        
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-project-diagram fa-3x mb-3"></i>
+                            <h5>Aucun projet trouvé</h5>
+                            <p>Créez votre premier projet pour commencer.</p>
+                            <a href="{% url 'content_management:project_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Créer un projet
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="d-flex justify-content-center py-4">
+        <nav aria-label="Navigation des projets">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Actions en masse -->
+<div class="bulk-actions mt-3" id="bulkActions" style="display: none;">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted">
+                    <span id="selectedCount">0</span> projet(s) sélectionné(s)
+                </span>
+                
+                <select class="form-select" id="bulkAction" style="width: auto;">
+                    <option value="">Choisir une action...</option>
+                    <option value="feature">Mettre en avant</option>
+                    <option value="unfeature">Retirer de la une</option>
+                    <option value="delete">Supprimer</option>
+                </select>
+                
+                <button class="btn btn-primary" onclick="performBulkAction()">
+                    <i class="fas fa-play me-2"></i>Exécuter
+                </button>
+            </div>
+        </div>
+            </div>
+    </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des filtres
+    const toggleFiltersBtn = document.getElementById('toggleFilters');
+    const projectFilters = document.getElementById('projectFilters');
+    
+    if (toggleFiltersBtn && projectFilters) {
+        toggleFiltersBtn.addEventListener('click', function() {
+            if (projectFilters.style.display === 'none') {
+                projectFilters.style.display = 'block';
+                this.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Masquer les filtres';
+            } else {
+                projectFilters.style.display = 'none';
+                this.innerHTML = '<i class="fas fa-filter me-2"></i>Filtres';
+            }
+        });
+    }
+    
+    // Gestion de la sélection multiple
+    initializeSelectAll();
+    initializeBulkActions();
+});
+
+// Initialiser la sélection multiple
+function initializeSelectAll() {
+    const headerCheckbox = document.getElementById('headerCheckbox');
+    const projectCheckboxes = document.querySelectorAll('.project-checkbox');
+    
+    if (headerCheckbox) {
+        headerCheckbox.addEventListener('change', function() {
+            projectCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+    
+    projectCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+}
+
+// Initialiser les actions en masse
+function initializeBulkActions() {
+    updateBulkActions();
+}
+
+// Mettre à jour l'affichage des actions en masse
+function updateBulkActions() {
+    const selectedCheckboxes = document.querySelectorAll('.project-checkbox:checked');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (selectedCheckboxes.length > 0) {
+        bulkActions.style.display = 'block';
+        selectedCount.textContent = selectedCheckboxes.length;
+    } else {
+        bulkActions.style.display = 'none';
+    }
+}
+
+// Exécuter une action en masse
+function performBulkAction() {
+    const action = document.getElementById('bulkAction').value;
+    const selectedCheckboxes = document.querySelectorAll('.project-checkbox:checked');
+    
+    if (!action) {
+        alert('Veuillez sélectionner une action.');
+        return;
+    }
+    
+    if (selectedCheckboxes.length === 0) {
+        alert('Aucun projet sélectionné.');
+        return;
+    }
+    
+    if (action === 'delete' && !confirm('Êtes-vous sûr de vouloir supprimer ces projets ?')) {
+        return;
+    }
+    
+    const projectIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+    const formData = new FormData();
+    formData.append('action', action);
+    projectIds.forEach(id => formData.append('project_ids[]', id));
+    
+    // TODO: Implémenter l'action en masse
+    console.log(`Action: ${action} sur ${projectIds.length} projets`);
+    alert(`Action ${action} sera exécutée sur ${projectIds.length} projet(s)`);
+}
+
+// Supprimer un projet
+function deleteProject(projectId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce projet ? Cette action est irréversible.')) {
+        return;
+    }
+    
+    // TODO: Implémenter la suppression AJAX
+    console.log(`Suppression du projet ${projectId}`);
+    alert('Fonctionnalité de suppression à implémenter');
+}
+</script>
+{% endblock %}
+
+{% endblock %}

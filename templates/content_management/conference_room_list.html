@@ -1,0 +1,399 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load custom_filters %}
+
+{% block page_title %}Salles de conférence{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:conference_room_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouvelle salle
+    </a>
+    <a href="{% url 'content_management:dashboard_rooms' %}" class="btn btn-outline-info">
+        <i class="fas fa-chart-line me-2"></i>Dashboard
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="conference-rooms-container">
+    <!-- Statistiques -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon-wrapper">
+                <div class="stat-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Total</span>
+                </div>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ total_rooms }}</div>
+                <div class="stat-label">Salles de conférence</div>
+            </div>
+        </div>
+        
+        <div class="stat-card stat-success">
+            <div class="stat-icon-wrapper">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Disponibles</span>
+                </div>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ available_rooms }}</div>
+                <div class="stat-label">Salles disponibles</div>
+            </div>
+        </div>
+        
+        <div class="stat-card stat-warning">
+            <div class="stat-icon-wrapper">
+                <div class="stat-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="stat-trend down">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>Maintenance</span>
+                </div>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ maintenance_rooms }}</div>
+                <div class="stat-label">En maintenance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="search-filter-bar">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <div class="search-box">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Rechercher une salle..." 
+                               value="{{ request.GET.search }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <select name="availability" class="form-select">
+                    <option value="">Toutes les disponibilités</option>
+                    <option value="available" {% if request.GET.availability == 'available' %}selected{% endif %}>
+                        Disponibles
+                    </option>
+                    <option value="maintenance" {% if request.GET.availability == 'maintenance' %}selected{% endif %}>
+                        En maintenance
+                    </option>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-2"></i>Filtrer
+                </button>
+            </div>
+        </form>
+        
+        <div class="results-count mt-3">
+            <i class="fas fa-info-circle me-2"></i>
+            {{ rooms.object_list|length }} salle(s) affichée(s) sur {{ total_rooms }} au total
+        </div>
+    </div>
+
+    <!-- Grille des salles -->
+    <div class="rooms-grid">
+        {% for room in rooms %}
+        <div class="room-card">
+            <div class="room-header">
+                <div class="room-status">
+                    {% if room.is_available %}
+                        <span class="status-badge status-active">
+                            <i class="fas fa-check-circle me-1"></i>Disponible
+                        </span>
+                    {% else %}
+                        <span class="status-badge status-inactive">
+                            <i class="fas fa-times-circle me-1"></i>Indisponible
+                        </span>
+                    {% endif %}
+                </div>
+                
+                {% if room.maintenance_until and room.maintenance_until > now %}
+                <div class="maintenance-badge">
+                    <i class="fas fa-tools me-1"></i>Maintenance
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="room-content">
+                <h5 class="room-title">
+                    <a href="{% url 'content_management:conference_room_detail' room.slug %}">
+                        {{ room.name }}
+                    </a>
+                </h5>
+                
+                <div class="room-description">
+                    {{ room.description|truncatewords:20|default:"Aucune description disponible" }}
+                </div>
+                
+                <div class="room-specs">
+                    <div class="spec-item">
+                        <i class="fas fa-users me-2"></i>
+                        <span>{{ room.capacity }} personnes</span>
+                    </div>
+                    <div class="spec-item">
+                        <i class="fas fa-ruler-combined me-2"></i>
+                        <span>{{ room.area }} m²</span>
+                    </div>
+                    <div class="spec-item">
+                        <i class="fas fa-clock me-2"></i>
+                        <span>{{ room.price_per_hour }}€/h</span>
+                    </div>
+                    <div class="spec-item">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        <span>{{ room.price_per_day }}€/jour</span>
+                    </div>
+                </div>
+                
+                {% if room.features %}
+                <div class="room-features">
+                    <h6>Équipements :</h6>
+                    <div class="features-list">
+                        {% for feature in room.features|split_features:"," %}
+                        <span class="feature-tag">{{ feature|clean_feature }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="room-actions">
+                <a href="{% url 'content_management:conference_room_detail' room.slug %}" 
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye me-1"></i>Voir détails
+                </a>
+                <a href="{% url 'content_management:conference_room_edit' room.slug %}" 
+                   class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-edit me-1"></i>Modifier
+                </a>
+                <a href="{% url 'content_management:room_booking_create' %}?room={{ room.id }}" 
+                   class="btn btn-success btn-sm">
+                    <i class="fas fa-calendar-plus me-1"></i>Réserver
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <h5>Aucune salle de conférence trouvée</h5>
+            <p>Commencez par créer votre première salle de conférence.</p>
+            <a href="{% url 'content_management:conference_room_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Créer une salle
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if rooms.has_other_pages %}
+    <nav aria-label="Pagination des salles" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if rooms.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ rooms.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.availability %}&availability={{ request.GET.availability }}{% endif %}">
+                    <i class="fas fa-chevron-left"></i> Précédent
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in rooms.paginator.page_range %}
+                {% if rooms.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > rooms.number|add:'-3' and num < rooms.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.availability %}&availability={{ request.GET.availability }}{% endif %}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if rooms.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ rooms.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.availability %}&availability={{ request.GET.availability }}{% endif %}">
+                    Suivant <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.room-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--box-shadow);
+}
+
+.room-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-color);
+}
+
+.room-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.room-status .status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.status-active {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.status-inactive {
+    background: var(--danger-color);
+    color: white;
+}
+
+.maintenance-badge {
+    background: var(--warning-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.room-content {
+    padding: 1.5rem;
+}
+
+.room-title {
+    margin-bottom: 1rem;
+}
+
+.room-title a {
+    color: var(--gray-800);
+    text-decoration: none;
+}
+
+.room-title a:hover {
+    color: var(--primary-color);
+}
+
+.room-description {
+    color: var(--gray-600);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.room-specs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.spec-item {
+    display: flex;
+    align-items: center;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+}
+
+.room-features {
+    margin-bottom: 1.5rem;
+}
+
+.room-features h6 {
+    color: var(--gray-700);
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.features-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.feature-tag {
+    background: rgba(13, 71, 134, 0.1);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.room-actions {
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.room-actions .btn {
+    flex: 1;
+    min-width: 100px;
+}
+
+@media (max-width: 768px) {
+    .rooms-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .room-specs {
+        grid-template-columns: 1fr;
+    }
+    
+    .room-actions {
+        flex-direction: column;
+    }
+    
+    .room-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

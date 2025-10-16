@@ -1,0 +1,447 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Configuration de la page À propos - CSIG{% endblock %}
+{% block page_title %}Configuration de la page À propos{% endblock %}
+{% block page_subtitle %}Configurez le contenu principal de votre page de présentation{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'content_management:about_page_preview' %}" class="btn btn-outline-primary" target="_blank">
+        <i class="fas fa-eye me-2"></i>Aperçu
+    </a>
+    <a href="{% url 'sfront:about' %}" class="btn btn-outline-secondary" target="_blank">
+        <i class="fas fa-external-link-alt me-2"></i>Voir le site
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-edit me-2"></i>Configuration de la page À propos
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="aboutPageForm">
+                    {% csrf_token %}
+                    
+                    <!-- Section Hero -->
+                    <div class="section-block">
+                        <h6 class="section-title">
+                            <i class="fas fa-star me-2 text-warning"></i>Section Hero
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="{{ form.hero_title.id_for_label }}" class="form-label">
+                                        <strong>Titre principal</strong>
+                                    </label>
+                                    {{ form.hero_title }}
+                                    {% if form.hero_title.errors %}
+                                        <div class="text-danger mt-1">{{ form.hero_title.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="{{ form.hero_background.id_for_label }}" class="form-label">
+                                        <strong>Image de fond</strong>
+                                    </label>
+                                    {{ form.hero_background }}
+                                    {% if form.hero_background.errors %}
+                                        <div class="text-danger mt-1">{{ form.hero_background.errors }}</div>
+                                    {% endif %}
+                                    {% if about_page.hero_background %}
+                                        <div class="current-image mt-2">
+                                            <img src="{{ about_page.hero_background.url }}" alt="Image actuelle" class="img-thumbnail">
+                                            <small class="text-muted d-block mt-1">Image actuelle</small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.hero_subtitle.id_for_label }}" class="form-label">
+                                <strong>Sous-titre principal</strong>
+                            </label>
+                            {{ form.hero_subtitle }}
+                            {% if form.hero_subtitle.errors %}
+                                <div class="text-danger mt-1">{{ form.hero_subtitle.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Lien vers les statistiques -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Statistiques Hero :</strong> Les statistiques sont gérées séparément. 
+                            <a href="{% url 'content_management:hero_statistic_list' %}" class="alert-link">Cliquez ici pour les gérer</a>.
+                        </div>
+                    </div>
+                    
+                    <!-- Section Histoire -->
+                    <div class="section-block">
+                        <h6 class="section-title">
+                            <i class="fas fa-history me-2 text-info"></i>Section Histoire
+                        </h6>
+                        <div class="form-group">
+                            <label for="{{ form.history_title.id_for_label }}" class="form-label">
+                                <strong>Titre de la section histoire</strong>
+                            </label>
+                            {{ form.history_title }}
+                            {% if form.history_title.errors %}
+                                <div class="text-danger mt-1">{{ form.history_title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.history_content.id_for_label }}" class="form-label">
+                                <strong>Contenu de l'histoire</strong>
+                            </label>
+                            {{ form.history_content }}
+                            {% if form.history_content.errors %}
+                                <div class="text-danger mt-1">{{ form.history_content.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Lien vers les réalisations -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Réalisations :</strong> Les réalisations sont gérées séparément. 
+                            <a href="{% url 'content_management:achievement_list' %}" class="alert-link">Cliquez ici pour les gérer</a>.
+                        </div>
+                    </div>
+                    
+                    <!-- Section Quartiers -->
+                    <div class="section-block">
+                        <h6 class="section-title">
+                            <i class="fas fa-building me-2 text-success"></i>Section Quartiers
+                        </h6>
+                        <div class="form-group">
+                            <label for="{{ form.districts_title.id_for_label }}" class="form-label">
+                                <strong>Titre de la section quartiers</strong>
+                            </label>
+                            {{ form.districts_title }}
+                            {% if form.districts_title.errors %}
+                                <div class="text-danger mt-1">{{ form.districts_title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.districts_subtitle.id_for_label }}" class="form-label">
+                                <strong>Sous-titre des quartiers</strong>
+                            </label>
+                            {{ form.districts_subtitle }}
+                            {% if form.districts_subtitle.errors %}
+                                <div class="text-danger mt-1">{{ form.districts_subtitle.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Lien vers les quartiers -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Gestion des quartiers :</strong> Les quartiers sont gérés séparément. 
+                            <a href="{% url 'content_management:city_district_list' %}" class="alert-link">Cliquez ici pour les gérer</a>.
+                        </div>
+                    </div>
+                    
+                    <!-- Section CTA -->
+                    <div class="section-block">
+                        <h6 class="section-title">
+                            <i class="fas fa-bullhorn me-2 text-danger"></i>Section Call-to-Action
+                        </h6>
+                        <div class="form-group">
+                            <label for="{{ form.cta_title.id_for_label }}" class="form-label">
+                                <strong>Titre de la section CTA</strong>
+                            </label>
+                            {{ form.cta_title }}
+                            {% if form.cta_title.errors %}
+                                <div class="text-danger mt-1">{{ form.cta_title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.cta_content.id_for_label }}" class="form-label">
+                                <strong>Contenu de la section CTA</strong>
+                            </label>
+                            {{ form.cta_content }}
+                            {% if form.cta_content.errors %}
+                                <div class="text-danger mt-1">{{ form.cta_content.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Paramètres -->
+                    <div class="section-block">
+                        <h6 class="section-title">
+                            <i class="fas fa-cog me-2 text-secondary"></i>Paramètres d'affichage
+                        </h6>
+                        <div class="form-group">
+                            <div class="form-check form-switch">
+                                {{ form.show_districts }}
+                                <label class="form-check-label" for="{{ form.show_districts.id_for_label }}">
+                                    <strong>Afficher la section quartiers</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Contrôle l'affichage de la section des quartiers de la cité
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Boutons d'action -->
+                    <div class="mt-5 pt-4 border-top">
+                        <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                            <a href="{% url 'content_management:dashboard' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'content_management:about_page_preview' %}" class="btn btn-outline-primary btn-lg" target="_blank">
+                                    <i class="fas fa-eye me-2"></i>Aperçu
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i>Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Résumé des sections -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2 text-primary"></i>Résumé des sections
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="section-summary">
+                            <div class="section-icon bg-primary">
+                                <i class="fas fa-star text-white"></i>
+                            </div>
+                            <h6>Hero</h6>
+                            <p class="text-muted small">Titre, sous-titre et image de fond</p>
+                            <a href="{% url 'content_management:hero_statistic_list' %}" class="btn btn-sm btn-outline-primary">
+                                Gérer les stats
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="section-summary">
+                            <div class="section-icon bg-info">
+                                <i class="fas fa-history text-white"></i>
+                            </div>
+                            <h6>Histoire</h6>
+                            <p class="text-muted small">Titre et contenu de l'histoire</p>
+                            <a href="{% url 'content_management:achievement_list' %}" class="btn btn-sm btn-outline-info">
+                                Gérer les réalisations
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="section-summary">
+                            <div class="section-icon bg-success">
+                                <i class="fas fa-building text-white"></i>
+                            </div>
+                            <h6>Quartiers</h6>
+                            <p class="text-muted small">Titre et sous-titre</p>
+                            <a href="{% url 'content_management:city_district_list' %}" class="btn btn-sm btn-outline-success">
+                                Gérer les quartiers
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="section-summary">
+                            <div class="section-icon bg-danger">
+                                <i class="fas fa-bullhorn text-white"></i>
+                            </div>
+                            <h6>CTA</h6>
+                            <p class="text-muted small">Titre et contenu du call-to-action</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles généraux */
+.section-block {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+}
+
+.section-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid;
+}
+
+.section-title i.text-warning { border-bottom-color: #ffc107; }
+.section-title i.text-info { border-bottom-color: #17a2b8; }
+.section-title i.text-success { border-bottom-color: #28a745; }
+.section-title i.text-danger { border-bottom-color: #dc3545; }
+.section-title i.text-secondary { border-bottom-color: #6c757d; }
+
+/* Formulaires */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Image actuelle */
+.current-image img {
+    max-width: 200px;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+/* Switch personnalisé */
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Boutons */
+.btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* Résumé des sections */
+.section-summary {
+    text-align: center;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    height: 100%;
+}
+
+.section-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+}
+
+.section-summary h6 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.section-summary p {
+    margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .section-block {
+        padding: 1.5rem;
+    }
+    
+    .btn-lg {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .section-block {
+        padding: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .d-flex.flex-column.flex-md-row {
+        flex-direction: column !important;
+    }
+}
+
+/* Animations */
+.card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Gradients */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+</style>
+{% endblock %}

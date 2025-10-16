@@ -1,0 +1,385 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Réalisations - Page À propos{% endblock %}
+
+{% block extra_css %}
+<style>
+    .achievements-container {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+    
+    .achievements-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .achievements-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .achievements-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .add-achievement-btn {
+        background: rgba(255,255,255,0.2);
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .add-achievement-btn:hover {
+        background: rgba(255,255,255,0.3);
+        border-color: rgba(255,255,255,0.5);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .achievements-table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .achievements-table th {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .achievements-table td {
+        padding: 1rem;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+        text-align: center;
+    }
+    
+    .achievements-table tr:hover {
+        background-color: #f8f9fa;
+        transform: scale(1.01);
+        transition: all 0.2s ease;
+    }
+    
+    .achievement-icon {
+        font-size: 2rem;
+        color: #ff6b6b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .achievement-text {
+        color: #6c757d;
+        font-weight: 500;
+        max-width: 300px;
+        text-align: left;
+    }
+    
+    .achievement-order {
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .achievement-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-edit, .btn-delete {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .btn-edit {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        background: #138496;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-delete:hover {
+        background: #c82333;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .mobile-achievements-grid {
+        display: none;
+    }
+    
+    .achievement-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-left: 5px solid #ff6b6b;
+        transition: all 0.3s ease;
+    }
+    
+    .achievement-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .achievement-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .achievement-card-icon {
+        font-size: 2.5rem;
+        color: #ff6b6b;
+    }
+    
+    .achievement-card-order {
+        background: #ff6b6b;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .achievement-card-text {
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        line-height: 1.5;
+    }
+    
+    .achievement-card-status {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+    
+    .achievement-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 991.98px) {
+        .d-lg-block {
+            display: none !important;
+        }
+        
+        .mobile-achievements-grid {
+            display: block;
+        }
+        
+        .achievements-container {
+            padding: 1.5rem;
+        }
+        
+        .achievements-header h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="achievements-container">
+    <div class="achievements-header">
+        <h1><i class="fas fa-trophy me-3"></i>Réalisations</h1>
+        <p>Gérez les accomplissements affichés sur la page À propos</p>
+        <a href="{% url 'content_management:achievement_create' %}" class="add-achievement-btn">
+            <i class="fas fa-plus me-2"></i>Ajouter une réalisation
+        </a>
+    </div>
+</div>
+
+{% if achievements %}
+    <!-- Version Desktop -->
+    <div class="d-none d-lg-block">
+        <div class="achievements-table">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag me-2"></i>Ordre</th>
+                        <th><i class="fas fa-star me-2"></i>Icône</th>
+                        <th><i class="fas fa-text-width me-2"></i>Description</th>
+                        <th><i class="fas fa-toggle-on me-2"></i>Statut</th>
+                        <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for achievement in achievements %}
+                    <tr>
+                        <td>
+                            <span class="achievement-order">{{ achievement.order }}</span>
+                        </td>
+                        <td>
+                            <div class="achievement-icon">
+                                <i class="{{ achievement.icon }}"></i>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="achievement-text">{{ achievement.text|truncatewords:20 }}</div>
+                        </td>
+                        <td>
+                            {% if achievement.is_active %}
+                                <span class="achievement-status status-active">
+                                    <i class="fas fa-check-circle me-1"></i>Actif
+                                </span>
+                            {% else %}
+                                <span class="achievement-status status-inactive">
+                                    <i class="fas fa-times-circle me-1"></i>Inactif
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'content_management:achievement_edit' achievement.pk %}" class="btn-edit">
+                                    <i class="fas fa-edit me-1"></i>Modifier
+                                </a>
+                                <button class="btn-delete" onclick="deleteAchievement({{ achievement.pk }}, '{{ achievement.text|truncatewords:5 }}')">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Version Mobile -->
+    <div class="d-lg-none mobile-achievements-grid">
+        {% for achievement in achievements %}
+        <div class="achievement-card">
+            <div class="achievement-card-header">
+                <div class="achievement-card-icon">
+                    <i class="{{ achievement.icon }}"></i>
+                </div>
+                <div class="achievement-card-order">{{ achievement.order }}</div>
+            </div>
+            <div class="achievement-card-text">{{ achievement.text }}</div>
+            <div class="achievement-card-status {% if achievement.is_active %}status-active{% else %}status-inactive{% endif %}">
+                {% if achievement.is_active %}
+                    <i class="fas fa-check-circle me-1"></i>Actif
+                {% else %}
+                    <i class="fas fa-times-circle me-1"></i>Inactif
+                {% endif %}
+            </div>
+            <div class="achievement-card-actions">
+                <a href="{% url 'content_management:achievement_edit' achievement.pk %}" class="btn-edit">
+                    <i class="fas fa-edit me-1"></i>Modifier
+                </a>
+                <button class="btn-delete" onclick="deleteAchievement({{ achievement.pk }}, '{{ achievement.text|truncatewords:5 }}')">
+                    <i class="fas fa-trash me-1"></i>Supprimer
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-trophy"></i>
+        <h3>Aucune réalisation configurée</h3>
+        <p>Commencez par ajouter des réalisations pour mettre en valeur vos accomplissements sur la page À propos.</p>
+        <a href="{% url 'content_management:achievement_create' %}" class="add-achievement-btn">
+            <i class="fas fa-plus me-2"></i>Ajouter la première réalisation
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteAchievement(pk, name) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer la réalisation "${name}" ?`)) {
+        // Ici vous pouvez ajouter la logique de suppression AJAX si nécessaire
+        window.location.href = `/content-management/achievements/${pk}/delete/`;
+    }
+}
+</script>
+{% endblock %}

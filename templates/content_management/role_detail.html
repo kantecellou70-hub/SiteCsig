@@ -1,0 +1,738 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ role.name }} - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.role-detail-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.role-detail-header {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.role-detail-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.1);
+    z-index: 1;
+}
+
+.role-detail-header > * {
+    position: relative;
+    z-index: 2;
+}
+
+.role-icon-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+    margin: 0 auto 1rem;
+    border: 4px solid rgba(255,255,255,0.3);
+}
+
+.role-name {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.role-type-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+
+.role-detail-body {
+    padding: 2rem;
+}
+
+.role-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.info-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border-left: 4px solid #6f42c1;
+}
+
+.info-card h4 {
+    color: #495057;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.info-value {
+    color: #495057;
+    text-align: right;
+}
+
+.permissions-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.permissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.permission-group {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+}
+
+.permission-group h6 {
+    color: #6f42c1;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.permission-item:last-child {
+    border-bottom: none;
+}
+
+.permission-item i {
+    color: #28a745;
+    margin-right: 0.5rem;
+}
+
+.users-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.user-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    margin: 0 auto 0.5rem;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.25rem;
+}
+
+.user-username {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.role-actions-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.action-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.action-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: #6f42c1;
+    border-color: #6f42c1;
+    color: white;
+}
+
+.btn-warning {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .role-detail-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .role-detail-header {
+        padding: 1.5rem;
+    }
+    
+    .role-name {
+        font-size: 2rem;
+    }
+    
+    .role-icon-large {
+        width: 80px;
+        height: 80px;
+        font-size: 2.5rem;
+    }
+    
+    .role-detail-body {
+        padding: 1rem;
+    }
+    
+    .role-info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .permissions-grid,
+    .users-grid,
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .info-value {
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .role-detail-header {
+        padding: 1rem;
+    }
+    
+    .role-name {
+        font-size: 1.5rem;
+    }
+    
+    .role-icon-large {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+    
+    .role-detail-body {
+        padding: 0.75rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-user-shield me-2"></i>Détails du rôle
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Informations complètes et gestion des permissions</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:role_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-home me-2"></i>Tableau de bord
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="role-detail-container">
+    <!-- En-tête avec icône et informations principales -->
+    <div class="role-detail-header">
+        <div class="role-icon-large">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        
+        <h1 class="role-name">{{ role.name }}</h1>
+        
+        <span class="role-type-badge">
+            {{ role.type }}
+        </span>
+        
+        {% if not role.is_active %}
+            <br><span class="badge bg-danger" style="margin-top: 0.5rem;">Inactif</span>
+        {% endif %}
+    </div>
+
+    <!-- Corps avec informations détaillées -->
+    <div class="role-detail-body">
+        <!-- Grille d'informations -->
+        <div class="role-info-grid">
+            <!-- Informations générales -->
+            <div class="info-card">
+                <h4><i class="fas fa-info-circle me-2"></i>Informations générales</h4>
+                <div class="info-item">
+                    <span class="info-label">Nom du rôle</span>
+                    <span class="info-value">{{ role.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Type</span>
+                    <span class="info-value">{{ role.type }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Statut</span>
+                    <span class="info-value">
+                        {% if role.is_active %}
+                            <span class="badge bg-success">Actif</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactif</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Créé le</span>
+                    <span class="info-value">{{ role.created_at }}</span>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="info-card">
+                <h4><i class="fas fa-align-left me-2"></i>Description</h4>
+                <div class="info-item">
+                    <span class="info-value" style="text-align: left; width: 100%;">
+                        {{ role.description|default:"Aucune description disponible" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="info-card">
+                <h4><i class="fas fa-chart-bar me-2"></i>Statistiques</h4>
+                <div class="info-item">
+                    <span class="info-label">Utilisateurs</span>
+                    <span class="info-value">{{ role.users.count }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Permissions</span>
+                    <span class="info-value">{{ role.permissions|length }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section des permissions -->
+        <div class="permissions-section">
+            <h3 class="mb-3"><i class="fas fa-key me-2"></i>Permissions attribuées</h3>
+            
+            {% if role.permissions %}
+                <div class="permissions-grid">
+                    {% for perm in role.permissions %}
+                        <div class="permission-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>{{ perm.name }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center text-muted">
+                    <i class="fas fa-key" style="font-size: 3rem; opacity: 0.3;"></i>
+                    <h5>Aucune permission attribuée</h5>
+                    <p>Ce rôle n'a actuellement aucune permission spécifique</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Section des utilisateurs -->
+        <div class="users-section">
+            <h3 class="mb-3"><i class="fas fa-users me-2"></i>Utilisateurs avec ce rôle</h3>
+            
+            {% if users_with_role %}
+                <div class="users-grid">
+                    {% for user in users_with_role %}
+                        <div class="user-card">
+                            {% if user.avatar_url %}
+                                <img src="{{ user.avatar_url }}" alt="Avatar" class="user-avatar">
+                            {% else %}
+                                <div class="user-avatar">
+                                    {% if user.first_name and user.last_name %}
+                                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                    {% else %}
+                                        {{ user.username|first|upper }}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="user-name">
+                                {% if user.first_name and user.last_name %}
+                                    {{ user.first_name }} {{ user.last_name }}
+                                {% else %}
+                                    {{ user.username }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="user-username">@{{ user.username }}</div>
+                            
+                            <div class="mt-2">
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactif</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center text-muted">
+                    <i class="fas fa-users" style="font-size: 3rem; opacity: 0.3;"></i>
+                    <h5>Aucun utilisateur</h5>
+                    <p>Aucun utilisateur n'a actuellement ce rôle</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Section des actions -->
+        <div class="role-actions-section">
+            <h3 class="mb-3"><i class="fas fa-tools me-2"></i>Actions disponibles</h3>
+            
+            <div class="actions-grid">
+                <!-- Modification du rôle -->
+                <div class="action-card">
+                    <h5 class="action-title">Modifier le rôle</h5>
+                    <p class="text-muted mb-3">Modifier la description et les permissions</p>
+                    <button class="btn btn-primary" onclick="showEditModal()">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </button>
+                </div>
+
+                <!-- Gestion des permissions -->
+                <div class="action-card">
+                    <h5 class="action-title">Gérer les permissions</h5>
+                    <p class="text-muted mb-3">Attribuer ou retirer des permissions</p>
+                    <button class="btn btn-warning" onclick="showPermissionsModal()">
+                        <i class="fas fa-key me-2"></i>Permissions
+                    </button>
+                </div>
+
+                <!-- Suppression du rôle -->
+                <div class="action-card">
+                    <h5 class="action-title">Supprimer le rôle</h5>
+                    <p class="text-muted mb-3">Cette action est irréversible</p>
+                    <button class="btn btn-danger" onclick="deleteRole()">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de modification -->
+<div class="modal fade" id="editRoleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier le rôle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editRoleForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_role">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="Description du rôle...">{{ role.description }}</textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="saveRoleChanges()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de gestion des permissions -->
+<div class="modal fade" id="permissionsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Gérer les permissions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="permissionsForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_role">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Sélectionner les permissions</label>
+                        <div class="permissions-container" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem;">
+                                            {% if all_permissions %}
+                                {% for perm in all_permissions %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="permissions" value="{{ perm.id }}" id="perm_{{ perm.id }}"
+                                               {% if perm.id in role.permission_ids %}checked{% endif %}>
+                                        <label class="form-check-label" for="perm_{{ perm.id }}">
+                                            {{ perm.name }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">Aucune permission disponible</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="savePermissions()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let editModal, permissionsModal;
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    editModal = new bootstrap.Modal(document.getElementById('editRoleModal'));
+    permissionsModal = new bootstrap.Modal(document.getElementById('permissionsModal'));
+});
+
+function showEditModal() {
+    editModal.show();
+}
+
+function showPermissionsModal() {
+    permissionsModal.show();
+}
+
+function saveRoleChanges() {
+    const form = document.getElementById('editRoleForm');
+    const formData = new FormData(form);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomNotification(data.message, 'success');
+            editModal.hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showCustomNotification(data.message || 'Erreur lors de la modification', 'error');
+        }
+    })
+    .catch(error => {
+        showCustomNotification('Erreur lors de la communication avec le serveur', 'error');
+    });
+}
+
+function savePermissions() {
+    const form = document.getElementById('permissionsForm');
+    const formData = new FormData(form);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomNotification(data.message, 'success');
+            permissionsModal.hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showCustomNotification(data.message || 'Erreur lors de la mise à jour des permissions', 'error');
+        }
+    })
+    .catch(error => {
+        showCustomNotification('Erreur lors de la communication avec le serveur', 'error');
+    });
+}
+
+function deleteRole() {
+    showCustomConfirm(
+        'Êtes-vous sûr de vouloir supprimer ce rôle ? Cette action est irréversible.',
+        function() {
+            const formData = new FormData();
+            formData.append('action', 'delete_role');
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    return response.json();
+                }
+            })
+            .then(data => {
+                if (data && data.success) {
+                    showCustomNotification(data.message, 'success');
+                    setTimeout(() => window.location.href = '{% url "content_management:role_list" %}', 1500);
+                }
+            })
+            .catch(error => {
+                showCustomNotification('Erreur lors de la suppression', 'error');
+            });
+        }
+    );
+}
+</script>
+{% endblock %}

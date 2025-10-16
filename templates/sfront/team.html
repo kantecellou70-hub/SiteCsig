@@ -1,0 +1,834 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Notre équipe - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="team-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h1 class="hero-title">Notre Équipe</h1>
+                <p class="hero-subtitle">
+                    Découvrez les talents passionnés qui font de la CSIG un centre d'excellence 
+                    en sciences et innovation en Guinée.
+                </p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ team_members.count }}</div>
+                        <div class="stat-label">Membres</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">Catégories</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Engagés</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Barre de recherche -->
+<section class="search-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="search-container" data-aos="fade-up">
+                    <div class="search-input-group">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Rechercher un membre de l'équipe...">
+                        <button type="button" id="clearSearch" class="clear-search-btn" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filtres par catégorie -->
+<section class="filters-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="category-filters text-center" data-aos="fade-up">
+                    <button class="filter-btn active" data-category="all">
+                        <i class="fas fa-users me-2"></i>Tous
+                    </button>
+                    <button class="filter-btn" data-category="management">
+                        <i class="fas fa-crown me-2"></i>Direction
+                    </button>
+                    <button class="filter-btn" data-category="research">
+                        <i class="fas fa-microscope me-2"></i>Recherche
+                    </button>
+                    <button class="filter-btn" data-category="teaching">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Enseignement
+                    </button>
+                    <button class="filter-btn" data-category="technical">
+                        <i class="fas fa-cogs me-2"></i>Technique
+                    </button>
+                    <button class="filter-btn" data-category="administrative">
+                        <i class="fas fa-clipboard-list me-2"></i>Administratif
+                    </button>
+                    <button class="filter-btn" data-category="communication">
+                        <i class="fas fa-bullhorn me-2"></i>Communication
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Grille des membres -->
+<section class="team-grid-section">
+    <div class="container">
+        <div class="row g-4" id="teamGrid">
+            {% for member in team_members %}
+            <div class="col-lg-4 col-md-6 team-member-card" 
+                 data-category="{{ member.category }}" 
+                 data-name="{{ member.full_name|lower }}"
+                 data-aos="fade-up" 
+                 data-aos-delay="{% if forloop.counter == 1 %}100{% elif forloop.counter == 2 %}200{% elif forloop.counter == 3 %}300{% elif forloop.counter == 4 %}400{% elif forloop.counter == 5 %}500{% else %}600{% endif %}">
+                <div class="member-card">
+                    <div class="member-image">
+                        {% if member.photo %}
+                            <img src="{{ member.photo.url }}" alt="{{ member.full_name }}" class="img-fluid">
+                        {% else %}
+                            <div class="member-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        {% endif %}
+                        <div class="member-overlay">
+                            <div class="member-social">
+                                {% if member.linkedin %}
+                                    <a href="{{ member.linkedin }}" target="_blank" class="social-link linkedin" title="LinkedIn">
+                                        <i class="fab fa-linkedin-in"></i>
+                                    </a>
+                                {% endif %}
+                                {% if member.twitter %}
+                                    <a href="{{ member.twitter }}" target="_blank" class="social-link twitter" title="Twitter">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                {% endif %}
+                                {% if member.youtube %}
+                                    <a href="{{ member.youtube }}" target="_blank" class="social-link youtube" title="YouTube">
+                                        <i class="fab fa-youtube"></i>
+                                    </a>
+                                {% endif %}
+                                {% if member.facebook %}
+                                    <a href="{{ member.facebook }}" target="_blank" class="social-link facebook" title="Facebook">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="member-category-badge">
+                            {{ member.get_category_display }}
+                        </div>
+                    </div>
+                    <div class="member-info">
+                        <h4 class="member-name">{{ member.full_name }}</h4>
+                        <p class="member-position">{{ member.job_title|default:"Membre de l'équipe" }}</p>
+                        <p class="member-bio">{{ member.biography|truncatewords:15 }}</p>
+                        <a href="{% url 'sfront:team_member_detail' member.slug %}" class="btn btn-outline-primary btn-sm member-btn">
+                            <i class="fas fa-eye me-2"></i>Voir le profil
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center" data-aos="fade-up">
+                <div class="empty-state">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h4>Aucun membre d'équipe trouvé</h4>
+                    <p class="text-muted">L'équipe sera bientôt complétée avec des profils passionnants.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <nav aria-label="Navigation des membres d'équipe">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                    <i class="fas fa-chevron-left"></i> Précédent
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                    Suivant <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Section CTA -->
+<section class="team-cta">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center" data-aos="fade-up">
+                <h2>Rejoignez Notre Équipe</h2>
+                <p class="cta-text">
+                    Vous êtes passionné par les sciences et l'innovation ? 
+                    Découvrez nos opportunités de carrière et rejoignez une équipe 
+                    qui fait la différence.
+                </p>
+                <div class="cta-buttons">
+                    <a href="{% url 'sfront:contact' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-envelope me-2"></i>Nous Contacter
+                    </a>
+                    <a href="{% url 'sfront:programs' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-graduation-cap me-2"></i>Nos Programmes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.team-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 6rem 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.team-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+    position: relative;
+    z-index: 1;
+    line-height: 1.6;
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 3rem;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-item {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--csig-accent);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 1rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Section de recherche */
+.search-section {
+    padding: 3rem 0;
+    background: var(--gray-50);
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 20px;
+    color: var(--gray-500);
+    font-size: 1.2rem;
+    z-index: 2;
+}
+
+.search-input {
+    width: 100%;
+    padding: 18px 20px 18px 50px;
+    border: 2px solid var(--gray-200);
+    border-radius: 50px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--csig-primary);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 15px;
+    background: var(--gray-300);
+    border: none;
+    color: var(--gray-600);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clear-search-btn:hover {
+    background: var(--gray-400);
+    color: white;
+}
+
+.filters-section {
+    padding: 2rem 0;
+    background: white;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.filter-btn {
+    background: white;
+    border: 2px solid var(--gray-200);
+    color: var(--gray-700);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: var(--csig-primary);
+    color: white;
+    border-color: var(--csig-primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.team-grid-section {
+    padding: 5rem 0;
+    background: var(--gray-50);
+}
+
+.team-member-card {
+    opacity: 1;
+    transform: scale(1);
+    transition: all 0.4s ease;
+}
+
+.team-member-card.hidden {
+    opacity: 0;
+    transform: scale(0.8);
+    display: none;
+}
+
+.member-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s ease;
+    height: 100%;
+    border: 1px solid var(--gray-100);
+}
+
+.member-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.member-image {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+}
+
+.member-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.4s ease;
+}
+
+.member-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--gray-200) 0%, var(--gray-300) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-500);
+    font-size: 4rem;
+}
+
+.member-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(13, 71, 134, 0.9) 0%, rgba(10, 54, 95, 0.95) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.4s ease;
+}
+
+.member-card:hover .member-overlay {
+    opacity: 1;
+}
+
+.member-card:hover .member-image img {
+    transform: scale(1.1);
+}
+
+.member-category-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: var(--csig-accent);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+}
+
+.member-social {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-link {
+    width: 45px;
+    height: 45px;
+    background: white;
+    color: var(--csig-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.social-link:hover {
+    transform: scale(1.1);
+    color: white;
+}
+
+.social-link.linkedin:hover { background: #0077b5; }
+.social-link.twitter:hover { background: #1da1f2; }
+.social-link.youtube:hover { background: #ff0000; }
+.social-link.facebook:hover { background: #1877f2; }
+
+.member-info {
+    padding: 2rem;
+}
+
+.member-name {
+    color: var(--csig-primary);
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+    line-height: 1.3;
+}
+
+.member-position {
+    color: var(--csig-primary-dark);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.member-bio {
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.member-btn {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid var(--csig-primary);
+}
+
+.member-btn:hover {
+    background: var(--csig-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.empty-state {
+    padding: 4rem;
+    color: var(--gray-500);
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.team-cta {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 5rem 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.team-cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.2;
+}
+
+.team-cta h2 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.cta-text {
+    font-size: 1.3rem;
+    margin-bottom: 2.5rem;
+    opacity: 0.95;
+    position: relative;
+    z-index: 1;
+    line-height: 1.6;
+}
+
+.cta-buttons {
+    margin-top: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.cta-buttons .btn {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    margin: 0 10px;
+}
+
+.cta-buttons .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+/* Pagination améliorée */
+.pagination {
+    gap: 0.5rem;
+}
+
+.page-link {
+    border: 2px solid var(--gray-200);
+    color: var(--gray-700);
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin: 0 2px;
+}
+
+.page-link:hover {
+    background: var(--csig-primary);
+    color: white;
+    border-color: var(--csig-primary);
+    transform: translateY(-2px);
+}
+
+.page-item.active .page-link {
+    background: var(--csig-primary);
+    border-color: var(--csig-primary);
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        padding: 1rem;
+    }
+    
+    .category-filters {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .filter-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .search-input {
+        padding: 15px 20px 15px 45px;
+        font-size: 1rem;
+    }
+    
+    .member-image {
+        height: 220px;
+    }
+    
+    .member-info {
+        padding: 1.5rem;
+    }
+    
+    .team-cta h2 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .search-input {
+        padding: 12px 18px 12px 40px;
+    }
+    
+    .member-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Éléments DOM
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const teamCards = document.querySelectorAll('.team-member-card');
+    
+    // Variables de filtrage
+    let currentCategory = 'all';
+    let currentSearch = '';
+    
+    // Fonction de filtrage combiné
+    function filterTeamMembers() {
+        teamCards.forEach(card => {
+            const category = card.dataset.category;
+            const name = card.dataset.name;
+            
+            const categoryMatch = currentCategory === 'all' || category === currentCategory;
+            const searchMatch = currentSearch === '' || name.includes(currentSearch.toLowerCase());
+            
+            if (categoryMatch && searchMatch) {
+                card.classList.remove('hidden');
+                card.style.display = 'block';
+            } else {
+                card.classList.add('hidden');
+                card.style.display = 'none';
+            }
+        });
+        
+        // Vérifier s'il y a des résultats
+        const visibleCards = document.querySelectorAll('.team-member-card:not(.hidden)');
+        if (visibleCards.length === 0) {
+            showNoResults();
+        } else {
+            hideNoResults();
+        }
+    }
+    
+    // Afficher le message "Aucun résultat"
+    function showNoResults() {
+        let noResults = document.getElementById('noResults');
+        if (!noResults) {
+            noResults = document.createElement('div');
+            noResults.id = 'noResults';
+            noResults.className = 'col-12 text-center';
+            noResults.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4>Aucun membre trouvé</h4>
+                    <p class="text-muted">Essayez de modifier vos critères de recherche ou de filtrage.</p>
+                </div>
+            `;
+            document.getElementById('teamGrid').appendChild(noResults);
+        }
+    }
+    
+    // Masquer le message "Aucun résultat"
+    function hideNoResults() {
+        const noResults = document.getElementById('noResults');
+        if (noResults) {
+            noResults.remove();
+        }
+    }
+    
+    // Gestion de la recherche
+    searchInput.addEventListener('input', function() {
+        currentSearch = this.value.toLowerCase();
+        clearSearchBtn.style.display = currentSearch ? 'block' : 'none';
+        filterTeamMembers();
+    });
+    
+    // Bouton de suppression de la recherche
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        currentSearch = '';
+        this.style.display = 'none';
+        searchInput.focus();
+        filterTeamMembers();
+    });
+    
+    // Filtrage par catégorie
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Retirer la classe active de tous les boutons
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Ajouter la classe active au bouton cliqué
+            this.classList.add('active');
+            
+            currentCategory = this.dataset.category;
+            filterTeamMembers();
+        });
+    });
+    
+    // Animation d'entrée des cartes
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    teamCards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+    
+    // Focus automatique sur la barre de recherche
+    searchInput.focus();
+});
+</script>
+{% endblock %}

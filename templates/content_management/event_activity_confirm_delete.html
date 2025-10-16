@@ -1,0 +1,287 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Confirmer la suppression - {{ activity.activity }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .delete-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .delete-body {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .day-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #0d4786;
+        text-align: center;
+    }
+    
+    .day-number {
+        background: linear-gradient(135deg, #0d4786, #1a6bb8);
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+    }
+    
+    .day-date {
+        color: #0d4786;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .day-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+    
+    .activity-info {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .activity-time {
+        background: linear-gradient(135deg, #0d4786, #1a6bb8);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    
+    .activity-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .activity-location {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .activity-location i {
+        color: #0d4786;
+        margin-right: 0.5rem;
+    }
+    
+    .activity-type {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 1rem;
+    }
+    
+    .activity-type.keynote { background: #e3f2fd; color: #0d47a1; }
+    .activity-type.session { background: #f3e5f5; color: #4a148c; }
+    .activity-type.workshop { background: #e8f5e8; color: #1b5e20; }
+    .activity-type.break { background: #fff3e0; color: #e65100; }
+    .activity-type.lunch { background: #fce4ec; color: #880e4f; }
+    .activity-type.networking { background: #e0f2f1; color: #004d40; }
+    .activity-type.poster { background: #f1f8e9; color: #33691e; }
+    .activity-type.other { background: #fafafa; color: #424242; }
+    
+    .warning-box {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .warning-text {
+        color: #721c24;
+        font-size: 1.1rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+    
+    .delete-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        border: none;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .delete-header {
+            padding: 1.5rem;
+        }
+        
+        .delete-body {
+            padding: 1.5rem;
+        }
+        
+        .delete-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="delete-container">
+        <!-- Header -->
+        <div class="delete-header">
+            <h1 class="mb-2">
+                <i class="fas fa-exclamation-triangle me-3"></i>Confirmer la suppression
+            </h1>
+            <p class="mb-0 opacity-75">Vous êtes sur le point de supprimer une activité de l'événement</p>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="delete-body">
+            <!-- Informations sur le jour -->
+            <div class="day-info">
+                <div class="day-number">{{ day.day_number }}</div>
+                <div class="day-date">{{ day.date|date:"d/m/Y" }}</div>
+                <div class="day-title">{{ day.title|default:"Jour "|add:day.day_number|add:" - "|add:day.date|date:"d/m" }}</div>
+            </div>
+
+            <!-- Informations sur l'activité -->
+            <div class="activity-info">
+                <div class="activity-time">
+                    {{ activity.start_time|time:"H:i" }} - {{ activity.end_time|time:"H:i" }}
+                </div>
+                
+                <div class="activity-title">{{ activity.activity }}</div>
+                
+                {% if activity.location %}
+                    <div class="activity-location">
+                        <i class="fas fa-map-marker-alt"></i>{{ activity.location }}
+                    </div>
+                {% endif %}
+                
+                <div class="activity-type {{ activity.activity_type }}">
+                    {{ activity.get_activity_type_display }}
+                </div>
+                
+                {% if activity.description %}
+                    <div class="activity-description">{{ activity.description }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Avertissement -->
+            <div class="warning-box">
+                <p class="warning-text">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Attention :</strong> Cette action est irréversible et supprimera définitivement cette activité.
+                </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="delete-actions">
+                <a href="{% url 'content_management:event_day_activities' event.pk day.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Confirmer la suppression
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Échap pour annuler
+        if (e.key === 'Escape') {
+            window.location.href = '{% url "content_management:event_day_activities" event.pk day.pk %}';
+        }
+        
+        // Ctrl/Cmd + Enter pour confirmer
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            document.querySelector('form[method="post"] button[type="submit"]').click();
+        }
+    });
+    
+    // Confirmation avant soumission
+    document.querySelector('form[method="post"]').addEventListener('submit', function(e) {
+        if (!confirm('Êtes-vous absolument sûr de vouloir supprimer cette activité ? Cette action ne peut pas être annulée.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

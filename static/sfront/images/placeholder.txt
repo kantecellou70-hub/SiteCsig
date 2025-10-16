@@ -1,0 +1,27 @@
+IMAGES REQUISES POUR LE SITE PUBLIC CSIG
+==========================================
+
+Ce dossier doit contenir les images suivantes :
+
+1. hero-bg-1.jpg - Image de fond pour le premier slide du hero (1920x1080px recommandé)
+2. hero-bg-2.jpg - Image de fond pour le slide des statistiques (1920x1080px recommandé)
+3. hero-bg-3.jpg - Image de fond pour le slide innovation (1920x1080px recommandé)
+4. hero-illustration.svg - Illustration pour le premier slide (600x400px recommandé)
+5. innovation-illustration.svg - Illustration pour le slide innovation (600x400px recommandé)
+6. logo.jpg - Logo de l'institution CSIG (200x200px recommandé)
+7. placeholder.jpg - Image par défaut pour les contenus sans image (400x300px recommandé)
+
+FORMATS RECOMMANDÉS :
+- Images de fond : JPG, optimisées pour le web (max 500KB)
+- Illustrations : SVG pour la qualité vectorielle
+- Logo : JPG ou PNG avec fond transparent
+- Placeholder : JPG neutre et professionnel
+
+OPTIMISATION :
+- Compresser toutes les images pour le web
+- Utiliser des dimensions appropriées
+- Maintenir un bon rapport qualité/taille
+- Tester sur différents appareils
+
+REMARQUE : Ces images sont référencées dans les templates et CSS.
+Si elles ne sont pas disponibles, des placeholders seront affichés automatiquement.

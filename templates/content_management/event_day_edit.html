@@ -1,0 +1,282 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Éditer le jour - {{ day.title|default:"Jour "|add:day.day_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .edit-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .edit-body {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .day-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #0d4786;
+        text-align: center;
+    }
+    
+    .day-number {
+        background: linear-gradient(135deg, #0d4786, #1a6bb8);
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+    }
+    
+    .day-date {
+        color: #0d4786;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .day-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #0d4786;
+        box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        border: none;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        border: none;
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .edit-header {
+            padding: 1.5rem;
+        }
+        
+        .edit-body {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="edit-container">
+        <!-- Header -->
+        <div class="edit-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fas fa-edit me-3"></i>Éditer le jour
+                    </h1>
+                    <h3 class="mb-0 opacity-75">{{ event.title }}</h3>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{% url 'content_management:event_manage_agenda' event.pk %}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à l'agenda
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="edit-body">
+            <!-- Informations sur le jour actuel -->
+            <div class="day-info">
+                <div class="day-number">{{ day.day_number }}</div>
+                <div class="day-date">{{ day.date|date:"d/m/Y" }}</div>
+                <div class="day-title">{{ day.title|default:"Jour "|add:day.day_number|add:" - "|add:day.date|date:"d/m" }}</div>
+            </div>
+
+            <!-- Formulaire d'édition -->
+            <form method="post" id="editDayForm">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="day_date" class="form-label">Date *</label>
+                            <input type="date" class="form-control" id="day_date" name="date" value="{{ day.date|date:'Y-m-d' }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="day_number" class="form-label">Numéro du jour *</label>
+                            <input type="number" class="form-control" id="day_number" name="day_number" min="1" value="{{ day.day_number }}" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="day_title" class="form-label">Titre du jour</label>
+                    <input type="text" class="form-control" id="day_title" name="title" value="{{ day.title|default:'' }}" placeholder="Ex: Jour 1 - Conférences plénières">
+                </div>
+                
+                <div class="form-group">
+                    <label for="day_description" class="form-label">Description</label>
+                    <textarea class="form-control" id="day_description" name="description" rows="3" placeholder="Description optionnelle de ce jour">{{ day.description|default:'' }}</textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'content_management:event_manage_agenda' event.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Mettre à jour
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Soumission du formulaire d'édition
+    const editDayForm = document.getElementById('editDayForm');
+    editDayForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('{% url "content_management:event_day_edit" event.pk day.pk %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Jour mis à jour avec succès !', 'success');
+                setTimeout(() => {
+                    window.location.href = '{% url "content_management:event_manage_agenda" event.pk %}';
+                }, 1500);
+            } else {
+                showNotification('Erreur lors de la mise à jour: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur lors de la mise à jour: ' + error.message, 'error');
+        });
+    });
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + S pour sauvegarder
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            editDayForm.submit();
+        }
+        
+        // Échap pour annuler
+        if (e.key === 'Escape') {
+            window.location.href = '{% url "content_management:event_manage_agenda" event.pk %}';
+        }
+    });
+});
+
+// Fonction de notification globale
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+            <span class="flex-grow-1">${message}</span>
+            <button type="button" class="btn-close" onclick="this.closest('.alert').remove()"></button>
+        </div>
+    `;
+    document.body.appendChild(notification);
+
+    // Auto-remove après 5 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

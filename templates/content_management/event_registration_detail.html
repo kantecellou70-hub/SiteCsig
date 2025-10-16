@@ -1,0 +1,548 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Détails de l'inscription" %} - {{ registration.registration_id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-container {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .detail-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .detail-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .detail-header .registration-id {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        font-family: 'Courier New', monospace;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        display: inline-block;
+        margin-top: 1rem;
+    }
+    
+    .detail-content {
+        padding: 2rem;
+    }
+    
+    .detail-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 15px;
+        border-left: 4px solid #0d4786;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #0d4786;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        color: #333;
+        font-size: 1rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        text-align: center;
+        display: inline-block;
+    }
+    
+    .status-pending {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+    }
+    
+    .status-confirmed {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+    }
+    
+    .status-cancelled {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+    }
+    
+    .responses-section {
+        margin-top: 1rem;
+    }
+    
+    .response-item {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        margin-bottom: 0.5rem;
+    }
+    
+    .response-field {
+        font-weight: 600;
+        color: #0d4786;
+        margin-bottom: 0.25rem;
+    }
+    
+    .response-value {
+        color: #333;
+    }
+    
+    .actions-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem;
+        border-top: 2px solid #e9ecef;
+        text-align: center;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 0.5rem;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-success-custom {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 0.5rem;
+    }
+    
+    .btn-success-custom:hover {
+        background: #218838;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .btn-warning-custom {
+        background: linear-gradient(135deg, #ffc107 0%, #ffb84d 100%);
+        border: none;
+        color: #212529;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 0.5rem;
+    }
+    
+    .btn-warning-custom:hover {
+        background: #e0a800;
+        color: #212529;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .btn-danger-custom {
+        background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 0.5rem;
+    }
+    
+    .btn-danger-custom:hover {
+        background: #c82333;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary-custom {
+        background: #6c757d;
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 0.5rem;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .detail-header {
+            padding: 1.5rem;
+        }
+        
+        .detail-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .detail-content {
+            padding: 1.5rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .actions-section {
+            padding: 1.5rem;
+        }
+        
+        .btn-primary-custom,
+        .btn-success-custom,
+        .btn-warning-custom,
+        .btn-danger-custom,
+        .btn-secondary-custom {
+            display: block;
+            margin: 0.5rem auto;
+            max-width: 200px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .detail-header {
+            padding: 1rem;
+        }
+        
+        .detail-header h1 {
+            font-size: 1.3rem;
+        }
+        
+        .detail-content {
+            padding: 1rem;
+        }
+        
+        .detail-section {
+            padding: 1rem;
+        }
+        
+        .actions-section {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="detail-container">
+        <!-- Header -->
+        <div class="detail-header">
+            <h1>
+                <i class="fas fa-user-check me-3"></i>
+                {% trans "Détails de l'inscription" %}
+            </h1>
+            <div class="registration-id">{{ registration.registration_id }}</div>
+        </div>
+        
+        <!-- Content -->
+        <div class="detail-content">
+            <!-- Informations de base -->
+            <div class="detail-section">
+                <h3 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    {% trans "Informations de base" %}
+                </h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Prénom" %}</span>
+                        <div class="info-value">{{ registration.first_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Nom" %}</span>
+                        <div class="info-value">{{ registration.last_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Email" %}</span>
+                        <div class="info-value">
+                            <a href="mailto:{{ registration.email }}">{{ registration.email }}</a>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Téléphone" %}</span>
+                        <div class="info-value">
+                            {% if registration.phone %}
+                                <a href="tel:{{ registration.phone }}">{{ registration.phone }}</a>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informations d'inscription -->
+            <div class="detail-section">
+                <h3 class="section-title">
+                    <i class="fas fa-calendar-check"></i>
+                    {% trans "Informations d'inscription" %}
+                </h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Date d'inscription" %}</span>
+                        <div class="info-value">{{ registration.registration_date|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Statut" %}</span>
+                        <div class="info-value">
+                            <span class="status-badge status-{{ registration.status }}">
+                                {% if registration.status == 'pending' %}
+                                    {% trans "En attente" %}
+                                {% elif registration.status == 'confirmed' %}
+                                    {% trans "Confirmée" %}
+                                {% elif registration.status == 'cancelled' %}
+                                    {% trans "Annulée" %}
+                                {% else %}
+                                    {{ registration.get_status_display }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "ID d'inscription" %}</span>
+                        <div class="info-value">{{ registration.registration_id }}</div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{% trans "Adresse IP" %}</span>
+                        <div class="info-value">{{ registration.ip_address|default:"-" }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Réponses aux champs personnalisés -->
+            {% if registration.responses.all %}
+            <div class="detail-section">
+                <h3 class="section-title">
+                    <i class="fas fa-list-alt"></i>
+                    {% trans "Réponses aux champs personnalisés" %}
+                </h3>
+                <div class="responses-section">
+                    {% for response in registration.responses.all %}
+                    <div class="response-item">
+                        <div class="response-field">{{ response.field.label }}</div>
+                        <div class="response-value">{{ response.display_value }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Notes internes -->
+            {% if registration.internal_notes %}
+            <div class="detail-section">
+                <h3 class="section-title">
+                    <i class="fas fa-sticky-note"></i>
+                    {% trans "Notes internes" %}
+                </h3>
+                <div class="info-value">{{ registration.internal_notes }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Actions -->
+        <div class="actions-section">
+            <h4 class="mb-3">{% trans "Actions" %}</h4>
+            
+            {% if registration.status == 'pending' %}
+                <button type="button" class="btn btn-success-custom" 
+                        onclick="changeStatus('{{ registration.pk }}', 'confirmed')">
+                    <i class="fas fa-check me-2"></i>
+                    {% trans "Confirmer l'inscription" %}
+                </button>
+                
+                <button type="button" class="btn btn-danger-custom" 
+                        onclick="changeStatus('{{ registration.pk }}', 'cancelled')">
+                    <i class="fas fa-times me-2"></i>
+                    {% trans "Annuler l'inscription" %}
+                </button>
+            {% elif registration.status == 'confirmed' %}
+                <button type="button" class="btn btn-warning-custom" 
+                        onclick="changeStatus('{{ registration.pk }}', 'pending')">
+                    <i class="fas fa-clock me-2"></i>
+                    {% trans "Remettre en attente" %}
+                </button>
+            {% elif registration.status == 'cancelled' %}
+                <button type="button" class="btn btn-success-custom" 
+                        onclick="changeStatus('{{ registration.pk }}', 'confirmed')">
+                    <i class="fas fa-check me-2"></i>
+                    {% trans "Confirmer l'inscription" %}
+                </button>
+            {% endif %}
+            
+            <a href="{% url 'content_management:event_registrations_list' event.pk %}" class="btn btn-secondary-custom">
+                <i class="fas fa-arrow-left me-2"></i>
+                {% trans "Retour à la liste" %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">{% trans "Confirmation" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="confirmModalBody">
+                <!-- Le contenu sera rempli dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Annuler" %}</button>
+                <button type="button" class="btn btn-primary" id="confirmModalConfirm">{% trans "Confirmer" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSRF Token pour les requêtes AJAX -->
+<form id="csrfForm" style="display: none;">{% csrf_token %}</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentAction = null;
+let currentRegistrationId = null;
+
+// Changer le statut d'une inscription
+function changeStatus(registrationId, newStatus) {
+    currentRegistrationId = registrationId;
+    currentAction = newStatus;
+    
+    const statusText = {
+        'confirmed': '{% trans "confirmer" %}',
+        'cancelled': '{% trans "annuler" %}',
+        'pending': '{% trans "remettre en attente" %}'
+    };
+    
+    const actionText = statusText[newStatus];
+    const modalBody = document.getElementById('confirmModalBody');
+    modalBody.innerHTML = `Êtes-vous sûr de vouloir ${actionText} cette inscription ?`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    modal.show();
+}
+
+// Confirmer l'action
+document.getElementById('confirmModalConfirm').addEventListener('click', function() {
+    if (currentAction && currentRegistrationId) {
+        fetch(`{% url 'content_management:event_registration_status_change' event.pk 0 %}`.replace('0', currentRegistrationId), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('#csrfForm [name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: currentAction
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Recharger la page pour afficher le nouveau statut
+                window.location.reload();
+            } else {
+                // Afficher l'erreur dans le modal
+                const modalBody = document.getElementById('confirmModalBody');
+                modalBody.innerHTML = `<div class="alert alert-danger">Erreur: ${data.error}</div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            const modalBody = document.getElementById('confirmModalBody');
+            modalBody.innerHTML = '<div class="alert alert-danger">Une erreur est survenue</div>';
+        });
+    }
+});
+
+// Raccourcis clavier
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey || e.metaKey) {
+        switch(e.key) {
+            case 'Escape':
+                e.preventDefault();
+                window.location.href = "{% url 'content_management:event_registrations_list' event.pk %}";
+                break;
+        }
+    }
+});
+</script>
+{% endblock %}

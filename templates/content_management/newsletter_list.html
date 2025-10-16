@@ -1,0 +1,1187 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Gestion des newsletters - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.newsletter-list-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.list-header {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 2rem;
+}
+
+.list-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.list-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.list-actions {
+    background: #f8f9fa;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.search-filters {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+    min-width: 300px;
+}
+
+.search-box input {
+    padding-left: 2.5rem;
+    border-radius: 25px;
+    border: 2px solid #e9ecef;
+}
+
+.search-box .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.filter-group select {
+    border-radius: 20px;
+    border: 2px solid #e9ecef;
+    padding: 0.5rem 1rem;
+    min-width: 150px;
+}
+
+.bulk-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.bulk-actions select {
+    border-radius: 20px;
+    border: 2px solid #e9ecef;
+    padding: 0.5rem 1rem;
+    min-width: 150px;
+}
+
+.newsletter-table {
+    margin: 0;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.newsletter-table th {
+    background: #f8f9fa;
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.newsletter-table td {
+    padding: 1rem;
+    border: none;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.newsletter-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+    .newsletter-info {
+        max-width: 300px;
+    }
+
+    /* Styles pour le modal de gestion */
+    .management-modal .card {
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .management-modal .card:hover {
+        transform: translateY(-5px);
+        border-color: #0d4786;
+        box-shadow: 0 8px 25px rgba(13, 71, 134, 0.15);
+    }
+
+    .management-modal .card-body {
+        padding: 2rem 1.5rem;
+    }
+
+    .management-modal .fa-3x {
+        margin-bottom: 1.5rem;
+    }
+
+    .management-modal .card-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #0d4786;
+    }
+
+    .management-modal .card-text {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .management-modal .btn {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .management-modal .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+.newsletter-title {
+    font-weight: 600;
+    color: #0d4786;
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+}
+
+.newsletter-preview {
+    color: #6c757d;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+}
+
+.newsletter-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.newsletter-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-draft {
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.status-scheduled {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-sending {
+    background: #d1edff;
+    color: #0c5460;
+}
+
+.status-sent {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.newsletter-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.action-btn.edit {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.action-btn.view {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+
+.action-btn.send {
+    background: #d4edda;
+    color: #155724;
+}
+
+.action-btn.schedule {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.action-btn.delete {
+    background: #ffebee;
+    color: #d32f2f;
+}
+
+.action-btn.duplicate {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.checkbox-cell {
+    width: 50px;
+    text-align: center;
+}
+
+.checkbox-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.checkbox-custom:checked {
+    background: #0d4786;
+    border-color: #0d4786;
+}
+
+.pagination-container {
+    background: #f8f9fa;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.pagination {
+    margin: 0;
+}
+
+.pagination .page-link {
+    border: none;
+    color: #0d4786;
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    background: #e3f2fd;
+    color: #0d4786;
+}
+
+.pagination .page-item.active .page-link {
+    background: #0d4786;
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: #495057;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: hidden;
+    }
+    
+    .newsletter-list-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .list-header {
+        padding: 1.5rem;
+    }
+    
+    .list-actions {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+    }
+    
+    .search-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .search-box {
+        min-width: auto;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group label {
+        margin-bottom: 0.5rem;
+    }
+    
+    .bulk-actions {
+        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .newsletter-table {
+        font-size: 0.875rem;
+    }
+    
+    .newsletter-table th,
+    .newsletter-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .newsletter-info {
+        max-width: 200px;
+    }
+    
+    .newsletter-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Masquer plus de colonnes sur mobile pour éviter le scroll horizontal */
+    .newsletter-table th:nth-child(3),
+    .newsletter-table td:nth-child(3),
+    .newsletter-table th:nth-child(4),
+    .newsletter-table td:nth-child(4),
+    .newsletter-table th:nth-child(6),
+    .newsletter-table td:nth-child(6) {
+        display: none;
+    }
+    
+    /* Ajuster la largeur des colonnes restantes */
+    .newsletter-table th:nth-child(1),
+    .newsletter-table td:nth-child(1) {
+        width: 50px;
+        min-width: 50px;
+    }
+    
+    .newsletter-table th:nth-child(2),
+    .newsletter-table td:nth-child(2) {
+        width: auto;
+        min-width: 0;
+    }
+    
+    .newsletter-table th:nth-child(5),
+    .newsletter-table td:nth-child(5) {
+        width: 80px;
+        min-width: 80px;
+    }
+    
+    .newsletter-table th:nth-child(7),
+    .newsletter-table td:nth-child(7) {
+        width: 80px;
+        min-width: 80px;
+    }
+}
+
+@media (max-width: 576px) {
+    .list-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .newsletter-title {
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+    
+    .newsletter-preview {
+        display: none;
+    }
+    
+    .newsletter-meta {
+        display: none;
+    }
+    
+    /* Masquer encore plus de colonnes sur très petit écran */
+    .newsletter-table th:nth-child(5),
+    .newsletter-table td:nth-child(5) {
+        display: none;
+    }
+    
+    /* Ajuster les largeurs finales */
+    .newsletter-table th:nth-child(1),
+    .newsletter-table td:nth-child(1) {
+        width: 40px;
+        min-width: 40px;
+    }
+    
+    .newsletter-table th:nth-child(2),
+    .newsletter-table td:nth-child(2) {
+        width: auto;
+        min-width: 0;
+    }
+    
+    .newsletter-table th:nth-child(7),
+    .newsletter-table td:nth-child(7) {
+        width: 60px;
+        min-width: 60px;
+    }
+    
+    /* Réduire encore plus le padding */
+    .newsletter-table th,
+    .newsletter-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .newsletter-info {
+        max-width: 150px;
+        min-width: 0;
+    }
+
+    /* Responsive pour le modal de gestion */
+    .management-modal .modal-dialog {
+        margin: 1rem;
+    }
+
+    .management-modal .card-body {
+        padding: 1.5rem 1rem;
+    }
+
+    .management-modal .fa-3x {
+        font-size: 2.5rem !important;
+        margin-bottom: 1rem;
+    }
+
+    .management-modal .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .management-modal .card-text {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .management-modal .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .newsletter-title {
+        font-size: 0.9rem;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+    
+    /* Ajuster les boutons d'action pour mobile */
+    .action-btn {
+        width: 100%;
+        height: 35px;
+        font-size: 0.8rem;
+        padding: 0.25rem;
+    }
+    
+    /* Masquer les éléments non essentiels sur mobile */
+    .newsletter-preview,
+    .newsletter-meta {
+        display: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-newspaper me-2"></i>Gestion des newsletters
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Créez, gérez et envoyez vos newsletters aux abonnés
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <button class="btn btn-primary" onclick="showManagementModal()">
+        <i class="fas fa-cogs me-2"></i>Gestion
+    </button>
+    <button class="btn btn-outline-secondary" onclick="exportNewsletters()">
+        <i class="fas fa-download me-2"></i>Exporter
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="newsletter-list-container">
+    <!-- Token CSRF caché pour les requêtes AJAX -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    
+    <!-- En-tête de la liste -->
+    <div class="list-header">
+        <h1>
+            <i class="fas fa-newspaper me-3"></i>Gestion des newsletters
+        </h1>
+        <p>Créez, gérez et envoyez vos newsletters aux abonnés</p>
+    </div>
+
+    <!-- Actions et filtres -->
+    <div class="list-actions">
+        <div class="search-filters">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="form-control" id="searchInput" placeholder="Rechercher des newsletters...">
+            </div>
+            
+            <div class="filter-group">
+                <label for="statusFilter">Statut:</label>
+                <select class="form-select" id="statusFilter">
+                    <option value="">Tous les statuts</option>
+                    <option value="draft">Brouillon</option>
+                    <option value="scheduled">Programmée</option>
+                    <option value="sending">En cours d'envoi</option>
+                    <option value="sent">Envoyée</option>
+                    <option value="cancelled">Annulée</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="bulk-actions">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="selectAll">
+                <label class="form-check-label" for="selectAll">
+                    <strong>Sélectionner tout</strong>
+                </label>
+            </div>
+            
+            <select class="form-select" id="bulkAction">
+                <option value="">Actions en lot</option>
+                <option value="send">Envoyer</option>
+                <option value="schedule">Programmer</option>
+                <option value="duplicate">Dupliquer</option>
+                <option value="delete">Supprimer définitivement</option>
+            </select>
+            
+            <button class="btn btn-primary" id="applyBulkAction" disabled>
+                <i class="fas fa-play me-2"></i>Appliquer
+            </button>
+        </div>
+    </div>
+
+    <!-- Tableau des newsletters -->
+    <div class="table-responsive">
+        <table class="table newsletter-table" id="newslettersTable">
+            <thead>
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom" id="headerCheckbox">
+                    </th>
+                    <th>Email</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for newsletter in newsletters %}
+                <tr data-newsletter-id="{{ newsletter.id }}" data-status="{{ newsletter.status }}">
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom newsletter-checkbox" value="{{ newsletter.id }}">
+                    </td>
+                    
+                    <td>
+                        <div class="newsletter-info">
+                            <div class="newsletter-title">{{ newsletter.email|default:"Sans titre" }}</div>
+                            
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <div class="text-muted">
+                            <div>{{ newsletter.created_at|date:"d/m/Y" }}</div>
+                            <div style="font-size: 0.8rem;">{{ newsletter.created_at|date:"H:i" }}</div>
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <div class="newsletter-actions">
+                            <a href="{% url 'content_management:newsletter_detail' newsletter.pk %}" 
+                               class="action-btn view" title="Voir">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            
+                            <a href="{% url 'content_management:newsletter_edit' newsletter.pk %}" 
+                               class="action-btn edit" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            
+                            {% if newsletter.status == 'draft' %}
+                                <button class="action-btn send" title="Envoyer" 
+                                        onclick="sendNewsletter({{ newsletter.pk }})">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                                
+                                <button class="action-btn schedule" title="Programmer" 
+                                        onclick="scheduleNewsletter({{ newsletter.pk }})">
+                                    <i class="fas fa-clock"></i>
+                                </button>
+                            {% endif %}
+                            
+                            {% if newsletter.status == 'scheduled' %}
+                                <button class="action-btn send" title="Envoyer maintenant" 
+                                        onclick="sendNewsletter({{ newsletter.pk }})">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            {% endif %}
+                            
+                            <button class="action-btn duplicate" title="Dupliquer" 
+                                    onclick="duplicateNewsletter({{ newsletter.pk }})">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            
+                            <button class="action-btn delete" title="Supprimer" 
+                                    onclick="deleteNewsletter({{ newsletter.pk }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <i class="fas fa-newspaper"></i>
+                            <h3>Aucune newsletter trouvée</h3>
+                            <p>Commencez par créer votre première newsletter pour communiquer avec vos abonnés.</p>
+                            <button class="btn btn-primary" onclick="showManagementModal()">
+                                <i class="fas fa-cogs me-2"></i>Gestion des newsletters
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal de gestion -->
+    <div class="modal fade management-modal" id="managementModal" tabindex="-1" aria-labelledby="managementModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="managementModalLabel">
+                        <i class="fas fa-cogs me-2"></i>Gestion des newsletters
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">Créer une newsletter</h5>
+                                    <p class="card-text">Créez une nouvelle newsletter pour communiquer avec vos abonnés.</p>
+                                    <a href="{% url 'content_management:newsletter_create' %}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Nouvelle newsletter
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                    <h5 class="card-title">Gérer les abonnés</h5>
+                                    <p class="card-text">Gérez votre liste d'abonnés et leurs préférences.</p>
+                                    <a href="{% url 'content_management:newsletter_subscribers_management' %}" class="btn btn-success">
+                                        <i class="fas fa-users me-2"></i>Gérer les abonnés
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                                    <h5 class="card-title">Statistiques</h5>
+                                    <p class="card-text">Consultez les statistiques de vos campagnes de newsletter.</p>
+                                    <a href="{% url 'content_management:newsletter_statistics' %}" class="btn btn-info">
+                                        <i class="fas fa-chart-line me-2"></i>Voir les stats
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-cog fa-3x text-warning mb-3"></i>
+                                    <h5 class="card-title">Paramètres</h5>
+                                    <p class="card-text">Configurez les paramètres d'envoi et les templates.</p>
+                                    <a href="{% url 'content_management:newsletter_settings' %}" class="btn btn-warning">
+                                        <i class="fas fa-cog me-2"></i>Paramètres
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if newsletters.has_other_pages %}
+    <div class="pagination-container">
+        <div class="pagination-info">
+            Affichage de {{ newsletters.start_index }} à {{ newsletters.end_index }} 
+            sur {{ newsletters.paginator.count }} newsletters
+        </div>
+        
+        <nav aria-label="Navigation des newsletters">
+            <ul class="pagination">
+                {% if newsletters.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" title="Première page">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ newsletters.previous_page_number }}" title="Page précédente">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for num in newsletters.paginator.page_range %}
+                    {% if newsletters.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > newsletters.number|add:'-3' and num < newsletters.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if newsletters.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ newsletters.next_page_number }}" title="Page suivante">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ newsletters.paginator.num_pages }}" title="Dernière page">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser les fonctionnalités
+    initSearchAndFilters();
+    initBulkActions();
+    initCheckboxes();
+});
+
+// Recherche et filtres
+function initSearchAndFilters() {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterNewsletters();
+            }, 300);
+        });
+    }
+    
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterNewsletters);
+    }
+}
+
+function filterNewsletters() {
+    const searchTerm = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+    const status = document.getElementById('statusFilter')?.value || '';
+    
+    const rows = document.querySelectorAll('#newslettersTable tbody tr[data-newsletter-id]');
+    
+    rows.forEach(row => {
+        let show = true;
+        
+        if (searchTerm) {
+            const title = row.querySelector('.newsletter-title')?.textContent?.toLowerCase() || '';
+            const preview = row.querySelector('.newsletter-preview')?.textContent?.toLowerCase() || '';
+            if (!title.includes(searchTerm) && !preview.includes(searchTerm)) {
+                show = false;
+            }
+        }
+        
+        if (status && row.dataset.status !== status) {
+            show = false;
+        }
+        
+        row.style.display = show ? '' : 'none';
+    });
+    
+    updateEmptyState();
+}
+
+function updateEmptyState() {
+    const visibleRows = document.querySelectorAll('#newslettersTable tbody tr[data-newsletter-id]:not([style*="display: none"])');
+    const emptyRow = document.querySelector('#newslettersTable tbody tr:not([data-newsletter-id])');
+    
+    if (visibleRows.length === 0 && emptyRow) {
+        emptyRow.style.display = '';
+        emptyRow.querySelector('.empty-state p').textContent = 'Aucune newsletter ne correspond à vos critères de recherche.';
+    } else if (emptyRow) {
+        emptyRow.style.display = 'none';
+    }
+}
+
+// Actions en lot
+function initBulkActions() {
+    const bulkActionSelect = document.getElementById('bulkAction');
+    const applyButton = document.getElementById('applyBulkAction');
+    
+    if (bulkActionSelect && applyButton) {
+        bulkActionSelect.addEventListener('change', function() {
+            applyButton.disabled = !this.value;
+        });
+        
+        applyButton.addEventListener('click', function() {
+            const action = bulkActionSelect.value;
+            const selectedIds = getSelectedNewsletterIds();
+            
+            if (selectedIds.length === 0) {
+                alert('Veuillez sélectionner au moins une newsletter.');
+                return;
+            }
+            
+            if (confirm(`Êtes-vous sûr de vouloir ${getActionText(action)} ${selectedIds.length} newsletter(s) ?`)) {
+                executeBulkAction(action, selectedIds);
+            }
+        });
+    }
+}
+
+function getActionText(action) {
+    const actions = {
+        'send': 'envoyer',
+        'schedule': 'programmer',
+        'duplicate': 'dupliquer',
+        'delete': 'supprimer définitivement'
+    };
+    return actions[action] || action;
+}
+
+function executeBulkAction(action, newsletterIds) {
+    const formData = new FormData();
+    formData.append('action', action);
+    formData.append('newsletter_ids', JSON.stringify(newsletterIds));
+    
+    fetch('{% url "content_management:bulk_newsletter_action" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            location.reload();
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('Erreur lors de l\'exécution de l\'action', 'error');
+    });
+}
+
+// Gestion des cases à cocher
+function initCheckboxes() {
+    const headerCheckbox = document.getElementById('headerCheckbox');
+    const newsletterCheckboxes = document.querySelectorAll('.newsletter-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    
+    if (headerCheckbox) {
+        headerCheckbox.addEventListener('change', function() {
+            newsletterCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            if (selectAllCheckbox) selectAllCheckbox.checked = this.checked;
+            updateBulkActionButton();
+        });
+    }
+    
+    newsletterCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateHeaderCheckbox();
+            updateBulkActionButton();
+        });
+    });
+    
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            newsletterCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            if (headerCheckbox) headerCheckbox.checked = this.checked;
+            updateBulkActionButton();
+        });
+    }
+}
+
+function updateHeaderCheckbox() {
+    const headerCheckbox = document.getElementById('headerCheckbox');
+    const newsletterCheckboxes = document.querySelectorAll('.newsletter-checkbox');
+    const checkedCount = document.querySelectorAll('.newsletter-checkbox:checked').length;
+    
+    if (headerCheckbox) {
+        if (checkedCount === 0) {
+            headerCheckbox.indeterminate = false;
+            headerCheckbox.checked = false;
+        } else if (checkedCount === newsletterCheckboxes.length) {
+            headerCheckbox.indeterminate = false;
+            headerCheckbox.checked = true;
+        } else {
+            headerCheckbox.indeterminate = true;
+            headerCheckbox.checked = false;
+        }
+    }
+}
+
+function updateBulkActionButton() {
+    const selectedIds = getSelectedNewsletterIds();
+    const applyButton = document.getElementById('applyBulkAction');
+    const bulkActionSelect = document.getElementById('bulkAction');
+    
+    if (applyButton && bulkActionSelect) {
+        applyButton.disabled = selectedIds.length === 0 || !bulkActionSelect.value;
+    }
+}
+
+function getSelectedNewsletterIds() {
+    const checkboxes = document.querySelectorAll('.newsletter-checkbox:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// Actions individuelles
+function sendNewsletter(newsletterId) {
+    if (confirm('Êtes-vous sûr de vouloir envoyer cette newsletter maintenant ?')) {
+        fetch(`{% url "content_management:newsletter_send" 0 %}`.replace('0', newsletterId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+            },
+            body: JSON.stringify({
+                newsletter_id: newsletterId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                location.reload();
+            } else {
+                showNotification(data.message || 'Erreur lors de l\'envoi', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showNotification('Erreur lors de l\'envoi', 'error');
+        });
+    }
+}
+
+function scheduleNewsletter(newsletterId) {
+    const scheduledDate = prompt('Entrez la date et l\'heure d\'envoi (format: YYYY-MM-DD HH:MM):');
+    if (scheduledDate) {
+        // Pour l'instant, on utilise l'action en lot pour programmer
+        // TODO: Implémenter une vraie fonction de programmation
+        showNotification('Fonctionnalité de programmation à implémenter', 'info');
+    }
+}
+
+function duplicateNewsletter(newsletterId) {
+    if (confirm('Êtes-vous sûr de vouloir dupliquer cette newsletter ?')) {
+        // Pour l'instant, on utilise l'action en lot pour dupliquer
+        // TODO: Implémenter une vraie fonction de duplication
+        showNotification('Fonctionnalité de duplication à implémenter', 'info');
+    }
+}
+
+function deleteNewsletter(newsletterId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette newsletter ? Cette action est irréversible.')) {
+        fetch(`{% url "content_management:newsletter_delete" 0 %}`.replace('0', newsletterId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+            },
+            body: JSON.stringify({
+                newsletter_id: newsletterId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                location.reload();
+            } else {
+                showNotification(data.message || 'Erreur lors de la suppression', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showNotification('Erreur lors de la suppression', 'error');
+        });
+    }
+}
+
+// Export des newsletters
+function exportNewsletters() {
+    const searchTerm = document.getElementById('searchInput')?.value || '';
+    const status = document.getElementById('statusFilter')?.value || '';
+    
+    const params = new URLSearchParams();
+    if (searchTerm) params.append('search', searchTerm);
+    if (status) params.append('status', status);
+    
+    window.location.href = `{% url "content_management:newsletter_export" %}?${params.toString()}`;
+}
+
+// Modal de gestion
+function showManagementModal() {
+    const modal = new bootstrap.Modal(document.getElementById('managementModal'));
+    modal.show();
+}
+
+
+
+// Notifications
+function showNotification(message, type) {
+    console.log(`${type.toUpperCase()}: ${message}`);
+}
+</script>
+{% endblock %}

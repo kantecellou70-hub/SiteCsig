@@ -1,0 +1,269 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Gestion des intervenants" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .intervenants-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .intervenants-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .intervenant-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .intervenant-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .intervenant-photo {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 4rem;
+    }
+    
+    .intervenant-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .intervenant-info {
+        padding: 1.5rem;
+    }
+    
+    .intervenant-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .intervenant-profession {
+        color: #667eea;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+    
+    .intervenant-bio {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .intervenant-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-add-intervenant {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-add-intervenant:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .intervenants-header {
+            padding: 1.5rem 0;
+        }
+        
+        .intervenants-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .stats-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="intervenants-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-3">
+                    <i class="fas fa-users me-3"></i>
+                    {% trans "Gestion des intervenants" %}
+                </h1>
+                <p class="mb-0">
+                    {% trans "Gérez les intervenants qui participent aux activités de vos événements" %}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'content_management:event_intervenant_create' %}" class="btn btn-add-intervenant">
+                    <i class="fas fa-plus me-2"></i>
+                    {% trans "Nouvel intervenant" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Statistiques -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number">{{ intervenants.count }}</div>
+            <div class="stat-label">{% trans "Total des intervenants" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ intervenants.count }}</div>
+            <div class="stat-label">{% trans "Intervenants actifs" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">0</div>
+            <div class="stat-label">{% trans "Événements programmés" %}</div>
+        </div>
+    </div>
+    
+    <!-- Liste des intervenants -->
+    {% if intervenants %}
+        <div class="intervenants-grid">
+            {% for intervenant in intervenants %}
+            <div class="intervenant-card">
+                <div class="intervenant-photo">
+                    {% if intervenant.photo %}
+                        <img src="{{ intervenant.photo.url }}" alt="{{ intervenant.nom }}">
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
+                </div>
+                <div class="intervenant-info">
+                    <h3 class="intervenant-name">{{ intervenant.nom }}</h3>
+                    <p class="intervenant-profession">{{ intervenant.profession }}</p>
+                    <p class="intervenant-bio">{{ intervenant.biographie|truncatewords:20 }}</p>
+                    
+                    <div class="intervenant-actions">
+                        <a href="{% url 'content_management:event_intervenant_edit' intervenant.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit me-1"></i>
+                            {% trans "Modifier" %}
+                        </a>
+                        <a href="{% url 'content_management:event_intervenant_delete' intervenant.pk %}" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-trash me-1"></i>
+                            {% trans "Supprimer" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <h4>{% trans "Aucun intervenant" %}</h4>
+            <p>{% trans "Commencez par créer votre premier intervenant" %}</p>
+            <a href="{% url 'content_management:event_intervenant_create' %}" class="btn btn-add-intervenant">
+                <i class="fas fa-plus me-2"></i>
+                {% trans "Créer un intervenant" %}
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 'n':
+                    e.preventDefault();
+                    window.location.href = "{% url 'content_management:event_intervenant_create' %}";
+                    break;
+            }
+        }
+        
+        if (e.key === 'Escape') {
+            // Fermer les modals si ouverts
+            const modals = document.querySelectorAll('.modal.show');
+            modals.forEach(modal => {
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

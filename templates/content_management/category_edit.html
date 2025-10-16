@@ -1,0 +1,252 @@
+{% extends 'content_management/category_form.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Modifier {{ category.name }} - Gestion de contenu CSIG{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-edit me-2"></i>Modifier la catégorie
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">Modifiez les informations de la catégorie "{{ category.name }}"</p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'content_management:category_detail' category.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+        </a>
+        <button type="submit" form="categoryForm" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>Mettre à jour
+        </button>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Pré-remplir l'aperçu avec les valeurs actuelles
+    updatePreview();
+    
+    // Ajouter des fonctionnalités spécifiques à l'édition
+    setupEditFeatures();
+    
+    // Mettre à jour l'aperçu avec les valeurs actuelles de la catégorie
+    updatePreviewWithCurrentValues();
+});
+
+function setupEditFeatures() {
+    // Afficher un avertissement si des articles sont associés
+    const articleCount = {{ category.articles.count|default:0 }};
+    if (articleCount > 0) {
+        showArticleWarning(articleCount);
+    }
+    
+    // Gestion des changements de statut
+    const statusField = document.getElementById('{{ form.status.id_for_label }}');
+    if (statusField) {
+        statusField.addEventListener('change', function() {
+            if (this.value === 'inactive' && articleCount > 0) {
+                showStatusChangeWarning();
+            }
+        });
+    }
+    
+    // Gestion des changements de catégorie parente
+    const parentField = document.getElementById('{{ form.parent.id_for_label }}');
+    if (parentField) {
+        parentField.addEventListener('change', function() {
+            if (this.value === '{{ category.pk }}') {
+                showParentWarning();
+            }
+        });
+    }
+}
+
+function updatePreviewWithCurrentValues() {
+    // Mettre à jour l'aperçu avec les valeurs actuelles de la catégorie
+    const nameEnField = document.getElementById('{{ form.name_en.id_for_label }}');
+    const previewNameEn = document.getElementById('previewNameEn');
+    
+    if (nameEnField && previewNameEn) {
+        if (nameEnField.value.trim()) {
+            previewNameEn.textContent = nameEnField.value;
+            previewNameEn.style.display = 'block';
+        } else {
+            previewNameEn.style.display = 'none';
+        }
+    }
+}
+
+function showArticleWarning(articleCount) {
+    const warningHtml = `
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Attention :</strong> Cette catégorie contient ${articleCount} article(s). 
+            Les modifications peuvent affecter l'affichage de ces articles.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const form = document.getElementById('categoryForm');
+    if (form) {
+        form.insertAdjacentHTML('afterbegin', warningHtml);
+    }
+}
+
+function showStatusChangeWarning() {
+    if (window.AdminInterface && window.AdminInterface.showNotification) {
+        window.AdminInterface.showNotification(
+            'Attention : Désactiver cette catégorie masquera tous ses articles', 
+            'warning'
+        );
+    } else {
+        alert('Attention : Désactiver cette catégorie masquera tous ses articles');
+    }
+}
+
+function showParentWarning() {
+    if (window.AdminInterface && window.AdminInterface.showNotification) {
+        window.AdminInterface.showNotification(
+            'Attention : Une catégorie ne peut pas être sa propre sous-catégorie', 
+            'error'
+        );
+    } else {
+        alert('Attention : Une catégorie ne peut pas être sa propre sous-catégorie');
+    }
+}
+
+// Override de la fonction de validation pour l'édition
+function validateForm() {
+    let isValid = true;
+    const form = document.getElementById('categoryForm');
+    
+    // Seuls les champs marqués comme required sont obligatoires
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+    
+    // Validation spécifique pour le nom (toujours obligatoire)
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    if (nameField && !nameField.value.trim()) {
+        nameField.classList.add('is-invalid');
+        isValid = false;
+    } else if (nameField) {
+        nameField.classList.remove('is-invalid');
+    }
+    
+    // Validation spécifique à l'édition
+    if (nameField && nameField.value.trim()) {
+        const originalName = '{{ category.name }}';
+        if (nameField.value.trim() !== originalName) {
+            // Vérifier si le nouveau nom n'existe pas déjà
+            // Ici vous pourriez implémenter une vérification AJAX
+            console.log('Vérification de l\'unicité du nom...');
+        }
+    }
+    
+    // Validation de la catégorie parente
+    const parentField = document.getElementById('{{ form.parent.id_for_label }}');
+    if (parentField && parentField.value === '{{ category.pk }}') {
+        parentField.classList.add('is-invalid');
+        isValid = false;
+        
+        // Afficher un message d'erreur
+        let errorDiv = parentField.parentNode.querySelector('.invalid-feedback');
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'invalid-feedback d-block';
+            parentField.parentNode.appendChild(errorDiv);
+        }
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Une catégorie ne peut pas être sa propre sous-catégorie';
+    } else if (parentField) {
+        parentField.classList.remove('is-invalid');
+        const errorDiv = parentField.parentNode.querySelector('.invalid-feedback');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+    }
+    
+    return isValid;
+}
+
+// Override de la fonction de soumission
+function setupFormValidation() {
+    const form = document.getElementById('categoryForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                showValidationErrors();
+                return false;
+            }
+            
+            // Afficher un indicateur de chargement
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mise à jour...';
+                
+                // Réactiver le bouton après un délai (fallback)
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 10000);
+            }
+        });
+    }
+}
+
+// Fonction pour réinitialiser les champs optionnels
+function resetOptionalFields() {
+    const optionalFields = [
+        '{{ form.name_en.id_for_label }}',
+        '{{ form.description.id_for_label }}',
+        '{{ form.description_en.id_for_label }}',
+        '{{ form.icon.id_for_label }}',
+        '{{ form.color.id_for_label }}',
+        '{{ form.parent.id_for_label }}',
+        '{{ form.order.id_for_label }}',
+        '{{ form.status.id_for_label }}'
+    ];
+    
+    optionalFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            if (field.tagName === 'SELECT') {
+                field.selectedIndex = 0;
+            } else {
+                field.value = '';
+            }
+        }
+    });
+    
+    // Mettre à jour l'aperçu
+    updatePreview();
+}
+
+// Ajouter un bouton pour réinitialiser les champs optionnels
+document.addEventListener('DOMContentLoaded', function() {
+    const formActions = document.querySelector('.form-actions .d-flex:first-child');
+    if (formActions) {
+        const resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'btn btn-outline-warning btn-sm';
+        resetBtn.innerHTML = '<i class="fas fa-undo me-2"></i>Réinitialiser les champs optionnels';
+        resetBtn.onclick = resetOptionalFields;
+        
+        formActions.appendChild(resetBtn);
+    }
+});
+</script>
+{% endblock %}

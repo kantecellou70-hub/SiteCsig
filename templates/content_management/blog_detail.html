@@ -1,0 +1,862 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}{{ blog.title }}{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:blog_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux blogs
+    </a>
+    <a href="{% url 'content_management:blog_edit' blog.slug %}" class="btn btn-outline-warning">
+        <i class="fas fa-edit me-2"></i>Modifier
+    </a>
+    <a href="{% url 'content_management:blog_delete' blog.slug %}" class="btn btn-outline-danger">
+        <i class="fas fa-trash me-2"></i>Supprimer
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="blog-detail-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- En-tête du blog -->
+            <div class="content-section">
+                <div class="blog-header">
+                    {% if blog.image %}
+                        <div class="blog-hero-image">
+                            <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+                        </div>
+                    {% endif %}
+                    
+                    <div class="blog-header-content">
+                        <div class="blog-status-badges">
+                            {% if blog.status == 'published' %}
+                                <span class="status-badge published">
+                                    <i class="fas fa-check-circle me-1"></i>Publié
+                                </span>
+                            {% elif blog.status == 'draft' %}
+                                <span class="status-badge draft">
+                                    <i class="fas fa-edit me-1"></i>Brouillon
+                                </span>
+                            {% else %}
+                                <span class="status-badge pending">
+                                    <i class="fas fa-clock me-1"></i>En attente
+                                </span>
+                            {% endif %}
+                            
+                            {% if blog.is_active %}
+                                <span class="status-badge active">
+                                    <i class="fas fa-eye me-1"></i>Actif
+                                </span>
+                            {% endif %}
+                            
+                            {% if blog.featured %}
+                                <span class="featured-badge">
+                                    <i class="fas fa-star me-1"></i>Mis en avant
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <h1 class="blog-title">{{ blog.title }}</h1>
+                        
+                        {% if blog.personna %}
+                        <div class="blog-personna-info">
+                            <div class="personna-avatar">
+                                {% if blog.personna.avatar %}
+                                    <img src="{{ blog.personna.avatar.url }}" alt="{{ blog.personna.name }}">
+                                {% else %}
+                                    <div class="avatar-placeholder">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="personna-details">
+                                <a href="{% url 'content_management:personna_detail' blog.personna.slug %}" class="personna-name">
+                                    {{ blog.personna.name }}
+                                </a>
+                                <span class="personna-type">{{ blog.personna.get_personna_type_display }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="blog-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-calendar me-2"></i>
+                                <span>Créé le {{ blog.created_at|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            
+                            {% if blog.published_at %}
+                            <div class="meta-item">
+                                <i class="fas fa-clock me-2"></i>
+                                <span>Publié le {{ blog.published_at|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="meta-item">
+                                <i class="fas fa-eye me-2"></i>
+                                <span>{{ blog.views_count|default:0 }} vue{{ blog.views_count|default:0|pluralize }}</span>
+                            </div>
+                            
+                            <div class="meta-item">
+                                <i class="fas fa-clock me-2"></i>
+                                <span>{{ blog.reading_time }} min de lecture</span>
+                            </div>
+                        </div>
+                        
+                        {% if blog.excerpt %}
+                        <div class="blog-excerpt">
+                            <p>{{ blog.excerpt }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenu du blog -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-align-left me-2"></i>Contenu</h3>
+                </div>
+                <div class="section-body">
+                    <div class="blog-content">
+                        {{ blog.content|safe }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vidéo -->
+            {% if blog.video_url %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-video me-2"></i>Vidéo</h3>
+                </div>
+                <div class="section-body">
+                    <div class="video-container">
+                        <iframe src="{{ blog.video_url }}" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Actions rapides -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-bolt me-2"></i>Actions rapides</h3>
+                </div>
+                <div class="section-body">
+                    <div class="quick-actions">
+                        <a href="{% url 'content_management:blog_edit' blog.slug %}" class="btn btn-warning w-100 mb-2">
+                            <i class="fas fa-edit me-2"></i>Modifier le blog
+                        </a>
+                        
+                        <button class="btn btn-outline-secondary w-100 mb-2 toggle-status-btn" 
+                                data-blog-id="{{ blog.slug }}"
+                                data-current-status="{{ blog.status }}">
+                            {% if blog.status == 'published' %}
+                                <i class="fas fa-pause me-2"></i>Mettre en brouillon
+                            {% else %}
+                                <i class="fas fa-play me-2"></i>Publier
+                            {% endif %}
+                        </button>
+                        
+                        <button class="btn btn-outline-info w-100 mb-2 toggle-active-btn"
+                                data-blog-id="{{ blog.slug }}"
+                                data-current-active="{{ blog.is_active|yesno:'true,false' }}">
+                            {% if blog.is_active %}
+                                <i class="fas fa-eye-slash me-2"></i>Masquer
+                            {% else %}
+                                <i class="fas fa-eye me-2"></i>Afficher
+                            {% endif %}
+                        </button>
+                        
+                        <button class="btn btn-outline-warning w-100 toggle-featured-btn"
+                                data-blog-id="{{ blog.slug }}"
+                                data-current-featured="{{ blog.featured|yesno:'true,false' }}">
+                            {% if blog.featured %}
+                                <i class="fas fa-star me-2"></i>Retirer de l'avant
+                            {% else %}
+                                <i class="fas fa-star me-2"></i>Mettre en avant
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-chart-bar me-2"></i>Statistiques</h3>
+                </div>
+                <div class="section-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>{{ blog.views_count|default:0 }}</h4>
+                                <p>Vues</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon {% if blog.is_active %}active{% else %}inactive{% endif %}">
+                                <i class="fas fa-{% if blog.is_active %}eye{% else %}eye-slash{% endif %}"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>{{ blog.is_active|yesno:"Actif,Masqué" }}</h4>
+                                <p>Visibilité</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon {{ blog.status }}">
+                                <i class="fas fa-{% if blog.status == 'published' %}check-circle{% elif blog.status == 'draft' %}edit{% else %}clock{% endif %}"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>{{ blog.get_status_display }}</h4>
+                                <p>Statut</p>
+                            </div>
+                        </div>
+
+                        {% if blog.featured %}
+                        <div class="stat-card">
+                            <div class="stat-icon featured">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>Oui</h4>
+                                <p>Mis en avant</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations système -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-cog me-2"></i>Informations système</h3>
+                </div>
+                <div class="section-body">
+                    <div class="system-info">
+                        <div class="info-item">
+                            <span class="info-label">ID :</span>
+                            <span class="info-value">{{ blog.id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Slug :</span>
+                            <span class="info-value">{{ blog.slug }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Créé le :</span>
+                            <span class="info-value">{{ blog.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% if blog.updated_at %}
+                        <div class="info-item">
+                            <span class="info-label">Modifié le :</span>
+                            <span class="info-value">{{ blog.updated_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% endif %}
+                        {% if blog.published_at %}
+                        <div class="info-item">
+                            <span class="info-label">Publié le :</span>
+                            <span class="info-value">{{ blog.published_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blogs similaires -->
+            {% if similar_blogs %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-link me-2"></i>Blogs similaires</h3>
+                </div>
+                <div class="section-body">
+                    <div class="similar-blogs">
+                        {% for similar_blog in similar_blogs|slice:":3" %}
+                        <div class="similar-blog-item">
+                            {% if similar_blog.image %}
+                            <div class="similar-blog-image">
+                                <img src="{{ similar_blog.image.url }}" alt="{{ similar_blog.title }}">
+                            </div>
+                            {% endif %}
+                            <div class="similar-blog-content">
+                                <h6 class="similar-blog-title">
+                                    <a href="{% url 'content_management:blog_detail' similar_blog.slug %}">
+                                        {{ similar_blog.title }}
+                                    </a>
+                                </h6>
+                                <p class="similar-blog-excerpt">{{ similar_blog.excerpt|truncatewords:10 }}</p>
+                                <div class="similar-blog-meta">
+                                    <span class="similar-blog-date">{{ similar_blog.created_at|date:"d/m/Y" }}</span>
+                                    {% if similar_blog.personna %}
+                                    <span class="similar-blog-personna">{{ similar_blog.personna.name }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.blog-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* En-tête du blog */
+.blog-header {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.blog-hero-image {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 2rem;
+}
+
+.blog-hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.blog-header-content {
+    position: relative;
+}
+
+.blog-status-badges {
+    position: absolute;
+    top: -60px;
+    right: 0;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.status-badge, .featured-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.published {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.draft {
+    background: var(--warning-color);
+    color: white;
+}
+
+.status-badge.pending {
+    background: var(--info-color);
+    color: white;
+}
+
+.status-badge.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.featured-badge {
+    background: var(--warning-color);
+    color: white;
+}
+
+.blog-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.2;
+}
+
+.blog-personna-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.personna-avatar {
+    flex-shrink: 0;
+}
+
+.personna-avatar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-600);
+    font-size: 1.25rem;
+}
+
+.personna-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.personna-name {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.personna-name:hover {
+    text-decoration: underline;
+}
+
+.personna-type {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.blog-meta {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+.blog-excerpt {
+    background: var(--gray-50);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--primary-color);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--gray-700);
+    font-style: italic;
+}
+
+/* Contenu du blog */
+.blog-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--gray-800);
+}
+
+.blog-content h1, .blog-content h2, .blog-content h3, .blog-content h4, .blog-content h5, .blog-content h6 {
+    color: var(--gray-900);
+    margin: 2rem 0 1rem 0;
+    font-weight: 600;
+}
+
+.blog-content p {
+    margin-bottom: 1.5rem;
+}
+
+.blog-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius);
+    margin: 1.5rem 0;
+}
+
+.blog-content blockquote {
+    background: var(--gray-50);
+    border-left: 4px solid var(--primary-color);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--gray-700);
+}
+
+.blog-content ul, .blog-content ol {
+    margin: 1.5rem 0;
+    padding-left: 2rem;
+}
+
+.blog-content li {
+    margin-bottom: 0.5rem;
+}
+
+/* Vidéo */
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* Ratio 16:9 */
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Actions rapides */
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Statistiques */
+.stats-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.stat-icon.active {
+    background: var(--success-color);
+}
+
+.stat-icon.inactive {
+    background: var(--danger-color);
+}
+
+.stat-icon.published {
+    background: var(--success-color);
+}
+
+.stat-icon.draft {
+    background: var(--warning-color);
+}
+
+.stat-icon.pending {
+    background: var(--info-color);
+}
+
+.stat-icon.featured {
+    background: var(--warning-color);
+}
+
+.stat-content h4 {
+    color: var(--gray-800);
+    font-size: 1.25rem;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+}
+
+.stat-content p {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Informations système */
+.system-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.info-value {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    font-family: monospace;
+}
+
+/* Blogs similaires */
+.similar-blogs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.similar-blog-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.similar-blog-image {
+    flex-shrink: 0;
+}
+
+.similar-blog-image img {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+}
+
+.similar-blog-content {
+    flex: 1;
+}
+
+.similar-blog-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+}
+
+.similar-blog-title a {
+    color: var(--gray-800);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.similar-blog-title a:hover {
+    color: var(--primary-color);
+}
+
+.similar-blog-excerpt {
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+}
+
+.similar-blog-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.similar-blog-date, .similar-blog-personna {
+    color: var(--gray-500);
+    font-size: 0.75rem;
+}
+
+.similar-blog-personna {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .blog-title {
+        font-size: 2rem;
+    }
+    
+    .blog-meta {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .blog-status-badges {
+        position: static;
+        margin-bottom: 1rem;
+        justify-content: flex-start;
+    }
+    
+    .blog-personna-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .blog-excerpt {
+        padding: 1rem;
+    }
+    
+    .blog-content {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .blog-hero-image {
+        height: 200px;
+    }
+    
+    .blog-title {
+        font-size: 1.5rem;
+    }
+    
+    .blog-meta {
+        gap: 0.75rem;
+    }
+    
+    .meta-item {
+        font-size: 0.75rem;
+    }
+    
+    .similar-blog-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .similar-blog-image img {
+        width: 100px;
+        height: 100px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle status
+    document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const blogId = this.dataset.blogId;
+            const currentStatus = this.dataset.currentStatus;
+            
+            fetch(`/content-management/blogs/${blogId}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showCustomNotification(data.error || 'Erreur lors du changement de statut', 'error');
+                }
+            })
+            .catch(error => {
+                showCustomNotification('Erreur de connexion', 'error');
+            });
+        });
+    });
+    
+    // Toggle active
+    document.querySelectorAll('.toggle-active-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const blogId = this.dataset.blogId;
+            const currentActive = this.dataset.currentActive === 'true';
+            
+            fetch(`/content-management/blogs/${blogId}/toggle-active/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showCustomNotification(data.error || 'Erreur lors du changement de visibilité', 'error');
+                }
+            })
+            .catch(error => {
+                showCustomNotification('Erreur de connexion', 'error');
+            });
+        });
+    });
+    
+    // Toggle featured
+    document.querySelectorAll('.toggle-featured-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const blogId = this.dataset.blogId;
+            const currentFeatured = this.dataset.currentFeatured === 'true';
+            
+            fetch(`/content-management/blogs/${blogId}/toggle-featured/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showCustomNotification(data.error || 'Erreur lors du changement de mise en avant', 'error');
+                }
+            })
+            .catch(error => {
+                showCustomNotification('Erreur de connexion', 'error');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

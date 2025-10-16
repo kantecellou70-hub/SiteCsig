@@ -1,0 +1,416 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ event.title }} - Gestion de contenu CSIG{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-calendar me-2"></i>{{ event.title }}
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">
+        {% if event.title_en %}{{ event.title_en }}{% endif %}
+        {% if event.location %} • <i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}{% endif %}
+    </p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'content_management:event_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+        <a href="{% url 'content_management:event_edit' event.pk %}" class="btn btn-primary">
+            <i class="fas fa-edit me-2"></i>Modifier
+        </a>
+        <button type="button" class="btn btn-outline-danger" onclick="deleteEvent({{ event.pk }}, '{{ event.title }}')">
+            <i class="fas fa-trash me-2"></i>Supprimer
+        </button>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="category-detail-container">
+    <!-- En-tête de l'événement -->
+    <div class="category-header-detail">
+        <div class="category-main-info">
+            <div class="category-icon-large" style="background-color: {{ event.category.color|default:'#0d4786' }}">
+                <i class="fas fa-calendar"></i>
+            </div>
+            <div>
+                <h1 class="category-title">{{ event.title }}</h1>
+                {% if event.title_en %}
+                    <h2 class="category-subtitle">{{ event.title_en }}</h2>
+                {% endif %}
+                <div class="category-meta">
+                    <span class="meta-badge">
+                        <i class="fas fa-calendar me-2"></i>
+                        {{ event.start_date|date:"d/m/Y" }}
+                        {% if event.end_date and event.end_date != event.start_date %}
+                            - {{ event.end_date|date:"d/m/Y" }}
+                        {% endif %}
+                    </span>
+                    {% if event.location %}
+                        <span class="meta-badge">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            {{ event.location }}
+                        </span>
+                    {% endif %}
+                    <span class="meta-badge">
+                        <i class="fas fa-calendar me-2"></i>
+                        {{ event.event_type|title }}
+                    </span>
+                    <span class="meta-badge status-{{ event.status }}">
+                        {% if event.status == 'published' %}
+                            <i class="fas fa-check-circle me-2"></i>Publié
+                        {% elif event.status == 'draft' %}
+                            <i class="fas fa-edit me-2"></i>Brouillon
+                        {% else %}
+                            <i class="fas fa-trash me-2"></i>Corbeille
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image principale -->
+    {% if event.featured_image %}
+    <div class="content-section">
+        <div class="section-header">
+            <h3><i class="fas fa-image me-2"></i>Image principale</h3>
+        </div>
+        <div class="section-body">
+            <div class="text-center">
+                <img src="{{ event.featured_image.url }}" alt="{{ event.title }}" 
+                     class="img-fluid rounded" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Description -->
+    {% if event.description %}
+    <div class="content-section">
+        <div class="section-header">
+            <h3><i class="fas fa-align-left me-2"></i>Description</h3>
+        </div>
+        <div class="section-body">
+            <div class="category-description-full">
+                <h5>Description en français</h5>
+                <div class="ck-content">
+                    {{ event.description|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Description en anglais -->
+    {% if event.description_en %}
+    <div class="content-section">
+        <div class="section-header">
+            <h3><i class="fas fa-language me-2"></i>Description en anglais</h3>
+        </div>
+        <div class="section-body">
+            <div class="category-description-full">
+                <h5>Description in English</h5>
+                <div class="ck-content">
+                    {{ event.description_en|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Informations techniques -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Statistiques -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-chart-bar me-2"></i>Statistiques</h3>
+                </div>
+                <div class="section-body">
+                    <div class="stats-grid-detailed">
+                        <div class="stat-item-detailed">
+                            <div class="stat-icon-detailed">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div class="stat-content-detailed">
+                                <h4>{{ event.start_date|date:"d/m/Y" }}</h4>
+                                <p>Date de début</p>
+                            </div>
+                        </div>
+                        {% if event.end_date %}
+                        <div class="stat-item-detailed">
+                            <div class="stat-icon-detailed">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="stat-content-detailed">
+                                <h4>{{ event.end_date|date:"d/m/Y" }}</h4>
+                                <p>Date de fin</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="stat-item-detailed">
+                            <div class="stat-icon-detailed">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content-detailed">
+                                <h4>{{ event.created_at|date:"d/m/Y H:i" }}</h4>
+                                <p>Créé le</p>
+                            </div>
+                        </div>
+                        <div class="stat-item-detailed">
+                            <div class="stat-icon-detailed">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="stat-content-detailed">
+                                <h4>{{ event.updated_at|date:"d/m/Y H:i" }}</h4>
+                                <p>Modifié le</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Métadonnées SEO -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-search me-2"></i>Métadonnées SEO</h3>
+                </div>
+                <div class="section-body">
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span class="info-label">Slug URL:</span>
+                            <span class="info-value">{{ event.slug|default:"Non défini" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Titre SEO:</span>
+                            <span class="info-value">{{ event.meta_title|default:"Non défini" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Description SEO:</span>
+                            <span class="info-value">{{ event.meta_description|default:"Non défini" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Informations de l'événement -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Informations</h3>
+                </div>
+                <div class="section-body">
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span class="info-label">Catégorie:</span>
+                            <span class="info-value">
+                                {% if event.category %}
+                                    <span class="badge" style="background-color: {{ event.category.color|default:'#0d4786' }}; color: white;">
+                                        {{ event.category.name }}
+                                    </span>
+                                {% else %}
+                                    Aucune catégorie
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Type:</span>
+                            <span class="info-value">{{ event.event_type|title }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Statut:</span>
+                            <span class="info-value">
+                                <span class="badge status-{{ event.status }}">
+                                    {% if event.status == 'published' %}Publié
+                                    {% elif event.status == 'draft' %}Brouillon
+                                    {% else %}Corbeille{% endif %}
+                                </span>
+                            </span>
+                        </div>
+                        {% if event.location %}
+                        <div class="info-item">
+                            <span class="info-label">Lieu:</span>
+                            <span class="info-value">{{ event.location }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-bolt me-2"></i>Actions rapides</h3>
+                </div>
+                <div class="section-body">
+                    <div class="quick-actions-list">
+                        <a href="{% url 'content_management:event_edit' event.pk %}" class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Modifier</h5>
+                                <p>Éditer les informations de l'événement</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:event_manage_agenda' event.pk %}" class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Gérer l'agenda</h5>
+                                <p>Organiser les jours et activités de l'événement</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:event_manage_intervenants' event.pk %}" class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Gérer les intervenants</h5>
+                                <p>Ajouter/modifier les conférenciers et présentateurs</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:event_manage_faq' event.pk %}" class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Gérer la FAQ</h5>
+                                <p>Ajouter/modifier les questions fréquentes</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:event_registration_form_manage' event.pk %}" class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Formulaire d'inscription</h5>
+                                <p>Gérer le formulaire d'inscription personnalisé</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:event_manage_organizers' event.pk %}" class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Gérer les organisateurs</h5>
+                                <p>Ajouter/modifier les organisateurs de l'événement</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:event_list' %}" class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Voir la liste</h5>
+                                <p>Retourner à la liste des événements</p>
+                            </div>
+                        </a>
+                        
+                        <button type="button" class="quick-action-item" onclick="deleteEvent({{ event.pk }}, '{{ event.title }}')">
+                            <div class="action-icon" style="background-color: var(--danger-color);">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Supprimer</h5>
+                                <p>Supprimer définitivement cet événement</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-history me-2"></i>Historique</h3>
+                </div>
+                <div class="section-body">
+                    <div class="history-timeline">
+                        <div class="history-item">
+                            <h6>Événement créé</h6>
+                            <p>Événement créé le {{ event.created_at|date:"d/m/Y H:i" }}</p>
+                            <small>{{ event.created_at|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        {% if event.updated_at != event.created_at %}
+                        <div class="history-item">
+                            <h6>Dernière modification</h6>
+                            <p>Modifications apportées</p>
+                            <small>{{ event.updated_at|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer l'événement <strong id="eventTitleToDelete"></strong> ?</p>
+                <p class="text-danger"><small>Cette action est irréversible.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentEventId = null;
+
+// Suppression d'événement
+function deleteEvent(eventId, eventTitle) {
+    currentEventId = eventId;
+    document.getElementById('eventTitleToDelete').textContent = eventTitle;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (currentEventId) {
+        // Rediriger vers la page de suppression
+        window.location.href = `/content-management/events/${currentEventId}/delete/`;
+    }
+});
+
+// Initialisation des composants
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser les tooltips Bootstrap
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

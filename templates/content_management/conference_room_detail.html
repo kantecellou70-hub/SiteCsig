@@ -1,0 +1,726 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+{% load custom_filters %}
+
+{% block page_title %}{{ room.name }}{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:conference_room_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:conference_room_edit' room.slug %}" class="btn btn-outline-primary">
+        <i class="fas fa-edit me-2"></i>Modifier
+    </a>
+    <a href="{% url 'content_management:room_booking_create' %}?room={{ room.id }}" class="btn btn-success">
+        <i class="fas fa-calendar-plus me-2"></i>Réserver cette salle
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="conference-room-detail-container">
+    <!-- En-tête de la salle -->
+    <div class="room-header-detail">
+        <div class="row">
+            <div class="col-lg-8">
+                                 <div class="room-main-info">
+                     <h1 class="room-title-large">{{ room.name }}</h1>
+                     <div class="room-subtitle">
+                         {% if room.is_available %}
+                             <span class="status-badge status-active">
+                                 <i class="fas fa-check-circle me-2"></i>Disponible
+                             </span>
+                         {% else %}
+                             <span class="status-badge status-inactive">
+                                 <i class="fas fa-times-circle me-2"></i>Indisponible
+                             </span>
+                         {% endif %}
+                         
+                         {% if room.maintenance_until and room.maintenance_until > now %}
+                             <span class="maintenance-badge">
+                                 <i class="fas fa-tools me-2"></i>Maintenance jusqu'au {{ room.maintenance_until|date:"d/m/Y H:i" }}
+                             </span>
+                         {% endif %}
+                     </div>
+                     
+                     <!-- Statistiques rapides avant la description -->
+                     <div class="room-quick-stats">
+                         <div class="stat-item-quick">
+                             <div class="stat-icon-quick">
+                                 <i class="fas fa-users"></i>
+                             </div>
+                             <div class="stat-content-quick">
+                                 <h4>{{ room.capacity }}</h4>
+                                 <p>Personnes</p>
+                             </div>
+                         </div>
+                         
+                         <div class="stat-item-quick">
+                             <div class="stat-icon-quick">
+                                 <i class="fas fa-ruler-combined"></i>
+                             </div>
+                             <div class="stat-content-quick">
+                                 <h4>{{ room.area }}</h4>
+                                 <p>m²</p>
+                             </div>
+                         </div>
+                         
+                         <div class="stat-item-quick">
+                             <div class="stat-icon-quick">
+                                 <i class="fas fa-clock"></i>
+                             </div>
+                             <div class="stat-content-quick">
+                                 <h4>{{ room.price_per_hour }}€</h4>
+                                 <p>Par heure</p>
+                             </div>
+                         </div>
+                         
+                         <div class="stat-item-quick">
+                             <div class="stat-icon-quick">
+                                 <i class="fas fa-calendar-day"></i>
+                             </div>
+                             <div class="stat-content-quick">
+                                 <h4>{{ room.price_per_day }}€</h4>
+                                 <p>Par jour</p>
+                             </div>
+                         </div>
+                     </div>
+                     
+                     <div class="room-description-full">
+                         <p>{{ room.description|default:"Aucune description disponible" }}</p>
+                     </div>
+                 </div>
+             </div>
+             
+             <div class="col-lg-4">
+                 <!-- Colonne de droite vide pour l'instant -->
+             </div>
+        </div>
+    </div>
+
+    <!-- Informations détaillées -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Équipements -->
+            {% if room.features %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-list me-2"></i>Équipements disponibles</h3>
+                </div>
+                <div class="section-body">
+                    <div class="features-grid">
+                        {% for feature in room.features|split_features:"," %}
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <span>{{ feature|clean_feature }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Réservations à venir -->
+            {% if upcoming_bookings %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-calendar-alt me-2"></i>Réservations à venir</h3>
+                </div>
+                <div class="section-body">
+                    <div class="bookings-list">
+                        {% for booking in upcoming_bookings %}
+                        <div class="booking-item">
+                            <div class="booking-date">
+                                <div class="date-main">{{ booking.start_time|date:"d" }}</div>
+                                <div class="date-month">{{ booking.start_time|date:"M" }}</div>
+                                <div class="date-year">{{ booking.start_time|date:"Y" }}</div>
+                            </div>
+                            
+                            <div class="booking-info">
+                                <h6 class="booking-title">{{ booking.event_title }}</h6>
+                                <div class="booking-details">
+                                    <span class="booking-time">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                                    </span>
+                                    <span class="booking-organization">
+                                        <i class="fas fa-building me-1"></i>
+                                        {{ booking.organization.name }}
+                                    </span>
+                                    <span class="booking-attendees">
+                                        <i class="fas fa-users me-1"></i>
+                                        {{ booking.attendees_count }} participants
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="booking-status">
+                                <span class="status-badge status-{{ booking.status }}">
+                                    {{ booking.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Réservations récentes -->
+            {% if recent_bookings %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-history me-2"></i>Réservations récentes</h3>
+                </div>
+                <div class="section-body">
+                    <div class="bookings-list">
+                        {% for booking in recent_bookings %}
+                        <div class="booking-item">
+                            <div class="booking-date">
+                                <div class="date-main">{{ booking.end_time|date:"d" }}</div>
+                                <div class="date-month">{{ booking.end_time|date:"M" }}</div>
+                                <div class="date-year">{{ booking.end_time|date:"Y" }}</div>
+                            </div>
+                            
+                            <div class="booking-info">
+                                <h6 class="booking-title">{{ booking.event_title }}</h6>
+                                <div class="booking-details">
+                                    <span class="booking-time">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                                    </span>
+                                    <span class="booking-organization">
+                                        <i class="fas fa-building me-1"></i>
+                                        {{ booking.organization.name }}
+                                    </span>
+                                    <span class="booking-revenue">
+                                        <i class="fas fa-euro-sign me-1"></i>
+                                        {{ booking.total_price }}€
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="booking-status">
+                                <span class="status-badge status-completed">
+                                    Terminée
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Actions rapides -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-bolt me-2"></i>Actions rapides</h3>
+                </div>
+                <div class="section-body">
+                    <div class="quick-actions-list">
+                        <a href="{% url 'content_management:room_booking_create' %}?room={{ room.id }}" 
+                           class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-calendar-plus"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Nouvelle réservation</h5>
+                                <p>Réserver cette salle pour un événement</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:room_maintenance_create' %}?room={{ room.id }}" 
+                           class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Planifier maintenance</h5>
+                                <p>Programmer une maintenance pour cette salle</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'content_management:room_booking_calendar' %}" 
+                           class="quick-action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="action-text">
+                                <h5>Voir calendrier</h5>
+                                <p>Consulter le calendrier des réservations</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance en cours -->
+            {% if active_maintenance %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-exclamation-triangle me-2"></i>Maintenance en cours</h3>
+                </div>
+                <div class="section-body">
+                    <div class="maintenance-alert">
+                        <div class="alert alert-warning">
+                            <h6>{{ active_maintenance.title }}</h6>
+                            <p>{{ active_maintenance.description|truncatewords:20 }}</p>
+                            <small>
+                                <i class="fas fa-calendar me-1"></i>
+                                Jusqu'au {{ active_maintenance.end_date|date:"d/m/Y H:i" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Informations techniques -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Informations techniques</h3>
+                </div>
+                <div class="section-body">
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span class="info-label">Créée le</span>
+                            <span class="info-value">{{ room.created_at|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Dernière modification</span>
+                            <span class="info-value">{{ room.updated_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Slug</span>
+                            <span class="info-value">{{ room.slug }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.room-header-detail {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--gray-200);
+}
+
+.room-title-large {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 1rem;
+}
+
+.room-subtitle {
+    margin-bottom: 1.5rem;
+}
+
+.room-subtitle .status-badge,
+.room-subtitle .maintenance-badge {
+    margin-right: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.status-badge.status-active {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.status-inactive {
+    background: var(--danger-color);
+    color: white;
+}
+
+.maintenance-badge {
+    background: var(--warning-color);
+    color: white;
+}
+
+.room-description-full {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--gray-700);
+}
+
+.room-quick-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1.5rem 0;
+    background: var(--gray-50);
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+}
+
+.stat-item-quick {
+    text-align: center;
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.stat-icon-quick {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.25rem;
+}
+
+.stat-content-quick h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--gray-800);
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.stat-content-quick p {
+    margin: 0;
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+    color: var(--gray-700);
+}
+
+.feature-item i {
+    color: var(--success-color);
+    margin-right: 0.75rem;
+}
+
+.bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.booking-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    background: var(--white);
+    transition: var(--transition);
+}
+
+.booking-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--box-shadow);
+}
+
+.booking-date {
+    text-align: center;
+    flex-shrink: 0;
+    width: 80px;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+}
+
+.date-main {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.date-month {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.date-year {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 0.25rem;
+}
+
+.booking-info {
+    flex: 1;
+}
+
+.booking-title {
+    margin: 0 0 0.75rem 0;
+    color: var(--gray-800);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.booking-details {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.booking-time, .booking-organization, .booking-attendees, .booking-revenue {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+}
+
+.booking-status {
+    flex-shrink: 0;
+}
+
+.status-badge.status-pending {
+    background: var(--warning-color);
+    color: white;
+}
+
+.status-badge.status-confirmed {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.status-completed {
+    background: var(--info-color);
+    color: white;
+}
+
+.quick-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.quick-actions-list .quick-action-item {
+    padding: 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition);
+    background: var(--white);
+}
+
+.quick-actions-list .quick-action-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--box-shadow);
+    text-decoration: none;
+    color: inherit;
+}
+
+.maintenance-alert .alert {
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin: 0;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+}
+
+.info-label {
+    color: var(--gray-700);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.info-value {
+    color: var(--gray-800);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+     .room-header-detail {
+         padding: 1rem;
+         margin-bottom: 1rem;
+     }
+     
+     .room-title-large {
+         font-size: 2rem;
+         text-align: center;
+     }
+     
+     .room-subtitle {
+         text-align: center;
+         flex-direction: column;
+         gap: 0.5rem;
+     }
+     
+     .room-subtitle .status-badge,
+     .room-subtitle .maintenance-badge {
+         margin-right: 0;
+         margin-bottom: 0.5rem;
+         display: inline-block;
+     }
+     
+     .room-quick-stats {
+         grid-template-columns: repeat(2, 1fr);
+         gap: 0.75rem;
+         margin: 1.5rem 0;
+     }
+     
+     .stat-item-quick {
+         padding: 1rem;
+     }
+     
+     .stat-icon-quick {
+         width: 40px;
+         height: 40px;
+         font-size: 1rem;
+     }
+     
+     .stat-content-quick h4 {
+         font-size: 1.25rem;
+     }
+     
+     .stat-content-quick p {
+         font-size: 0.75rem;
+     }
+     
+     .room-description-full {
+         font-size: 1rem;
+         text-align: center;
+     }
+     
+     .booking-item {
+         flex-direction: column;
+         text-align: center;
+         padding: 1rem;
+     }
+     
+     .booking-date {
+         width: 100%;
+         margin-bottom: 1rem;
+     }
+     
+     .features-grid {
+         grid-template-columns: 1fr;
+         gap: 0.75rem;
+     }
+     
+     .feature-item {
+         padding: 0.75rem;
+         text-align: center;
+     }
+     
+     .quick-actions-list .quick-action-item {
+         padding: 0.75rem;
+     }
+     
+     .action-text h5 {
+         font-size: 1rem;
+     }
+     
+     .action-text p {
+         font-size: 0.875rem;
+     }
+     
+     .info-list {
+         gap: 0.75rem;
+     }
+     
+     .info-item {
+         flex-direction: column;
+         text-align: center;
+         gap: 0.5rem;
+     }
+ }
+
+@media (max-width: 480px) {
+     .room-quick-stats {
+         grid-template-columns: 1fr;
+         gap: 0.5rem;
+     }
+     
+     .stat-item-quick {
+         padding: 0.75rem;
+     }
+     
+     .stat-icon-quick {
+         width: 35px;
+         height: 35px;
+         font-size: 0.875rem;
+     }
+     
+     .stat-content-quick h4 {
+         font-size: 1.1rem;
+     }
+     
+     .room-title-large {
+         font-size: 1.75rem;
+     }
+     
+     .room-header-detail {
+         padding: 0.75rem;
+     }
+     
+     .content-section {
+         margin-bottom: 1.5rem;
+     }
+     
+     .section-header h3 {
+         font-size: 1.25rem;
+     }
+ }
+</style>
+{% endblock %}

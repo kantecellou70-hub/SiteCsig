@@ -1,0 +1,903 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}{{ project.title }} - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="project-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="project-hero-content">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'sfront:home' %}">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'sfront:projects' %}">Projets</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ project.title }}</li>
+                        </ol>
+                    </nav>
+                    
+                    <div class="project-badges mb-3">
+                        <span class="badge status-badge status-{{ project.status }}">
+                            {{ project.get_status_display }}
+                        </span>
+                        {% if project.is_featured %}
+                            <span class="badge featured-badge">
+                                <i class="fas fa-star"></i> Mis en avant
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <h1 class="project-title">{{ project.title }}</h1>
+                    
+                    {% if project.short_description %}
+                        <p class="project-excerpt">{{ project.short_description }}</p>
+                    {% endif %}
+                    
+                    <div class="project-meta-hero">
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>{{ project.start_date|date:"M Y" }}
+                                {% if project.end_date %}
+                                    - {{ project.end_date|date:"M Y" }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% if project.budget %}
+                        <div class="meta-item">
+                            <i class="fas fa-coins"></i>
+                            <span>{{ project.budget }} GNF</span>
+                        </div>
+                        {% endif %}
+                        <div class="meta-item">
+                            <i class="fas fa-users"></i>
+                            <span>{{ project.team_members.count }} membres</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="project-hero-image">
+                    {% if project.featured_image %}
+                        <img src="{{ project.featured_image.url }}" alt="{{ project.title }}" class="img-fluid rounded-3 shadow">
+                    {% else %}
+                        <div class="project-placeholder">
+                            <i class="fas fa-project-diagram fa-4x text-muted"></i>
+                            <p class="mt-3 text-muted">Image du projet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section id="project-content" class="project-content-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Description du projet -->
+                <div class="content-card mb-4">
+                    <h2 class="section-title">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>
+                        Description
+                    </h2>
+                    <div class="project-description">
+                        {{ project.description|safe }}
+                    </div>
+                </div>
+                
+                <!-- Objectifs du projet -->
+                {% if project.objectives %}
+                <div class="content-card mb-4">
+                    <h2 class="section-title">
+                        <i class="fas fa-bullseye me-2 text-primary"></i>
+                        Objectifs
+                    </h2>
+                    <div class="objectives-content">
+                        {{ project.objectives|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Résultats du projet -->
+                {% if project.results %}
+                <div class="content-card mb-4">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        Résultats
+                    </h2>
+                    <div class="results-content">
+                        {{ project.results|safe }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Informations du projet -->
+                <div class="content-card mb-4">
+                    <h3 class="card-title">
+                        <i class="fas fa-clipboard-list me-2 text-primary"></i>
+                        Informations du projet
+                    </h3>
+                    
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-calendar me-2 text-muted"></i>Début :</strong>
+                        <span>{{ project.start_date|date:"d/m/Y" }}</span>
+                    </div>
+                    
+                    {% if project.end_date %}
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-calendar-check me-2 text-muted"></i>Fin prévue :</strong>
+                        <span>{{ project.end_date|date:"d/m/Y" }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-signal me-2 text-muted"></i>Statut :</strong>
+                        <span class="status-indicator status-{{ project.status }}">
+                            {{ project.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    {% if project.budget %}
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-coins me-2 text-muted"></i>Budget :</strong>
+                        <span>{{ project.budget }} GNF</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Équipe du projet -->
+                {% if project.team_members.exists %}
+                <div class="content-card mb-4">
+                    <h3 class="card-title">
+                        <i class="fas fa-users me-2 text-primary"></i>
+                        Équipe du projet
+                    </h3>
+                    
+                    <div class="team-members">
+                        {% for member in project.team_members.all %}
+                        <div class="team-member-item">
+                            <div class="member-avatar">
+                                {% if member.profile_picture %}
+                                    <img src="{{ member.profile_picture.url }}" alt="{{ member.get_full_name }}" class="rounded-circle">
+                                {% else %}
+                                    <div class="avatar-placeholder">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="member-info">
+                                <h6 class="member-name">{{ member.get_full_name }}</h6>
+                                {% if member.job_title %}
+                                    <small class="member-title">{{ member.job_title }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Partenaires du projet -->
+                {% if project.partners_text %}
+                <div class="content-card mb-4">
+                    <h3 class="card-title">
+                        <i class="fas fa-handshake me-2 text-primary"></i>
+                        Partenaires
+                    </h3>
+                    
+                    <div class="partners-content">
+                        {{ project.partners_text|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Actions -->
+                <div class="content-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-share-alt me-2 text-primary"></i>
+                        Partager ce projet
+                    </h3>
+                    
+                    <div class="share-buttons">
+                        <a href="#" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="shareProject()">
+                            <i class="fas fa-share me-2"></i>Partager
+                        </a>
+                        <a href="{% url 'sfront:contact' %}" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-envelope me-2"></i>Nous contacter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Similar Projects Section -->
+{% if similar_projects %}
+<section class="similar-projects-section py-5 bg-light">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title">Projets similaires</h2>
+            <p class="section-subtitle">Découvrez d'autres projets qui pourraient vous intéresser</p>
+        </div>
+        
+        <div class="row">
+            {% for similar_project in similar_projects %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="project-card h-100">
+                    <div class="project-image">
+                        {% if similar_project.featured_image %}
+                            <img src="{{ similar_project.featured_image.url }}" alt="{{ similar_project.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="project-placeholder">
+                                <i class="fas fa-project-diagram fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="project-overlay">
+                            <a href="{% url 'sfront:project_detail' similar_project.slug %}" class="btn btn-primary btn-sm">
+                                Voir détails
+                            </a>
+                        </div>
+                        
+                        {% if similar_project.is_featured %}
+                        <div class="featured-badge">
+                            <i class="fas fa-star"></i> Mis en avant
+                        </div>
+                        {% endif %}
+                        
+                        <div class="status-badge status-{{ similar_project.status }}">
+                            {{ similar_project.get_status_display }}
+                        </div>
+                    </div>
+                    
+                    <div class="project-body">
+                        <h5 class="project-title">
+                            <a href="{% url 'sfront:project_detail' similar_project.slug %}">{{ similar_project.title }}</a>
+                        </h5>
+                        
+                        {% if similar_project.short_description %}
+                            <p class="project-excerpt">{{ similar_project.short_description|truncatewords:15 }}</p>
+                        {% endif %}
+                        
+                        <div class="project-meta">
+                            <span class="meta-item">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ similar_project.start_date|date:"M Y" }}
+                            </span>
+                            {% if similar_project.budget %}
+                            <span class="meta-item">
+                                <i class="fas fa-coins me-1"></i>
+                                {{ similar_project.budget }} GNF
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'sfront:projects' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-th-large me-2"></i>Voir tous les projets
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.project-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.project-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="hexagons" width="50" height="43.4" patternUnits="userSpaceOnUse"><polygon points="25,0 50,14.4 50,28.9 25,43.3 0,28.9 0,14.4" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23hexagons)"/></svg>');
+    opacity: 0.4;
+}
+
+.project-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 25px;
+}
+
+.breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--csig-accent);
+}
+
+.project-badges .badge {
+    font-size: 0.9rem;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    margin-right: 10px;
+}
+
+.status-badge {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%) !important;
+    color: white !important;
+}
+
+.featured-badge {
+    background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%) !important;
+    color: var(--csig-primary) !important;
+}
+
+.project-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 25px;
+    line-height: 1.1;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.project-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-accent), #ffffff);
+    border-radius: 2px;
+}
+
+.project-excerpt {
+    font-size: 1.2rem;
+    opacity: 0.95;
+    margin-bottom: 35px;
+    line-height: 1.8;
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+}
+
+.project-meta-hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.1);
+    padding: 12px 20px;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+}
+
+.meta-item:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+}
+
+.meta-item i {
+    color: var(--csig-accent);
+    font-size: 1.1rem;
+}
+
+.project-hero-image {
+    position: relative;
+    z-index: 2;
+}
+
+.project-hero-image img {
+    border-radius: 25px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s ease;
+}
+
+.project-hero-image img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.5);
+}
+
+.project-placeholder {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    border: 3px dashed rgba(255,255,255,0.3);
+    border-radius: 25px;
+    padding: 80px 30px;
+    text-align: center;
+    color: rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+}
+
+.project-content-section {
+    background: white;
+}
+
+.content-card {
+    background: white;
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.content-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-primary), var(--csig-accent));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.content-card:hover::before {
+    opacity: 1;
+}
+
+.content-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.section-title {
+    color: var(--csig-primary);
+    font-weight: 800;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+    border-bottom: 3px solid #e9ecef;
+    padding-bottom: 20px;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+    border-radius: 2px;
+}
+
+.project-description,
+.objectives-content,
+.results-content {
+    line-height: 1.8;
+    color: #495057;
+}
+
+.card-title {
+    color: var(--csig-primary);
+    font-weight: 700;
+    margin-bottom: 25px;
+    font-size: 1.4rem;
+    position: relative;
+}
+
+.card-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+    border-radius: 2px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f1f3f4;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    background: rgba(13, 71, 134, 0.05);
+    padding-left: 10px;
+    border-radius: 8px;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item strong {
+    min-width: 140px;
+    color: var(--csig-primary);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-item span {
+    color: #495057;
+    font-weight: 500;
+}
+
+.status-indicator {
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-planning {
+    background: #17a2b8;
+    color: white;
+}
+
+.status-active {
+    background: #28a745;
+    color: white;
+}
+
+.status-completed {
+    background: #6c757d;
+    color: white;
+}
+
+.status-on_hold {
+    background: #ffc107;
+    color: #212529;
+}
+
+.team-members {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.team-member-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.team-member-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+
+.member-avatar img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    background: #dee2e6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.member-name {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.member-title {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.partners-content {
+    line-height: 1.6;
+    color: #495057;
+}
+
+.share-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.share-buttons .btn {
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: 15px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.share-buttons .btn-primary {
+    background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%);
+    border: none;
+    color: var(--csig-primary);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.share-buttons .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+}
+
+.share-buttons .btn-outline-primary {
+    background: transparent;
+    border: 2px solid var(--csig-primary);
+    color: var(--csig-primary);
+    box-shadow: 0 4px 15px rgba(13, 71, 134, 0.2);
+}
+
+.share-buttons .btn-outline-primary:hover {
+    background: var(--csig-primary);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(13, 71, 134, 0.3);
+}
+
+.similar-projects-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.section-header {
+    position: relative;
+    z-index: 2;
+}
+
+.section-header .section-title {
+    color: var(--csig-primary);
+    font-weight: 800;
+    font-size: 3rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.section-header .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+    border-radius: 2px;
+}
+
+.section-header .section-subtitle {
+    color: #495057;
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.8;
+    font-weight: 500;
+}
+
+.project-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.project-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-primary), var(--csig-accent));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.project-card:hover::before {
+    opacity: 1;
+}
+
+.project-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(13, 71, 134, 0.15);
+    border-color: var(--csig-accent);
+}
+
+.project-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.project-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.project-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.project-card:hover .project-overlay {
+    opacity: 1;
+}
+
+.project-body {
+    padding: 20px;
+}
+
+.project-title a {
+    color: #2c3e50;
+    text-decoration: none;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.project-title a:hover {
+    color: #667eea;
+}
+
+.project-excerpt {
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.project-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.meta-item {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+@media (max-width: 768px) {
+    .project-hero {
+        padding: 80px 0;
+    }
+    
+    .project-title {
+        font-size: 2.5rem;
+    }
+    
+    .content-card {
+        padding: 25px;
+    }
+    
+    .project-meta-hero {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .info-item strong {
+        min-width: auto;
+        margin-bottom: 8px;
+    }
+    
+    .section-header .section-title {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .project-hero {
+        padding: 60px 0;
+    }
+    
+    .project-title {
+        font-size: 2rem;
+    }
+    
+    .project-badges .badge {
+        font-size: 0.8rem;
+        padding: 10px 16px;
+        margin-bottom: 10px;
+    }
+    
+    .content-card {
+        padding: 20px;
+    }
+    
+    .section-header .section-title {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function shareProject() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ project.title }}',
+            text: '{{ project.short_description|default:project.title }}',
+            url: window.location.href
+        });
+    } else {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Lien du projet copié dans le presse-papiers !');
+        }).catch(() => {
+            prompt('Copiez ce lien pour partager le projet :', url);
+        });
+    }
+}
+</script>
+{% endblock %}

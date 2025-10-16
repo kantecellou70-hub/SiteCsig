@@ -1,0 +1,329 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:conference_room_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    {% if room %}
+    <a href="{% url 'content_management:conference_room_detail' room.slug %}" class="btn btn-outline-primary">
+        <i class="fas fa-eye me-2"></i>Voir détails
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Formulaire principal -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-building me-2"></i>Informations de la salle</h3>
+                </div>
+                <div class="section-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        <i class="fas fa-tag me-2"></i>{{ form.name.label }}
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.name.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.capacity.id_for_label }}" class="form-label">
+                                        <i class="fas fa-users me-2"></i>{{ form.capacity.label }}
+                                    </label>
+                                    {{ form.capacity }}
+                                    {% if form.capacity.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.capacity.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.area.id_for_label }}" class="form-label">
+                                        <i class="fas fa-ruler-combined me-2"></i>{{ form.area.label }}
+                                    </label>
+                                    {{ form.area }}
+                                    {% if form.area.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.area.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.is_active.id_for_label }}" class="form-label">
+                                        <i class="fas fa-toggle-on me-2"></i>{{ form.is_active.label }}
+                                    </label>
+                                    <div class="form-check form-switch">
+                                        {{ form.is_active }}
+                                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                            Cette salle est disponible pour les réservations
+                                        </label>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.is_active.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>{{ form.description.label }}
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.price_per_hour.id_for_label }}" class="form-label">
+                                        <i class="fas fa-clock me-2"></i>{{ form.price_per_hour.label }}
+                                    </label>
+                                    <div class="input-group">
+                                        {{ form.price_per_hour }}
+                                        <span class="input-group-text">GNF/h</span>
+                                    </div>
+                                    {% if form.price_per_hour.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.price_per_hour.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.price_per_day.id_for_label }}" class="form-label">
+                                        <i class="fas fa-calendar-day me-2"></i>{{ form.price_per_day.label }}
+                                    </label>
+                                    <div class="input-group">
+                                        {{ form.price_per_day }}
+                                        <span class="input-group-text">GNF/jour</span>
+                                    </div>
+                                    {% if form.price_per_day.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.price_per_day.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.features.id_for_label }}" class="form-label">
+                                <i class="fas fa-list me-2"></i>{{ form.features.label }}
+                            </label>
+                            {{ form.features }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Entrez un équipement par ligne (ex: projecteur, son, wifi, etc.)<br>
+                                <small class="text-muted">Les équipements existants seront affichés ci-dessus si vous modifiez une salle.</small>
+                            </div>
+                            {% if form.features.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.features.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.maintenance_until.id_for_label }}" class="form-label">
+                                <i class="fas fa-tools me-2"></i>Maintenance jusqu'au
+                            </label>
+                            {{ form.maintenance_until }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Laissez vide si aucune maintenance n'est prévue
+                            </div>
+                            {% if form.maintenance_until.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.maintenance_until.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>{{ submit_text }}
+                            </button>
+                            <a href="{% url 'content_management:conference_room_list' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Conseils et aperçu -->
+            <div class="tips-container">
+                <div class="tip-item">
+                    <div class="tip-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h6>Conseils pour créer une salle</h6>
+                        <p>Décrivez clairement les équipements disponibles et les spécifications techniques pour aider les clients à choisir la salle adaptée à leurs besoins.</p>
+                    </div>
+                </div>
+                
+                <div class="tip-item">
+                    <div class="tip-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h6>Tarification</h6>
+                        <p>Définissez des prix compétitifs en tenant compte de la taille de la salle, des équipements et de la localisation.</p>
+                    </div>
+                </div>
+                
+                <div class="tip-item">
+                    <div class="tip-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h6>Disponibilité</h6>
+                        <p>Planifiez les maintenances en dehors des périodes de forte affluence pour maximiser l'utilisation des salles.</p>
+                    </div>
+                </div>
+            </div>
+            
+            {% if room %}
+            <!-- Aperçu de la salle -->
+            <div class="room-preview">
+                <div class="preview-header">
+                    <h4>Aperçu de la salle</h4>
+                </div>
+                <div class="preview-content">
+                    <h5 class="preview-title">{{ room.name }}</h5>
+                    <div class="preview-description">
+                        {{ room.description|truncatewords:15|default:"Aucune description" }}
+                    </div>
+                    <div class="preview-meta">
+                        <span class="meta-badge">
+                            <i class="fas fa-users me-1"></i>{{ room.capacity }} personnes
+                        </span>
+                        <span class="meta-badge">
+                            <i class="fas fa-ruler-combined me-1"></i>{{ room.area }} m²
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.room-preview {
+    background: var(--gray-50);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    margin-top: 2rem;
+    transition: all 0.3s ease;
+}
+
+.room-preview:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--box-shadow);
+}
+
+.preview-header {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.preview-header h4 {
+    color: var(--gray-800);
+    margin: 0;
+    font-weight: 600;
+}
+
+.preview-content {
+    text-align: center;
+}
+
+.preview-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 1rem;
+}
+
+.preview-description {
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.preview-meta {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+</style>
+{% endblock %}

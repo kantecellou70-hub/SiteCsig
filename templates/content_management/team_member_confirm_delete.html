@@ -1,0 +1,292 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Supprimer {{ team_member.full_name }} - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.delete-confirm-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.delete-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.delete-header h2 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.delete-header i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.delete-body {
+    padding: 2rem;
+    text-align: center;
+}
+
+.member-info {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #0d4786;
+}
+
+.member-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e9ecef;
+    margin: 0 auto 1rem;
+    display: block;
+}
+
+.member-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d4786;
+    margin-bottom: 0.5rem;
+}
+
+.member-category {
+    background: #0d4786;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.warning-message {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #856404;
+}
+
+.warning-message i {
+    margin-right: 0.5rem;
+    color: #f39c12;
+}
+
+.delete-actions {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    border: none;
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13, 71, 134, 0.3);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border: none;
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    color: white;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border: 2px solid #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .delete-confirm-container {
+        margin: 1rem;
+        border-radius: 12px;
+    }
+    
+    .delete-header {
+        padding: 1.5rem;
+    }
+    
+    .delete-body {
+        padding: 1.5rem;
+    }
+    
+    .delete-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .delete-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .delete-confirm-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .delete-header {
+        padding: 1rem;
+    }
+    
+    .delete-header i {
+        font-size: 2.5rem;
+    }
+    
+    .delete-body {
+        padding: 1rem;
+    }
+    
+    .member-info {
+        padding: 1rem;
+    }
+    
+    .member-photo {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .member-name {
+        font-size: 1.25rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-exclamation-triangle me-2"></i>Confirmation de suppression
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Êtes-vous sûr de vouloir supprimer ce membre de l'équipe ?
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'content_management:team_member_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:team_member_detail' team_member.pk %}" class="btn btn-primary">
+        <i class="fas fa-eye me-2"></i>Voir les détails
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="delete-confirm-container">
+    <!-- En-tête de suppression -->
+    <div class="delete-header">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>Confirmation de suppression</h2>
+        <p>Cette action est irréversible</p>
+    </div>
+    
+    <!-- Corps de la page -->
+    <div class="delete-body">
+        <!-- Informations sur le membre -->
+        <div class="member-info">
+            {% if team_member.photo %}
+            <img src="{{ team_member.photo.url }}" alt="{{ team_member.full_name }}" class="member-photo">
+            {% else %}
+            <div class="member-photo d-flex align-items-center justify-content-center bg-light">
+                <i class="fas fa-user fa-2x text-muted"></i>
+            </div>
+            {% endif %}
+            
+            <div class="member-name">{{ team_member.full_name }}</div>
+            <div class="member-category">{{ team_member.get_category_display }}</div>
+        </div>
+        
+        <!-- Message d'avertissement -->
+        <div class="warning-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Attention :</strong> Vous êtes sur le point de supprimer définitivement ce membre de l'équipe.
+        </div>
+        
+        <!-- Détails de suppression -->
+        <div class="text-muted">
+            <p><strong>Ce qui sera supprimé :</strong></p>
+            <ul class="text-start">
+                <li>Les informations personnelles du membre</li>
+                <li>Sa photo de profil</li>
+                <li>Ses liens vers les réseaux sociaux</li>
+                <li>Sa biographie</li>
+                <li>Toutes les données associées</li>
+            </ul>
+            
+            <p class="mt-3">
+                <strong>Cette action ne peut pas être annulée.</strong>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="delete-actions">
+        <a href="{% url 'content_management:team_member_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-times me-2"></i>Annuler
+        </a>
+        
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash me-2"></i>Confirmer la suppression
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

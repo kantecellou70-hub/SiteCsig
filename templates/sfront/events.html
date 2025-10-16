@@ -1,0 +1,560 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Événements - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="events-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h1 class="hero-title">Événements</h1>
+                <p class="hero-subtitle">
+                    Découvrez nos événements, conférences, ateliers et formations 
+                    pour rester à la pointe de l'innovation technologique.
+                </p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ events.count }}</div>
+                        <div class="stat-label">Événements</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">4</div>
+                        <div class="stat-label">Types</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Engageants</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filtres et recherche -->
+<section class="filters-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="search-filters" data-aos="fade-up">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="search-box">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="eventSearch" class="form-control" placeholder="Rechercher un événement...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="typeFilter" class="form-select">
+                                <option value="">Tous les types</option>
+                                <option value="conference">Conférence</option>
+                                <option value="workshop">Atelier</option>
+                                <option value="formation">Formation</option>
+                                <option value="seminaire">Séminaire</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-select">
+                                <option value="">Tous les statuts</option>
+                                <option value="upcoming">À venir</option>
+                                <option value="ongoing">En cours</option>
+                                <option value="completed">Terminé</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Grille des événements -->
+<section class="events-grid-section">
+    <div class="container">
+        <div class="row g-4" id="eventsGrid">
+            {% for event in events %}
+            <div class="col-lg-4 col-md-6 event-card" 
+                 data-title="{{ event.title|lower }}" 
+                 data-type="{{ event.event_type }}"
+                 data-status="{% if event.start_date > now %}upcoming{% elif event.end_date < now %}completed{% else %}ongoing{% endif %}"
+                 data-aos="fade-up" 
+                 data-aos-delay="{% if forloop.counter == 1 %}100{% elif forloop.counter == 2 %}200{% elif forloop.counter == 3 %}300{% elif forloop.counter == 4 %}400{% elif forloop.counter == 5 %}500{% else %}600{% endif %}">
+                <div class="event-item">
+                    <div class="event-image">
+                        {% if event.featured_image %}
+                            <img src="{{ event.featured_image.url }}" alt="{{ event.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="event-placeholder">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                        {% endif %}
+                        <div class="event-overlay">
+                            <div class="event-actions">
+                                <a href="{% url 'sfront:event_detail' event.slug %}" class="btn btn-light btn-sm">
+                                    <i class="fas fa-eye me-2"></i>Voir détails
+                                </a>
+                            </div>
+                        </div>
+                        {% if event.is_featured %}
+                        <div class="featured-badge">
+                            <i class="fas fa-star"></i> À la une
+                        </div>
+                        {% endif %}
+                        <div class="event-status-badge">
+                            {% if event.start_date > now %}
+                                <span class="badge bg-success">À venir</span>
+                            {% elif event.end_date < now %}
+                                <span class="badge bg-secondary">Terminé</span>
+                            {% else %}
+                                <span class="badge bg-primary">En cours</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span class="event-type">{{ event.get_event_type_display }}</span>
+                            <span class="event-date">{{ event.start_date|date:"d/m/Y" }}</span>
+                        </div>
+                        <h3 class="event-title">
+                            <a href="{% url 'sfront:event_detail' event.slug %}">{{ event.title }}</a>
+                        </h3>
+                        <p class="event-excerpt">{{ event.description|truncatewords:20 }}</p>
+                        <div class="event-details">
+                            <div class="event-time">
+                                <i class="fas fa-clock me-2"></i>
+                                {% if event.start_date|date:"H" != "00" or event.start_date|date:"i" != "00" %}
+                                    {{ event.start_date|date:"H:i" }} - {{ event.end_date|date:"H:i" }}
+                                {% else %}
+                                    {{ event.start_date|date:"d/m/Y" }} - {{ event.end_date|date:"d/m/Y" }}
+                                {% endif %}
+                            </div>
+                            <div class="event-location">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                {{ event.location|default:"Lieu à préciser" }}
+                            </div>
+                        </div>
+                        <div class="event-footer">
+                            <div class="event-participants">
+                                <i class="fas fa-users me-2"></i>
+                                {{ event.max_participants|default:"Illimité" }} participants
+                            </div>
+                            <div class="event-register">
+                                <a href="{% url 'sfront:event_detail' event.slug %}" class="btn btn-outline-primary btn-sm">
+                                    S'inscrire
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="no-events" data-aos="fade-up">
+                    <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                    <h3>Aucun événement disponible</h3>
+                    <p class="text-muted">Aucun événement n'a été programmé pour le moment.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-section" data-aos="fade-up">
+            <nav aria-label="Navigation des événements">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center" data-aos="fade-up">
+                <div class="cta-content">
+                    <h2>Restez informé</h2>
+                    <p>
+                        Abonnez-vous à notre newsletter pour recevoir les informations 
+                        sur nos prochains événements et formations.
+                    </p>
+                    <form class="newsletter-form">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Votre adresse email">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane me-2"></i>S'abonner
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.events-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.filters-section {
+    padding: 3rem 0;
+    background: var(--gray-50);
+}
+
+.search-filters {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-500);
+    z-index: 2;
+}
+
+.search-box .form-control {
+    padding-left: 2.5rem;
+}
+
+.events-grid-section {
+    padding: 4rem 0;
+}
+
+.event-item {
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.event-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+.event-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.event-item:hover .event-image img {
+    transform: scale(1.05);
+}
+
+.event-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-500);
+    font-size: 3rem;
+}
+
+.event-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(13, 71, 134, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.event-item:hover .event-overlay {
+    opacity: 1;
+}
+
+.featured-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--csig-primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.event-status-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+}
+
+.event-content {
+    padding: 1.5rem;
+}
+
+.event-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.event-type {
+    background: var(--csig-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.event-date {
+    color: var(--gray-500);
+    font-size: 0.85rem;
+}
+
+.event-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.event-title a {
+    color: var(--gray-800);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.event-title a:hover {
+    color: var(--csig-primary);
+}
+
+.event-excerpt {
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.event-details {
+    margin-bottom: 1.5rem;
+}
+
+.event-time,
+.event-location {
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.event-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.event-participants {
+    color: var(--gray-500);
+    font-size: 0.85rem;
+}
+
+.no-events {
+    padding: 4rem 2rem;
+}
+
+.no-events i {
+    color: var(--gray-400);
+}
+
+.pagination-section {
+    margin-top: 3rem;
+}
+
+.cta-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.cta-content h2 {
+    color: var(--csig-primary);
+    margin-bottom: 1rem;
+}
+
+.cta-content p {
+    color: var(--gray-600);
+    margin-bottom: 2rem;
+}
+
+.newsletter-form .input-group {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-stats {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .search-filters {
+        padding: 1.5rem;
+    }
+    
+    .event-content {
+        padding: 1rem;
+    }
+    
+    .event-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('eventSearch');
+    const typeFilter = document.getElementById('typeFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const eventsGrid = document.getElementById('eventsGrid');
+    
+    function filterEvents() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedType = typeFilter.value;
+        const selectedStatus = statusFilter.value;
+        
+        const eventCards = eventsGrid.querySelectorAll('.event-card');
+        
+        eventCards.forEach(card => {
+            const title = card.dataset.title;
+            const type = card.dataset.type;
+            const status = card.dataset.status;
+            
+            const matchesSearch = title.includes(searchTerm);
+            const matchesType = !selectedType || type === selectedType;
+            const matchesStatus = !selectedStatus || status === selectedStatus;
+            
+            if (matchesSearch && matchesType && matchesStatus) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    searchInput.addEventListener('input', filterEvents);
+    typeFilter.addEventListener('change', filterEvents);
+    statusFilter.addEventListener('change', filterEvents);
+});
+</script>
+{% endblock %}

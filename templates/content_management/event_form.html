@@ -1,0 +1,1068 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ title }} - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.event-form-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.event-form-header {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.event-form-header h2 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+}
+
+.event-form-body {
+    padding: 2.5rem;
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #f1f3f4;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0d4786;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #0d4786, #1a6bb8);
+    border-radius: 2px;
+}
+
+.section-title i {
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-group .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group .form-control:focus {
+    border-color: #0d4786;
+    box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+}
+
+.form-group .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group .form-select:focus {
+    border-color: #0d4786;
+    box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+}
+
+.form-group textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-check {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin: 0;
+    border: 2px solid #0d4786;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.form-check-input:checked {
+    background-color: #0d4786;
+    border-color: #0d4786;
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.checkbox-row {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.checkbox-row .form-check {
+    margin-bottom: 0;
+    min-width: 200px;
+}
+
+.image-preview {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.image-preview img {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+}
+
+.image-preview .no-image {
+    width: 200px;
+    height: 150px;
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.tag-item {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tag-item .remove-tag {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tag-item .remove-tag:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.form-actions {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-top: 2px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    border-color: transparent;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0a3a6b 0%, #145a9b 100%);
+}
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.required-field::after {
+    content: ' *';
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-top: 1rem;
+}
+
+.alert-info i {
+    color: #0c5460;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .event-form-body {
+        padding: 2rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .event-form-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .event-form-header {
+        padding: 1.5rem;
+    }
+    
+    .event-form-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .event-form-body {
+        padding: 1.5rem;
+    }
+    
+    .checkbox-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .checkbox-row .form-check {
+        min-width: auto;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .btn {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .event-form-header {
+        padding: 1rem;
+    }
+    
+    .event-form-body {
+        padding: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-calendar-plus me-2"></i>{{ title }}
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    {% if event %}
+        Modifiez les informations de l'événement "{{ event.title }}"
+    {% else %}
+        Créez un nouvel événement scientifique avec tous ses composants
+    {% endif %}
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:event_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    {% if event %}
+    <a href="{% url 'content_management:event_detail' event.pk %}" class="btn btn-outline-info">
+        <i class="fas fa-eye me-2"></i>Voir l'événement
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="event-form-container">
+    <form method="post" enctype="multipart/form-data" id="eventForm">
+        {% csrf_token %}
+        
+        <div class="event-form-header">
+            <h2>{{ title }}</h2>
+        </div>
+        
+        <div class="event-form-body">
+            <!-- Informations principales -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-info-circle"></i>Informations principales
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.title.id_for_label }}" class="required-field">
+                            <i class="fas fa-heading me-2"></i>Titre de l'événement
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.title.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.event_type.id_for_label }}" class="required-field">
+                        <i class="fas fa-tag me-2"></i>Type d'événement
+                    </label>
+                    {{ form.event_type }}
+                    {% if form.event_type.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.event_type.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="required-field">
+                        <i class="fas fa-align-left me-2"></i>Description
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.description.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+
+            </div>
+            
+            <!-- Dates et horaires -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-calendar-alt"></i>Dates et horaires
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.start_date.id_for_label }}" class="required-field">
+                            <i class="fas fa-calendar me-2"></i>Date de début
+                        </label>
+                        {{ form.start_date }}
+                        {% if form.start_date.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.start_date.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.end_date.id_for_label }}" class="required-field">
+                            <i class="fas fa-calendar me-2"></i>Date de fin
+                        </label>
+                        {{ form.end_date }}
+                        {% if form.end_date.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.end_date.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.start_time.id_for_label }}" class="required-field">
+                            <i class="fas fa-clock me-2"></i>Heure de début
+                        </label>
+                        {{ form.start_time }}
+                        {% if form.start_time.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.start_time.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.end_time.id_for_label }}" class="required-field">
+                            <i class="fas fa-clock me-2"></i>Heure de fin
+                        </label>
+                        {{ form.end_time }}
+                        {% if form.end_time.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.end_time.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Localisation -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>Localisation
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.location.id_for_label }}" class="required-field">
+                            <i class="fas fa-building me-2"></i>Lieu principal
+                        </label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.location.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.city.id_for_label }}">
+                            <i class="fas fa-city me-2"></i>Ville
+                        </label>
+                        {{ form.city }}
+                        {% if form.city.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.city.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.country.id_for_label }}">
+                            <i class="fas fa-globe me-2"></i>Pays
+                        </label>
+                        {{ form.country }}
+                        {% if form.country.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.country.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.address.id_for_label }}">
+                        <i class="fas fa-map me-2"></i>Adresse complète
+                    </label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.address.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Liens et informations supplémentaires -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-link"></i>Liens et informations
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.direct_link.id_for_label }}">
+                            <i class="fas fa-external-link-alt me-2"></i>Lien direct
+                        </label>
+                        {{ form.direct_link }}
+                        {% if form.direct_link.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.direct_link.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.registration_link.id_for_label }}">
+                            <i class="fas fa-user-plus me-2"></i>Lien d'inscription
+                        </label>
+                        {{ form.registration_link }}
+                        {% if form.registration_link.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.registration_link.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.website.id_for_label }}">
+                        <i class="fas fa-globe me-2"></i>Site web de l'événement
+                    </label>
+                    {{ form.website }}
+                    {% if form.website.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.website.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Contact principal -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-envelope"></i>Contact principal
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.contact_email.id_for_label }}">
+                            <i class="fas fa-envelope me-2"></i>Email de contact
+                        </label>
+                        {{ form.contact_email }}
+                        {% if form.contact_email.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.contact_email.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.contact_phone.id_for_label }}">
+                            <i class="fas fa-phone me-2"></i>Téléphone de contact
+                        </label>
+                        {{ form.contact_phone }}
+                        {% if form.contact_phone.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.contact_phone.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note :</strong> Les organisateurs de l'événement peuvent être ajoutés après la création de l'événement via la section "Gérer les organisateurs".
+                </div>
+            </div>
+            
+            <!-- Configuration et tarifs -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-cog"></i>Configuration et tarifs
+                </h3>
+                
+                <div class="checkbox-row">
+                    <div class="form-check">
+                        {{ form.registration_required }}
+                        <label class="form-check-label" for="{{ form.registration_required.id_for_label }}">
+                            Inscription requise
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        {{ form.is_free }}
+                        <label class="form-check-label" for="{{ form.is_free.id_for_label }}">
+                            Événement gratuit
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.max_participants.id_for_label }}">
+                        <i class="fas fa-users me-2"></i>Nombre maximum de participants
+                    </label>
+                    {{ form.max_participants }}
+                    {% if form.max_participants.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.max_participants.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.price.id_for_label }}">
+                        <i class="fas fa-euro-sign me-2"></i>Prix (en GNF)
+                    </label>
+                    {{ form.price }}
+                    {% if form.price.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.price.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="help-text">La devise est automatiquement en GNF (Francs Guinéens)</div>
+                </div>
+            </div>
+            
+            <!-- Informations scientifiques -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-flask"></i>Informations scientifiques
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.scientific_field.id_for_label }}">
+                            <i class="fas fa-microscope me-2"></i>Domaine scientifique
+                        </label>
+                        {{ form.scientific_field }}
+                        {% if form.scientific_field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.scientific_field.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.target_audience.id_for_label }}">
+                            <i class="fas fa-user-graduate me-2"></i>Public cible
+                        </label>
+                        {{ form.target_audience }}
+                        {% if form.target_audience.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.target_audience.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.language.id_for_label }}" class="required-field">
+                        <i class="fas fa-language me-2"></i>Langue principale
+                    </label>
+                    {{ form.language }}
+                    {% if form.language.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.language.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Médias -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-images"></i>Médias
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.featured_image.id_for_label }}">
+                            <i class="fas fa-image me-2"></i>Image principale
+                        </label>
+                        {{ form.featured_image }}
+                        <div class="help-text">Image représentative de l'événement (format recommandé: 1200x800px)</div>
+                        {% if form.featured_image.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.featured_image.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if event.featured_image %}
+                        <div class="image-preview">
+                            <img src="{{ event.featured_image.url }}" alt="Image actuelle" id="currentImage">
+                        </div>
+                        {% else %}
+                        <div class="image-preview">
+                            <div class="no-image">
+                                <i class="fas fa-image fa-2x mb-2"></i>
+                                <div>Aucune image sélectionnée</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.banner_image.id_for_label }}">
+                            <i class="fas fa-image me-2"></i>Bannière <span class="text-muted">(optionnel)</span>
+                        </label>
+                        {{ form.banner_image }}
+                        <div class="help-text">Bannière pour l'affichage en page d'accueil (format recommandé: 1920x400px)</div>
+                        {% if form.banner_image.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.banner_image.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tags -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-tags"></i>Tags et catégorisation
+                </h3>
+                
+                <div class="form-group">
+                    <label for="{{ form.tags.id_for_label }}">
+                        <i class="fas fa-tag me-2"></i>Tags de l'événement
+                    </label>
+                    {{ form.tags }}
+                    <div class="help-text">Sélectionnez les tags qui décrivent le mieux votre événement</div>
+                    {% if form.tags.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.tags.errors %}
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- SEO -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-search"></i>Optimisation SEO
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.meta_title.id_for_label }}">
+                            <i class="fas fa-heading me-2"></i>Titre meta
+                        </label>
+                        {{ form.meta_title }}
+                        <div class="help-text">Titre optimisé pour les moteurs de recherche (max 60 caractères)</div>
+                        {% if form.meta_title.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.meta_title.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.meta_description.id_for_label }}">
+                            <i class="fas fa-align-left me-2"></i>Description meta
+                        </label>
+                        {{ form.meta_description }}
+                        <div class="help-text">Description optimisée pour les moteurs de recherche (max 160 caractères)</div>
+                        {% if form.meta_description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.meta_description.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statut et visibilité -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-eye"></i>Statut et visibilité
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.status.id_for_label }}" class="required-field">
+                            <i class="fas fa-toggle-on me-2"></i>Statut
+                        </label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.status.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="checkbox-row">
+                    <div class="form-check">
+                        {{ form.is_featured }}
+                        <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">
+                            Mettre en avant
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        {{ form.is_public }}
+                        <label class="form-check-label" for="{{ form.is_public.id_for_label }}">
+                            Événement public
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <div>
+                <a href="{% url 'content_management:event_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>{{ submit_text }}
+                </button>
+                
+                {% if event %}
+                <a href="{% url 'content_management:event_manage_agenda' event.pk %}" class="btn btn-outline-info">
+                    <i class="fas fa-calendar-day me-2"></i>Gérer l'agenda
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser Select2 pour les tags
+    if (typeof Select2 !== 'undefined') {
+        $('#id_tags').select2({
+            placeholder: 'Sélectionnez des tags...',
+            allowClear: true,
+            theme: 'bootstrap-5'
+        });
+    }
+    
+    // Gestion de l'image principale
+    const featuredImageInput = document.getElementById('id_featured_image');
+    if (featuredImageInput) {
+        featuredImageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.querySelector('.image-preview');
+                    if (preview) {
+                        preview.innerHTML = `<img src="${e.target.result}" alt="Aperçu" style="max-width: 200px; max-height: 150px; border-radius: 12px; border: 2px solid #e9ecef;">`;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Validation des dates
+    const startDateInput = document.getElementById('id_start_date');
+    const endDateInput = document.getElementById('id_end_date');
+    const startTimeInput = document.getElementById('id_start_time');
+    const endTimeInput = document.getElementById('id_end_time');
+    
+    if (startDateInput && endDateInput) {
+        startDateInput.addEventListener('change', function() {
+            endDateInput.min = this.value;
+        });
+        
+        endDateInput.addEventListener('change', function() {
+            startDateInput.max = this.value;
+        });
+    }
+    
+    // Validation des heures
+    if (startTimeInput && endTimeInput) {
+        startTimeInput.addEventListener('change', function() {
+            if (startDateInput && endDateInput && startDateInput.value === endDateInput.value) {
+                endTimeInput.min = this.value;
+            }
+        });
+        
+        endTimeInput.addEventListener('change', function() {
+            if (startDateInput && endDateInput && startDateInput.value === endDateInput.value) {
+                startTimeInput.max = this.value;
+            }
+        });
+    }
+    
+    // Gestion du prix
+    const isFreeCheckbox = document.getElementById('id_is_free');
+    const priceInput = document.getElementById('id_price');
+    
+    if (isFreeCheckbox && priceInput) {
+        function togglePriceField() {
+            if (isFreeCheckbox.checked) {
+                priceInput.disabled = true;
+                priceInput.value = '';
+            } else {
+                priceInput.disabled = false;
+            }
+        }
+        
+        isFreeCheckbox.addEventListener('change', togglePriceField);
+        togglePriceField(); // État initial
+    }
+    
+    // Validation du formulaire avant soumission
+    const form = document.getElementById('eventForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Veuillez remplir tous les champs obligatoires.');
+                return false;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

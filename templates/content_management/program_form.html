@@ -1,0 +1,694 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if program %}Modifier le Programme{% else %}Nouveau Programme{% endif %} - CSIG
+{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-{% if program %}edit{% else %}plus-circle{% endif %} me-2"></i>
+    {% if program %}Modifier le Programme{% else %}Nouveau Programme{% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">
+        {% if program %}
+            Modifiez les informations du programme "{{ program.title }}"
+        {% else %}
+            Créez un nouveau programme pour présenter les initiatives de la CSIG
+        {% endif %}
+    </p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'content_management:program_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+        {% if program %}
+            <a href="{% url 'content_management:program_detail' program.pk %}" class="btn btn-outline-info">
+                <i class="fas fa-eye me-2"></i>Voir le programme
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="program-form-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Informations principales -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-info-circle me-2"></i>Informations principales</h3>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.title.id_for_label }}" class="form-label required">
+                                    {{ form.title.label }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback">{{ form.title.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text">Titre principal du programme</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.slug.id_for_label }}" class="form-label optional">
+                                    {{ form.slug.label }}
+                                </label>
+                                {{ form.slug }}
+                                {% if form.slug.errors %}
+                                    <div class="invalid-feedback">{{ form.slug.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text">URL unique du programme</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.status.id_for_label }}" class="form-label optional">
+                                    {{ form.status.label }}
+                                </label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="invalid-feedback">{{ form.status.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.level.id_for_label }}" class="form-label optional">
+                                    {{ form.level.label }}
+                                </label>
+                                {{ form.level }}
+                                {% if form.level.errors %}
+                                    <div class="invalid-feedback">{{ form.level.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.duration.id_for_label }}" class="form-label optional">
+                                    {{ form.duration.label }}
+                                </label>
+                                {{ form.duration }}
+                                {% if form.duration.errors %}
+                                    <div class="invalid-feedback">{{ form.duration.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text">Ex: 6 mois, 1 an, etc.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.max_students.id_for_label }}" class="form-label optional">
+                                    {{ form.max_students.label }}
+                                </label>
+                                {{ form.max_students }}
+                                {% if form.max_students.errors %}
+                                    <div class="invalid-feedback">{{ form.max_students.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label optional">
+                                    {{ form.start_date.label }}
+                                </label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                    <div class="invalid-feedback">{{ form.start_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.end_date.id_for_label }}" class="form-label optional">
+                                    {{ form.end_date.label }}
+                                </label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                    <div class="invalid-feedback">{{ form.end_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.price.id_for_label }}" class="form-label optional">
+                                    {{ form.price.label }}
+                                </label>
+                                {{ form.price }}
+                                {% if form.price.errors %}
+                                    <div class="invalid-feedback">{{ form.price.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text">Prix en GNF (laisser vide si gratuit)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check">
+                                    {{ form.is_free }}
+                                    <label class="form-check-label" for="{{ form.is_free.id_for_label }}">
+                                        {{ form.is_free.label }}
+                                    </label>
+                                </div>
+                                {% if form.is_free.errors %}
+                                    <div class="invalid-feedback">{{ form.is_free.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            {{ form.is_featured }}
+                            <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">
+                                {{ form.is_featured.label }}
+                            </label>
+                        </div>
+                        {% if form.is_featured.errors %}
+                            <div class="invalid-feedback">{{ form.is_featured.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-align-left me-2"></i>Description</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}" class="form-label required">
+                            {{ form.description.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Description détaillée du programme</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.short_description.id_for_label }}" class="form-label optional">
+                            {{ form.short_description.label }}
+                        </label>
+                        {{ form.short_description }}
+                        {% if form.short_description.errors %}
+                            <div class="invalid-feedback">{{ form.short_description.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Description courte (max 300 caractères)</div>
+                    </div>
+                </div>
+                
+                <!-- Médias et SEO -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-image me-2"></i>Médias et SEO</h3>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.featured_image.id_for_label }}" class="form-label optional">
+                            {{ form.featured_image.label }}
+                        </label>
+                        {{ form.featured_image }}
+                        {% if form.featured_image.errors %}
+                            <div class="invalid-feedback">{{ form.featured_image.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Image principale du programme (format recommandé: 1200x800px)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.meta_title.id_for_label }}" class="form-label optional">
+                            {{ form.meta_title.label }}
+                        </label>
+                        {{ form.meta_title }}
+                        {% if form.meta_title.errors %}
+                            <div class="invalid-feedback">{{ form.meta_title.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Titre pour le référencement (SEO)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.meta_description.id_for_label }}" class="form-label optional">
+                            {{ form.meta_description.label }}
+                        </label>
+                        {{ form.meta_description }}
+                        {% if form.meta_description.errors %}
+                            <div class="invalid-feedback">{{ form.meta_description.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Description pour le référencement (SEO)</div>
+                    </div>
+                </div>
+                
+                <!-- Actions du formulaire -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {% if program %}Mettre à jour{% else %}Créer{% endif %}
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo me-2"></i>Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Aperçu en temps réel -->
+            <div class="program-preview">
+                <div class="preview-header">
+                    <h4><i class="fas fa-eye me-2"></i>Aperçu</h4>
+                </div>
+                <div class="preview-content">
+                    <div class="preview-title" id="preview-title">
+                        {% if program %}{{ program.title }}{% else %}Titre du programme{% endif %}
+                    </div>
+                    <div class="preview-description" id="preview-description">
+                        {% if program %}{{ program.description|truncatewords:30 }}{% else %}Description du programme...{% endif %}
+                    </div>
+                    <div class="preview-meta">
+                        <span class="badge bg-primary" id="preview-status">
+                            {% if program %}{{ program.get_status_display }}{% else %}Brouillon{% endif %}
+                        </span>
+                        <span class="badge bg-info" id="preview-category">
+                            {% if program and program.category %}{{ program.category.name }}{% else %}Catégorie{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Conseils -->
+            <div class="tips-container">
+                <div class="tips-header">
+                    <h4><i class="fas fa-lightbulb me-2"></i>Conseils</h4>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="tip-content">
+                        <strong>Description claire :</strong> Expliquez clairement les objectifs et les bénéfices du programme
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div class="tip-content">
+                        <strong>Image de qualité :</strong> Utilisez une image de haute qualité pour attirer l'attention
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="tip-content">
+                        <strong>SEO optimisé :</strong> Remplissez les champs meta pour améliorer le référencement
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.program-form-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.content-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.content-section::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    transition: all 0.3s ease;
+}
+
+.content-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.content-section:hover::before {
+    width: 6px;
+}
+
+.section-header h3 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-label.required::after {
+    content: ' *';
+    color: #dc3545;
+}
+
+.form-label.optional::after {
+    content: ' (optionnel)';
+    color: #6c757d;
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.form-control:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    outline: none;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    padding: 1.5rem 0;
+    border-top: 1px solid #e9ecef;
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #c82333 0%, #e55a00 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    color: #6c757d;
+    border: 2px solid #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-outline-info {
+    background: transparent;
+    color: #17a2b8;
+    border: 2px solid #17a2b8;
+}
+
+.btn-outline-info:hover {
+    background: #17a2b8;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Aperçu */
+.program-preview {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.preview-header h4 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.preview-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.preview-description {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.preview-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+/* Conseils */
+.tips-container {
+    background: linear-gradient(135deg, #fff3cd 0%, #fff8e1 100%);
+    border: 1px solid #ffeaa7;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.tips-header h4 {
+    color: #856404;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+}
+
+.tip-item:last-child {
+    margin-bottom: 0;
+}
+
+.tip-icon {
+    color: #f39c12;
+    font-size: 1.1rem;
+    margin-top: 0.125rem;
+}
+
+.tip-content {
+    color: #856404;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.tip-content strong {
+    color: #6c5700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .program-form-container {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .content-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .preview-meta {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .section-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .preview-title {
+        font-size: 1.1rem;
+    }
+    
+    .tip-content {
+        font-size: 0.85rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation de Select2 pour les champs de sélection
+    if (typeof $ !== 'undefined' && $.fn.select2) {
+        $('#id_category, #id_author').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Sélectionnez une option...',
+            allowClear: true
+        });
+    }
+    
+    // Aperçu en temps réel
+    const titleInput = document.getElementById('id_title');
+    const descriptionInput = document.getElementById('id_description');
+    const shortDescriptionInput = document.getElementById('id_short_description');
+    const statusSelect = document.getElementById('id_status');
+    const levelSelect = document.getElementById('id_level');
+    
+    const previewTitle = document.getElementById('preview-title');
+    const previewDescription = document.getElementById('preview-description');
+    const previewStatus = document.getElementById('preview-status');
+    const previewCategory = document.getElementById('preview-category');
+    
+    // Mise à jour de l'aperçu
+    function updatePreview() {
+        if (titleInput && previewTitle && titleInput.value) {
+            previewTitle.textContent = titleInput.value;
+        }
+        
+        if (descriptionInput && previewDescription && descriptionInput.value) {
+            const cleanText = descriptionInput.value.replace(/<[^>]*>/g, '').substring(0, 150);
+            previewDescription.textContent = cleanText + (cleanText.length >= 150 ? '...' : '');
+        }
+        
+        if (statusSelect && previewStatus && statusSelect.value) {
+            const statusText = statusSelect.options[statusSelect.selectedIndex].text;
+            previewStatus.textContent = statusText;
+        }
+        
+        if (levelSelect && previewCategory && levelSelect.value) {
+            const levelText = levelSelect.options[levelSelect.selectedIndex].text;
+            previewCategory.textContent = levelText;
+        }
+    }
+    
+    // Écouteurs d'événements (avec vérification d'existence)
+    if (titleInput) titleInput.addEventListener('input', updatePreview);
+    if (descriptionInput) descriptionInput.addEventListener('input', updatePreview);
+    if (shortDescriptionInput) shortDescriptionInput.addEventListener('input', updatePreview);
+    if (statusSelect) statusSelect.addEventListener('change', updatePreview);
+    if (levelSelect) levelSelect.addEventListener('change', updatePreview);
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            const form = document.querySelector('form');
+            if (form) form.submit();
+        }
+    });
+    
+    // Validation du formulaire
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    }
+});
+</script>
+{% endblock %}

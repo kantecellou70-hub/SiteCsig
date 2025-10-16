@@ -1,0 +1,621 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Gérer les organisateurs - {{ event.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .organizers-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .organizers-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .organizers-body {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .partners-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .partner-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .partner-card:hover {
+        border-color: #0d4786;
+        box-shadow: 0 8px 25px rgba(13, 71, 134, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .partner-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #0d4786, #1a6bb8);
+    }
+    
+    .partner-logo {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.5rem;
+        background: white;
+        margin: 0 auto 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .partner-logo-placeholder {
+        width: 80px;
+        height: 80px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.5rem;
+        background: white;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .partner-card:hover .partner-logo,
+    .partner-card:hover .partner-logo-placeholder {
+        border-color: #0d4786;
+        transform: scale(1.05);
+    }
+    
+    .partner-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+    
+    .partner-role {
+        background: linear-gradient(135deg, #0d4786, #1a6bb8);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    
+    .partner-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+    
+    .add-partner-section {
+        text-align: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        border: 2px dashed #dee2e6;
+        transition: all 0.3s ease;
+    }
+    
+    .add-partner-section:hover {
+        border-color: #0d4786;
+        background: linear-gradient(135deg, #e3f2fd 0%, #d1ecf1 100%);
+    }
+    
+    .add-partner-btn {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .add-partner-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+    
+    .logo-preview {
+        width: 100px;
+        height: 60px;
+        object-fit: contain;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.25rem;
+        background: white;
+        margin: 1rem auto;
+    }
+    
+    @media (max-width: 768px) {
+        .partners-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .organizers-header {
+            padding: 1.5rem;
+        }
+        
+        .organizers-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="organizers-container">
+        <!-- Header -->
+        <div class="organizers-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fas fa-building me-3"></i>Gérer les organisateurs
+                    </h1>
+                    <h3 class="mb-0 opacity-75">{{ event.title }}</h3>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{% url 'content_management:event_detail' event.pk %}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à l'événement
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="organizers-body">
+            <!-- Section d'ajout -->
+            <div class="add-partner-section">
+                <h4 class="mb-3">
+                    <i class="fas fa-plus-circle me-2"></i>Ajouter un nouvel organisateur
+                </h4>
+                <p class="text-muted mb-3">Cliquez sur le bouton ci-dessous pour ajouter un nouvel organisateur à cet événement</p>
+                <button type="button" class="add-partner-btn" data-bs-toggle="modal" data-bs-target="#addPartnerModal">
+                    <i class="fas fa-plus"></i>Ajouter un organisateur
+                </button>
+            </div>
+
+            <!-- Grille des partenaires existants -->
+            <div class="partners-section">
+                <h4 class="mb-3">
+                    <i class="fas fa-users me-2"></i>Organisateurs actuels
+                </h4>
+                
+                {% if organizers %}
+                    <div class="partners-grid">
+                        {% for organizer in organizers %}
+                        <div class="partner-card">
+                            <div class="partner-logo">
+                                {% if organizer.logo and organizer.logo.url %}
+                                    <img src="{{ organizer.logo.url }}" alt="Logo {{ organizer.name }}" class="partner-logo">
+                                {% else %}
+                                    <div class="partner-logo-placeholder">
+                                        <i class="fas fa-building fa-2x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="partner-name">{{ organizer.name }}</div>
+                            <div class="partner-role">{{ organizer.get_role_display }}</div>
+                            <div class="partner-actions">
+                                <button class="btn btn-outline-primary btn-sm" onclick="editPartner({{ organizer.pk }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deletePartner({{ organizer.pk }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h5>Aucun organisateur pour le moment</h5>
+                        <p class="text-muted">Commencez par ajouter le premier organisateur de l'événement</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'ajout d'organisateur -->
+<div class="modal fade" id="addPartnerModal" tabindex="-1" aria-labelledby="addPartnerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPartnerModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Ajouter un organisateur
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data" id="addPartnerForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner_name" class="form-label">Nom de l'organisation *</label>
+                                <input type="text" class="form-control" id="partner_name" name="name" required placeholder="Ex: Université de Conakry">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner_role" class="form-label">Rôle dans l'événement *</label>
+                                <select class="form-control" id="partner_role" name="role" required>
+                                    <option value="">Sélectionner un rôle</option>
+                                    <option value="organizer">Organisateur principal</option>
+                                    <option value="co_organizer">Co-organisateur</option>
+                                    <option value="partner">Partenaire</option>
+                                    <option value="sponsor">Sponsor</option>
+                                    <option value="supporter">Soutien</option>
+                                    <option value="other">Autre</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner_type" class="form-label">Type d'organisation</label>
+                                <select class="form-control" id="partner_type" name="organization_type">
+                                    <option value="university">Université</option>
+                                    <option value="research_center">Centre de recherche</option>
+                                    <option value="company">Entreprise</option>
+                                    <option value="ngo">ONG</option>
+                                    <option value="government">Institution gouvernementale</option>
+                                    <option value="other">Autre</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner_order" class="form-label">Ordre d'affichage</label>
+                                <input type="number" class="form-control" id="partner_order" name="order" value="1" min="1">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="partner_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="partner_description" name="description" rows="3" placeholder="Description de l'organisation et de son rôle dans l'événement"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner_website" class="form-label">Site web</label>
+                                <input type="url" class="form-control" id="partner_website" name="website" placeholder="https://...">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner_email" class="form-label">Email de contact</label>
+                                <input type="email" class="form-control" id="partner_email" name="contact_email" placeholder="contact@exemple.com">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner_phone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="partner_phone" name="contact_phone" placeholder="+224 XXX XXX XXX">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner_address" class="form-label">Adresse</label>
+                                <input type="text" class="form-control" id="partner_address" name="address" placeholder="Adresse complète">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="partner_logo" class="form-label">Logo de l'organisation</label>
+                        <div class="logo-upload-area" id="logoUploadArea">
+                            <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                            <p class="mb-2">Cliquez pour sélectionner ou glissez-déposez le logo</p>
+                            <p class="small text-muted">PNG, JPG • Max 2MB • Recommandé: 200x120px</p>
+                            <input type="file" id="partner_logo" name="logo" accept="image/*" style="display: none;">
+                        </div>
+                        <div id="logoPreview" style="display: none;">
+                            <img src="" alt="Aperçu du logo" class="logo-preview">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Ajouter l'organisateur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cet organisateur ?</p>
+                <p class="text-muted small mb-0">Cette action est irréversible et supprimera définitivement l'organisateur de l'événement.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM chargé, initialisation en cours...');
+    
+    // Gestion du logo
+    const logoUploadArea = document.getElementById('logoUploadArea');
+    const logoInput = document.getElementById('partner_logo');
+    const logoPreview = document.getElementById('logoPreview');
+    const logoPreviewImg = logoPreview.querySelector('img');
+    
+    // Clic sur la zone de logo
+    logoUploadArea.addEventListener('click', function() {
+        logoInput.click();
+    });
+    
+    // Changement de fichier
+    logoInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                logoPreviewImg.src = e.target.result;
+                logoPreview.style.display = 'block';
+                logoUploadArea.style.display = 'none';
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Drag and drop
+    logoUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+    
+    logoUploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+    
+    logoUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            logoInput.files = e.dataTransfer.files;
+            logoInput.dispatchEvent(new Event('change'));
+        }
+    });
+    
+    // Soumission du formulaire
+    const addPartnerForm = document.getElementById('addPartnerForm');
+    addPartnerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('{% url "content_management:event_manage_organizers" event.pk %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Organisateur ajouté avec succès !', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showNotification('Erreur lors de l\'ajout: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur lors de l\'ajout: ' + error.message, 'error');
+        });
+    });
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + N pour ajouter un organisateur
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            e.preventDefault();
+            document.getElementById('addPartnerModal').click();
+        }
+        
+        // Échap pour fermer le modal
+        if (e.key === 'Escape') {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addPartnerModal'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+    });
+    
+    console.log('JavaScript de base chargé');
+});
+
+// Fonction de notification globale
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+            <span class="flex-grow-1">${message}</span>
+            <button type="button" class="btn-close" onclick="this.closest('.alert').remove()"></button>
+        </div>
+    `;
+    document.body.appendChild(notification);
+
+    // Auto-remove après 5 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+console.log('Fonctions globales définies');
+
+// Fonctions globales pour éditer et supprimer
+function editPartner(partnerId) {
+    console.log('editPartner appelé avec ID:', partnerId);
+    window.location.href = `{% url "content_management:event_manage_organizers" event.pk %}`.replace('organizers/', `organizers/${partnerId}/edit/`);
+}
+
+function deletePartner(partnerId) {
+    console.log('deletePartner appelé avec ID:', partnerId);
+    
+    // Vérification simple
+    if (!partnerId) {
+        console.error('ID partenaire manquant');
+        return;
+    }
+    
+    // Stocker l'ID du partenaire à supprimer
+    window.partnerToDelete = partnerId;
+    
+    // Afficher le modal Bootstrap de confirmation
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    deleteModal.show();
+}
+
+// Gérer la confirmation de suppression
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            const partnerId = window.partnerToDelete;
+            if (partnerId) {
+                console.log('Confirmation de suppression pour ID:', partnerId);
+                performDelete(partnerId);
+                
+                // Fermer le modal
+                const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+                if (deleteModal) {
+                    deleteModal.hide();
+                }
+            }
+        });
+    }
+});
+
+function performDelete(partnerId) {
+    console.log('Exécution de la suppression pour ID:', partnerId);
+    
+    // Afficher un indicateur de chargement
+    showNotification('Suppression en cours...', 'info');
+    
+    fetch(`{% url "content_management:event_manage_organizers" event.pk %}`.replace('organizers/', `organizers/${partnerId}/delete/`), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            showNotification('Organisateur supprimé avec succès !', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showNotification('Erreur lors de la suppression', 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur lors de la suppression: ' + error.message, 'error');
+    });
+}
+</script>
+{% endblock %}
