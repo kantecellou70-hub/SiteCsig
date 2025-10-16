@@ -1,0 +1,1015 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Recherche - CSIG - Cité des Sciences et de l'Innovation de Guinée{% endblock %}
+
+{% block content %}
+<!-- ============================================================================
+   SECTION RECHERCHE
+   ============================================================================ -->
+<section class="search-section section-padding">
+    <div class="container">
+        <!-- En-tête de recherche -->
+        <div class="search-header text-center mb-5" data-aos="fade-up">
+            <h1 class="search-title">
+                <i class="fas fa-search me-3"></i>Recherche
+            </h1>
+            {% if query %}
+                <p class="search-subtitle">
+                    Résultats pour : <span class="search-query">"{{ query }}"</span>
+                    {% if results.total_results %}
+                        <span class="results-count">({{ results.total_results }} résultat{{ results.total_results|pluralize:"s" }})</span>
+                    {% endif %}
+                </p>
+            {% else %}
+                <p class="search-subtitle">
+                    Recherchez dans tous nos contenus, programmes, événements et ressources
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Formulaire de recherche -->
+        <div class="search-form-container mb-5" data-aos="fade-up">
+            <form method="get" action="{% url 'sfront:search' %}" class="search-form-main">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="input-group input-group-lg">
+                            <input type="text" 
+                                   class="form-control search-input-main" 
+                                   placeholder="Rechercher des articles, programmes, événements, personnalités..." 
+                                   name="q" 
+                                   value="{{ query }}"
+                                   required>
+                            <button class="btn btn-primary search-btn-main" type="submit">
+                                <i class="fas fa-search me-2"></i>Rechercher
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filtres de recherche -->
+                {% if query and all_categories %}
+                <div class="search-filters mt-3">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6">
+                            <select name="category" class="form-select" onchange="this.form.submit()">
+                                <option value="all" {% if category_filter == 'all' or not category_filter %}selected{% endif %}>
+                                    Toutes les catégories
+                                </option>
+                                {% for category in all_categories %}
+                                <option value="{{ category.slug }}" {% if category_filter == category.slug %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Résultats de recherche -->
+        {% if query %}
+            {% if results.total_results > 0 %}
+                <div class="search-results" data-aos="fade-up">
+                    
+                    <!-- Résultats des articles -->
+                    {% if results.articles %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-newspaper me-2"></i>Articles ({{ results.articles|length }})
+                                </h3>
+                                <a href="{% url 'sfront:news' %}" class="view-all-link">Voir tous les articles</a>
+                            </div>
+                            <div class="row">
+                                {% for article in results.articles %}
+                                    <div class="col-lg-6 col-md-6 mb-4">
+                                        <div class="result-card article-card">
+                                            <div class="result-image">
+                                                {% if article.featured_image %}
+                                                    <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" class="img-fluid">
+                                                {% else %}
+                                                    <div class="result-image-placeholder">
+                                                        <i class="fas fa-newspaper"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="result-content">
+                                                <h4 class="result-title">
+                                                    <a href="{% url 'sfront:article_detail' article.slug %}">{{ article.title }}</a>
+                                                </h4>
+                                                <p class="result-excerpt">{{ article.excerpt|truncatewords:20 }}</p>
+                                                <div class="result-meta">
+                                                    <span class="result-date">
+                                                        <i class="fas fa-calendar me-1"></i>
+                                                        {{ article.published_at|date:"d/m/Y" }}
+                                                    </span>
+                                                    {% if article.category %}
+                                                        <span class="result-category">
+                                                            <i class="fas fa-tag me-1"></i>
+                                                            {{ article.category.name }}
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des programmes -->
+                    {% if results.programs %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-flask me-2"></i>Programmes ({{ results.programs|length }})
+                                </h3>
+                                <a href="{% url 'sfront:programs' %}" class="view-all-link">Voir tous les programmes</a>
+                            </div>
+                            <div class="row">
+                                {% for program in results.programs %}
+                                    <div class="col-lg-6 col-md-6 mb-4">
+                                        <div class="result-card program-card">
+                                            <div class="result-image">
+                                                {% if program.featured_image %}
+                                                    <img src="{{ program.featured_image.url }}" alt="{{ program.title }}" class="img-fluid">
+                                                {% else %}
+                                                    <div class="result-image-placeholder">
+                                                        <i class="fas fa-flask"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="result-content">
+                                                <h4 class="result-title">
+                                                    <a href="{% url 'sfront:program_detail' program.slug %}">{{ program.title }}</a>
+                                                </h4>
+                                                <p class="result-excerpt">{{ program.description|truncatewords:20 }}</p>
+                                                <div class="result-meta">
+                                                    {% if program.scientific_field %}
+                                                        <span class="result-field">
+                                                            <i class="fas fa-microscope me-1"></i>
+                                                            {{ program.scientific_field }}
+                                                        </span>
+                                                    {% endif %}
+                                                    {% if program.duration %}
+                                                        <span class="result-duration">
+                                                            <i class="fas fa-clock me-1"></i>
+                                                            {{ program.duration }}
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des événements -->
+                    {% if results.events %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-calendar-alt me-2"></i>Événements ({{ results.events|length }})
+                                </h3>
+                                <a href="{% url 'sfront:events' %}" class="view-all-link">Voir tous les événements</a>
+                            </div>
+                            <div class="row">
+                                {% for event in results.events %}
+                                    <div class="col-lg-6 col-md-6 mb-4">
+                                        <div class="result-card event-card">
+                                            <div class="result-image">
+                                                {% if event.featured_image %}
+                                                    <img src="{{ event.featured_image.url }}" alt="{{ event.title }}" class="img-fluid">
+                                                {% else %}
+                                                    <div class="result-image-placeholder">
+                                                        <i class="fas fa-calendar-alt"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="result-content">
+                                                <h4 class="result-title">
+                                                    <a href="{% url 'sfront:event_detail' event.slug %}">{{ event.title }}</a>
+                                                </h4>
+                                                <p class="result-excerpt">{{ event.description|truncatewords:20 }}</p>
+                                                <div class="result-meta">
+                                                    <span class="result-date">
+                                                        <i class="fas fa-calendar me-1"></i>
+                                                        {{ event.start_date|date:"d/m/Y" }}
+                                                    </span>
+                                                    {% if event.location %}
+                                                        <span class="result-location">
+                                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                                            {{ event.location }}
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des blogs -->
+                    {% if results.blogs %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-blog me-2"></i>Blogs ({{ results.blogs|length }})
+                                </h3>
+                            </div>
+                            <div class="row">
+                                {% for blog in results.blogs %}
+                                    <div class="col-lg-6 col-md-6 mb-4">
+                                        <div class="result-card blog-card">
+                                            <div class="result-content">
+                                                <h4 class="result-title">
+                                                    <a href="{% url 'sfront:blog_detail' blog.slug %}">{{ blog.title }}</a>
+                                                </h4>
+                                                <p class="result-excerpt">{{ blog.content|truncatewords:25 }}</p>
+                                                <div class="result-meta">
+                                                    {% if blog.personna %}
+                                                        <span class="result-author">
+                                                            <i class="fas fa-user me-1"></i>
+                                                            {{ blog.personna.name }}
+                                                        </span>
+                                                    {% endif %}
+                                                    <span class="result-date">
+                                                        <i class="fas fa-calendar me-1"></i>
+                                                        {{ blog.published_at|date:"d/m/Y" }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des personnalités -->
+                    {% if results.personnas %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-user-tie me-2"></i>Personnalités ({{ results.personnas|length }})
+                                </h3>
+                            </div>
+                            <div class="row">
+                                {% for personna in results.personnas %}
+                                    <div class="col-lg-4 col-md-6 mb-4">
+                                        <div class="result-card personna-card text-center">
+                                            <div class="result-image">
+                                                {% if personna.photo %}
+                                                    <img src="{{ personna.photo.url }}" alt="{{ personna.name }}" class="img-fluid rounded-circle">
+                                                {% else %}
+                                                    <div class="result-image-placeholder rounded-circle">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="result-content">
+                                                <h4 class="result-title">
+                                                    <a href="{% url 'sfront:persona_detail' personna.slug %}">{{ personna.name }}</a>
+                                                </h4>
+                                                {% if personna.profession %}
+                                                    <p class="result-profession">{{ personna.profession }}</p>
+                                                {% endif %}
+                                                <p class="result-excerpt">{{ personna.description|truncatewords:15 }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des membres de l'équipe -->
+                    {% if results.team_members %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-users me-2"></i>Membres de l'équipe ({{ results.team_members|length }})
+                                </h3>
+                                <a href="{% url 'sfront:team' %}" class="view-all-link">Voir toute l'équipe</a>
+                            </div>
+                            <div class="row">
+                                {% for member in results.team_members %}
+                                    <div class="col-lg-4 col-md-6 mb-4">
+                                        <div class="result-card team-card text-center">
+                                            <div class="result-image">
+                                                {% if member.photo %}
+                                                    <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="img-fluid rounded-circle">
+                                                {% else %}
+                                                    <div class="result-image-placeholder rounded-circle">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="result-content">
+                                                <h4 class="result-title">
+                                                    <a href="{% url 'sfront:team_member_detail' member.slug %}">{{ member.name }}</a>
+                                                </h4>
+                                                {% if member.position %}
+                                                    <p class="result-position">{{ member.position }}</p>
+                                                {% endif %}
+                                                <p class="result-excerpt">{{ member.biography|truncatewords:15 }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des partenaires -->
+                    {% if results.partners %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-handshake me-2"></i>Partenaires ({{ results.partners|length }})
+                                </h3>
+                            </div>
+                            <div class="row">
+                                {% for partner in results.partners %}
+                                    <div class="col-lg-4 col-md-6 mb-4">
+                                        <div class="result-card partner-card text-center">
+                                            <div class="result-image">
+                                                {% if partner.logo %}
+                                                    <img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="img-fluid">
+                                                {% else %}
+                                                    <div class="result-image-placeholder">
+                                                        <i class="fas fa-handshake"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="result-content">
+                                                <h4 class="result-title">{{ partner.name }}</h4>
+                                                <p class="result-excerpt">{{ partner.description|truncatewords:20 }}</p>
+                                                {% if partner.website %}
+                                                    <a href="{{ partner.website }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-external-link-alt me-1"></i>Site web
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des catégories -->
+                    {% if results.categories %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-tags me-2"></i>Catégories ({{ results.categories|length }})
+                                </h3>
+                            </div>
+                            <div class="row">
+                                {% for category in results.categories %}
+                                    <div class="col-lg-4 col-md-6 mb-4">
+                                        <div class="result-card category-card text-center">
+                                            <div class="result-content">
+                                                <div class="category-icon">
+                                                    <i class="fas fa-{{ category.icon|default:'tag' }} fa-3x" style="color: {{ category.color }};"></i>
+                                                </div>
+                                                <h4 class="result-title">{{ category.name }}</h4>
+                                                <p class="result-excerpt">{{ category.description|truncatewords:15 }}</p>
+                                                <a href="{% url 'sfront:news' %}?category={{ category.slug }}" class="btn btn-sm btn-outline-primary">
+                                                    Voir les articles
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des valeurs fondamentales -->
+                    {% if results.core_values %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-star me-2"></i>Valeurs fondamentales ({{ results.core_values|length }})
+                                </h3>
+                            </div>
+                            <div class="row">
+                                {% for value in results.core_values %}
+                                    <div class="col-lg-4 col-md-6 mb-4">
+                                        <div class="result-card value-card text-center">
+                                            <div class="result-content">
+                                                <div class="value-icon">
+                                                    <i class="{{ value.icon }} fa-3x text-primary"></i>
+                                                </div>
+                                                <h4 class="result-title">{{ value.name }}</h4>
+                                                <p class="result-excerpt">{{ value.description|truncatewords:20 }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des quartiers de la cité -->
+                    {% if results.city_districts %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-building me-2"></i>Quartiers de la cité ({{ results.city_districts|length }})
+                                </h3>
+                            </div>
+                            <div class="row">
+                                {% for district in results.city_districts %}
+                                    <div class="col-lg-6 col-md-6 mb-4">
+                                        <div class="result-card district-card">
+                                            <div class="result-image">
+                                                {% if district.image %}
+                                                    <img src="{{ district.image.url }}" alt="{{ district.name }}" class="img-fluid">
+                                                {% else %}
+                                                    <div class="result-image-placeholder">
+                                                        <i class="fas fa-building"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="result-content">
+                                                <h4 class="result-title">{{ district.name }}</h4>
+                                                <p class="result-excerpt">{{ district.description|truncatewords:25 }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des statistiques héro -->
+                    {% if results.hero_stats %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-chart-bar me-2"></i>Statistiques ({{ results.hero_stats|length }})
+                                </h3>
+                            </div>
+                            <div class="row">
+                                {% for stat in results.hero_stats %}
+                                    <div class="col-lg-4 col-md-6 mb-4">
+                                        <div class="result-card stat-card text-center">
+                                            <div class="result-content">
+                                                <div class="stat-number">
+                                                    <span class="counter">{{ stat.number }}</span>
+                                                    {% if stat.suffix %}
+                                                        <span class="suffix">{{ stat.suffix }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                <h4 class="result-title">{{ stat.label }}</h4>
+                                                <p class="result-excerpt">{{ stat.number }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Résultats des réalisations -->
+                    {% if results.achievements %}
+                        <div class="results-section mb-5">
+                            <div class="section-header">
+                                <h3 class="results-section-title">
+                                    <i class="fas fa-trophy me-2"></i>Réalisations ({{ results.achievements|length }})
+                                </h3>
+                            </div>
+                            <div class="row">
+                                {% for achievement in results.achievements %}
+                                    <div class="col-lg-6 col-md-6 mb-4">
+                                        <div class="result-card achievement-card">
+                                            <div class="result-content">
+                                                <div class="achievement-icon text-center mb-3">
+                                                    <i class="{{ achievement.icon }} fa-3x text-primary"></i>
+                                                </div>
+                                                <h4 class="result-title">{{ achievement.text|truncatewords:10 }}</h4>
+                                                <p class="result-excerpt">{{ achievement.text|truncatewords:25 }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% else %}
+                <!-- Aucun résultat -->
+                <div class="no-results text-center" data-aos="fade-up">
+                    <div class="no-results-icon">
+                        <i class="fas fa-search fa-4x text-muted mb-4"></i>
+                    </div>
+                    <h3>Aucun résultat trouvé</h3>
+                    <p class="text-muted mb-4">
+                        Aucun contenu ne correspond à votre recherche "{{ query }}".
+                    </p>
+                    <div class="search-suggestions">
+                        <h5>Suggestions :</h5>
+                        <ul class="list-unstyled">
+                            <li>Vérifiez l'orthographe des mots-clés</li>
+                            <li>Essayez des mots-clés plus généraux</li>
+                            <li>Utilisez moins de mots-clés</li>
+                            <li>Essayez des synonymes</li>
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Page d'accueil de recherche -->
+            <div class="search-home text-center" data-aos="fade-up">
+                <div class="search-categories">
+                    <h3 class="mb-4">Que recherchez-vous ?</h3>
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="search-category-card">
+                                <div class="category-icon">
+                                    <i class="fas fa-newspaper fa-3x text-primary"></i>
+                                </div>
+                                <h5>Articles & Actualités</h5>
+                                <p>Dernières nouvelles et articles scientifiques</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="search-category-card">
+                                <div class="category-icon">
+                                    <i class="fas fa-flask fa-3x text-success"></i>
+                                </div>
+                                <h5>Programmes</h5>
+                                <p>Formations et programmes de recherche</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="search-category-card">
+                                <div class="category-icon">
+                                    <i class="fas fa-calendar-alt fa-3x text-warning"></i>
+                                </div>
+                                <h5>Événements</h5>
+                                <p>Conférences, séminaires et manifestations</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="search-category-card">
+                                <div class="category-icon">
+                                    <i class="fas fa-users fa-3x text-info"></i>
+                                </div>
+                                <h5>Personnalités</h5>
+                                <p>Experts, chercheurs et intervenants</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Variables CSS */
+:root {
+    --search-primary: #0d4786;
+    --search-secondary: #6c757d;
+    --search-success: #28a745;
+    --search-warning: #ffc107;
+    --search-info: #17a2b8;
+    --search-light: #f8f9fa;
+    --search-dark: #343a40;
+    --search-border: #dee2e6;
+    --search-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --search-shadow-lg: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --search-radius: 0.375rem;
+    --search-radius-lg: 0.5rem;
+}
+
+/* Section de recherche */
+.search-section {
+    padding: 3rem 0;
+    background: var(--search-light);
+}
+
+/* En-tête de recherche */
+.search-header {
+    margin-bottom: 3rem;
+}
+
+.search-title {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--search-primary);
+    margin-bottom: 1rem;
+}
+
+.search-subtitle {
+    font-size: 1.2rem;
+    color: var(--search-secondary);
+    margin-bottom: 0;
+}
+
+.search-query {
+    color: var(--search-primary);
+    font-weight: 600;
+}
+
+.results-count {
+    color: var(--search-success);
+    font-weight: 600;
+}
+
+/* Formulaire de recherche */
+.search-form-container {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--search-radius-lg);
+    box-shadow: var(--search-shadow);
+}
+
+.search-form-main .input-group {
+    box-shadow: var(--search-shadow);
+    border-radius: var(--search-radius-lg);
+    overflow: hidden;
+}
+
+.search-input-main {
+    border: none;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+.search-input-main:focus {
+    box-shadow: none;
+    border-color: var(--search-primary);
+}
+
+.search-btn-main {
+    padding: 1rem 2rem;
+    font-weight: 600;
+    border: none;
+    background: var(--search-primary);
+}
+
+.search-btn-main:hover {
+    background: #0a3a6b;
+    transform: translateY(-1px);
+}
+
+/* Filtres de recherche */
+.search-filters {
+    text-align: center;
+}
+
+.search-filters .form-select {
+    border: 2px solid var(--search-border);
+    border-radius: var(--search-radius);
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    max-width: 300px;
+}
+
+/* Résultats de recherche */
+.search-results {
+    margin-top: 2rem;
+}
+
+.results-section {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--search-radius-lg);
+    box-shadow: var(--search-shadow);
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--search-light);
+}
+
+.results-section-title {
+    color: var(--search-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.view-all-link {
+    color: var(--search-primary);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--search-primary);
+    border-radius: var(--search-radius);
+    transition: all 0.3s ease;
+}
+
+.view-all-link:hover {
+    background: var(--search-primary);
+    color: white;
+    text-decoration: none;
+}
+
+/* Cartes de résultats */
+.result-card {
+    background: white;
+    border: 1px solid var(--search-border);
+    border-radius: var(--search-radius);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    box-shadow: var(--search-shadow);
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--search-shadow-lg);
+    border-color: var(--search-primary);
+}
+
+.result-image {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.result-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.result-card:hover .result-image img {
+    transform: scale(1.05);
+}
+
+.result-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--search-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--search-secondary);
+    font-size: 3rem;
+}
+
+.result-content {
+    padding: 1.5rem;
+}
+
+.result-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.result-title a {
+    color: var(--search-dark);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.result-title a:hover {
+    color: var(--search-primary);
+}
+
+.result-excerpt {
+    color: var(--search-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.result-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--search-secondary);
+}
+
+.result-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.result-meta i {
+    color: var(--search-primary);
+}
+
+/* Cartes spécialisées */
+.personna-card .result-image,
+.team-card .result-image {
+    height: 150px;
+    margin-bottom: 1rem;
+}
+
+.personna-card .result-image img,
+.team-card .result-image img {
+    width: 120px;
+    height: 120px;
+    border: 4px solid white;
+    box-shadow: var(--search-shadow);
+}
+
+.personna-card .result-image-placeholder,
+.team-card .result-image-placeholder {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    border: 4px solid white;
+    box-shadow: var(--search-shadow);
+}
+
+.result-profession,
+.result-position {
+    color: var(--search-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.category-card .category-icon,
+.value-card .value-icon {
+    margin-bottom: 1rem;
+}
+
+.stat-card .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--search-primary);
+    margin-bottom: 1rem;
+}
+
+.stat-card .suffix {
+    font-size: 1.5rem;
+    color: var(--search-secondary);
+}
+
+.result-year {
+    color: var(--search-warning);
+    font-weight: 600;
+}
+
+/* Aucun résultat */
+.no-results {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--search-radius-lg);
+    box-shadow: var(--search-shadow);
+}
+
+.no-results-icon {
+    margin-bottom: 2rem;
+}
+
+.no-results h3 {
+    color: var(--search-dark);
+    margin-bottom: 1rem;
+}
+
+.search-suggestions {
+    margin-top: 2rem;
+    text-align: left;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-suggestions h5 {
+    color: var(--search-primary);
+    margin-bottom: 1rem;
+}
+
+.search-suggestions ul li {
+    color: var(--search-secondary);
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    position: relative;
+}
+
+.search-suggestions ul li:before {
+    content: "•";
+    color: var(--search-primary);
+    position: absolute;
+    left: 0;
+}
+
+/* Page d'accueil de recherche */
+.search-home {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--search-radius-lg);
+    box-shadow: var(--search-shadow);
+}
+
+.search-categories h3 {
+    color: var(--search-primary);
+    margin-bottom: 2rem;
+}
+
+.search-category-card {
+    background: var(--search-light);
+    padding: 2rem 1rem;
+    border-radius: var(--search-radius);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.search-category-card:hover {
+    border-color: var(--search-primary);
+    transform: translateY(-5px);
+    box-shadow: var(--search-shadow-lg);
+}
+
+.search-category-card .category-icon {
+    margin-bottom: 1rem;
+}
+
+.search-category-card h5 {
+    color: var(--search-dark);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.search-category-card p {
+    color: var(--search-secondary);
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .search-title {
+        font-size: 2rem;
+    }
+    
+    .search-form-container {
+        padding: 1.5rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .view-all-link {
+        align-self: flex-end;
+    }
+    
+    .results-section {
+        padding: 1.5rem;
+    }
+    
+    .search-home {
+        padding: 2rem 1.5rem;
+    }
+    
+    .search-category-card {
+        padding: 1.5rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .search-form-main .input-group {
+        flex-direction: column;
+    }
+    
+    .search-input-main {
+        border-radius: var(--search-radius) 0 0 var(--search-radius);
+    }
+    
+    .search-btn-main {
+        border-radius: 0 0 var(--search-radius) var(--search-radius);
+        margin-top: -1px;
+    }
+    
+    .result-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

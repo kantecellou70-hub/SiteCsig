@@ -1,0 +1,678 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}Supprimer {{ blog.title }}{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:blog_detail' blog.slug %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour au blog
+    </a>
+    <a href="{% url 'content_management:blog_list' %}" class="btn btn-outline-primary">
+        <i class="fas fa-list me-2"></i>Liste des blogs
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="delete-confirmation-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header text-center">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2>Confirmer la suppression</h2>
+                    <p class="text-muted">Cette action est irréversible</p>
+                </div>
+                
+                <div class="section-body">
+                    <!-- Aperçu du blog -->
+                    <div class="blog-preview">
+                        <div class="preview-header">
+                            {% if blog.image %}
+                                <div class="preview-image">
+                                    <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+                                </div>
+                            {% else %}
+                                <div class="preview-image-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="preview-content">
+                                <h3 class="preview-title">{{ blog.title }}</h3>
+                                
+                                {% if blog.personna %}
+                                <div class="preview-personna">
+                                    <i class="fas fa-user me-1"></i>
+                                    <span>{{ blog.personna.name }} ({{ blog.personna.get_personna_type_display }})</span>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="preview-status">
+                                    {% if blog.status == 'published' %}
+                                        <span class="status-badge published">
+                                            <i class="fas fa-check-circle me-1"></i>Publié
+                                        </span>
+                                    {% elif blog.status == 'draft' %}
+                                        <span class="status-badge draft">
+                                            <i class="fas fa-edit me-1"></i>Brouillon
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge pending">
+                                            <i class="fas fa-clock me-1"></i>En attente
+                                        </span>
+                                    {% endif %}
+                                    
+                                    {% if blog.is_active %}
+                                        <span class="status-badge active">
+                                            <i class="fas fa-eye me-1"></i>Actif
+                                        </span>
+                                    {% endif %}
+                                    
+                                    {% if blog.featured %}
+                                        <span class="featured-badge">
+                                            <i class="fas fa-star me-1"></i>Mis en avant
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if blog.excerpt %}
+                                <p class="preview-excerpt">{{ blog.excerpt|truncatewords:30 }}</p>
+                                {% endif %}
+                                
+                                <div class="preview-meta">
+                                    <span class="meta-item">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Créé le {{ blog.created_at|date:"d/m/Y" }}
+                                    </span>
+                                    {% if blog.published_at %}
+                                    <span class="meta-item">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Publié le {{ blog.published_at|date:"d/m/Y" }}
+                                    </span>
+                                    {% endif %}
+                                    <span class="meta-item">
+                                        <i class="fas fa-eye me-1"></i>
+                                        {{ blog.views_count|default:0 }} vue{{ blog.views_count|default:0|pluralize }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Impact de la suppression -->
+                    <div class="deletion-impact">
+                        <h4><i class="fas fa-exclamation-circle me-2 text-warning"></i>Impact de la suppression</h4>
+                        
+                        <div class="impact-items">
+                            <div class="impact-item">
+                                <div class="impact-icon danger">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="impact-content">
+                                    <h6>Contenu perdu</h6>
+                                    <p>Tout le contenu du blog sera définitivement supprimé.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="impact-item">
+                                <div class="impact-icon warning">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <div class="impact-content">
+                                    <h6>Fichiers média</h6>
+                                    <p>
+                                        {% if blog.image %}
+                                            L'image principale sera supprimée du serveur.
+                                        {% else %}
+                                            Aucun fichier média à supprimer.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="impact-item">
+                                <div class="impact-icon info">
+                                    <i class="fas fa-link"></i>
+                                </div>
+                                <div class="impact-content">
+                                    <h6>Liens et références</h6>
+                                    <p>Tous les liens vers ce blog deviendront invalides.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="impact-item">
+                                <div class="impact-icon warning">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="impact-content">
+                                    <h6>Statistiques</h6>
+                                    <p>Les statistiques de vues et d'engagement seront perdues.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Avertissements -->
+                    <div class="warnings">
+                        <div class="warning-item">
+                            <i class="fas fa-shield-alt me-2 text-warning"></i>
+                            <div>
+                                <strong>Action irréversible</strong>
+                                <p>Une fois supprimé, ce blog ne pourra plus être récupéré.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="warning-item">
+                            <i class="fas fa-database me-2 text-info"></i>
+                            <div>
+                                <strong>Données supprimées</strong>
+                                <p>Toutes les données du blog seront définitivement effacées de la base de données.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="warning-item">
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            <div>
+                                <strong>Impact sur les personnas</strong>
+                                <p>Si ce blog était le seul d'un personna, cela pourrait affecter la visibilité de ce personna.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="warning-item">
+                            <i class="fas fa-external-link-alt me-2 text-secondary"></i>
+                            <div>
+                                <strong>Liens externes</strong>
+                                <p>Les liens partagés sur les réseaux sociaux ou autres sites deviendront inaccessibles.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alternatives à la suppression -->
+                    <div class="alternatives">
+                        <h4><i class="fas fa-lightbulb me-2 text-info"></i>Alternatives à la suppression</h4>
+                        
+                        <div class="alternatives-list">
+                            <div class="alternative-item">
+                                <div class="alternative-icon">
+                                    <i class="fas fa-eye-slash"></i>
+                                </div>
+                                <div class="alternative-content">
+                                    <h6>Masquer le blog</h6>
+                                    <p>Gardez le contenu mais rendez-le invisible au public.</p>
+                                    <a href="{% url 'content_management:blog_edit' blog.slug %}" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-edit me-1"></i>Modifier
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="alternative-item">
+                                <div class="alternative-icon">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <div class="alternative-content">
+                                    <h6>Mettre en brouillon</h6>
+                                    <p>Remettez le blog en brouillon pour le modifier plus tard.</p>
+                                    <a href="{% url 'content_management:blog_edit' blog.slug %}" class="btn btn-outline-warning btn-sm">
+                                        <i class="fas fa-edit me-1"></i>Modifier
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="alternative-item">
+                                <div class="alternative-icon">
+                                    <i class="fas fa-copy"></i>
+                                </div>
+                                <div class="alternative-content">
+                                    <h6>Dupliquer le contenu</h6>
+                                    <p>Copiez le contenu dans un nouveau blog avant de supprimer celui-ci.</p>
+                                    <a href="{% url 'content_management:blog_create' %}" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-plus me-1"></i>Nouveau blog
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulaire de confirmation -->
+                    <form method="post" class="delete-form">
+                        {% csrf_token %}
+                        
+                        <div class="confirmation-checkbox">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="confirm-deletion" required>
+                                <label class="form-check-label" for="confirm-deletion">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Je confirme que je veux supprimer définitivement ce blog et toutes ses données associées
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-danger btn-lg" id="delete-btn" disabled>
+                                <i class="fas fa-trash me-2"></i>Supprimer définitivement
+                            </button>
+                            <a href="{% url 'content_management:blog_detail' blog.slug %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.delete-confirmation-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.warning-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--warning-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin: 0 auto 1.5rem;
+}
+
+.section-header h2 {
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+}
+
+/* Aperçu du blog */
+.blog-preview {
+    background: var(--gray-50);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.preview-header {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.preview-image {
+    flex-shrink: 0;
+}
+
+.preview-image img {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+}
+
+.preview-image-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--border-radius);
+    background: var(--gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-600);
+    font-size: 3rem;
+}
+
+.preview-content {
+    flex: 1;
+}
+
+.preview-title {
+    color: var(--gray-800);
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    line-height: 1.3;
+}
+
+.preview-personna {
+    color: var(--primary-color);
+    font-weight: 500;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+.preview-status {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.status-badge, .featured-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.published {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.draft {
+    background: var(--warning-color);
+    color: white;
+}
+
+.status-badge.pending {
+    background: var(--info-color);
+    color: white;
+}
+
+.status-badge.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.featured-badge {
+    background: var(--warning-color);
+    color: white;
+}
+
+.preview-excerpt {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0 0 1rem 0;
+    font-style: italic;
+}
+
+.preview-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Impact de la suppression */
+.deletion-impact {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.deletion-impact h4 {
+    color: #856404;
+    margin-bottom: 1rem;
+}
+
+.impact-items {
+    display: grid;
+    gap: 1rem;
+}
+
+.impact-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.impact-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.impact-icon.danger {
+    background: var(--danger-color);
+}
+
+.impact-icon.warning {
+    background: var(--warning-color);
+}
+
+.impact-icon.info {
+    background: var(--info-color);
+}
+
+.impact-content h6 {
+    color: #856404;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+}
+
+.impact-content p {
+    color: #856404;
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* Avertissements */
+.warnings {
+    background: #f8f9fa;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.warning-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.warning-item:last-child {
+    margin-bottom: 0;
+}
+
+.warning-item i {
+    font-size: 1.25rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+.warning-item strong {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.warning-item p {
+    color: var(--gray-600);
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* Alternatives */
+.alternatives {
+    background: #e7f3ff;
+    border: 1px solid #b3d9ff;
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.alternatives h4 {
+    color: #004085;
+    margin-bottom: 1rem;
+}
+
+.alternatives-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.alternative-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--border-radius);
+    border: 1px solid #b3d9ff;
+}
+
+.alternative-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--info-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.alternative-content h6 {
+    color: #004085;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.alternative-content p {
+    color: #004085;
+    margin: 0 0 1rem 0;
+    font-size: 0.875rem;
+}
+
+/* Formulaire de confirmation */
+.delete-form {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+}
+
+.confirmation-checkbox {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.form-check-label {
+    color: var(--gray-800);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+#delete-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .preview-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .preview-image img, .preview-image-placeholder {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .preview-status {
+        justify-content: center;
+    }
+    
+    .preview-meta {
+        justify-content: center;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+    
+    .impact-item, .warning-item, .alternative-item {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .blog-preview {
+        padding: 1rem;
+    }
+    
+    .deletion-impact, .warnings, .alternatives, .delete-form {
+        padding: 1rem;
+    }
+    
+    .preview-title {
+        font-size: 1.25rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheckbox = document.getElementById('confirm-deletion');
+    const deleteBtn = document.getElementById('delete-btn');
+    
+    // Activer/désactiver le bouton de suppression selon la confirmation
+    confirmCheckbox.addEventListener('change', function() {
+        deleteBtn.disabled = !this.checked;
+    });
+    
+    // Confirmation supplémentaire avant soumission
+    document.querySelector('.delete-form').addEventListener('submit', function(e) {
+        if (!confirmCheckbox.checked) {
+            e.preventDefault();
+            showCustomNotification('Veuillez confirmer la suppression', 'warning');
+            return;
+        }
+        
+        const confirmed = confirm('Êtes-vous absolument sûr de vouloir supprimer ce blog ? Cette action est irréversible !');
+        if (!confirmed) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

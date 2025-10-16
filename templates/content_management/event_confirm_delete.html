@@ -1,0 +1,148 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Supprimer l'événement - Gestion de contenu CSIG{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">Êtes-vous sûr de vouloir supprimer cet événement ?</p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'content_management:event_detail' event.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-exclamation-triangle me-2"></i>Confirmation de suppression</h3>
+                </div>
+                <div class="section-body">
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Attention !
+                        </h5>
+                        <p class="mb-0">
+                            Vous êtes sur le point de supprimer définitivement l'événement 
+                            <strong>"{{ event.title }}"</strong>.
+                        </p>
+                    </div>
+
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations sur l'événement
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6>Titre :</h6>
+                                    <p>{{ event.title }}</p>
+                                    
+                                    {% if event.title_en %}
+                                        <h6>Titre en anglais :</h6>
+                                        <p>{{ event.title_en }}</p>
+                                    {% endif %}
+                                    
+                                    <h6>Date de début :</h6>
+                                    <p>{{ event.start_date|date:"d/m/Y" }}</p>
+                                    
+                                    {% if event.end_date %}
+                                        <h6>Date de fin :</h6>
+                                        <p>{{ event.end_date|date:"d/m/Y" }}</p>
+                                    {% endif %}
+                                    
+                                    {% if event.location %}
+                                        <h6>Lieu :</h6>
+                                        <p>{{ event.location }}</p>
+                                    {% endif %}
+                                    
+                                    <h6>Statut :</h6>
+                                    <p>
+                                        <span class="badge status-{{ event.status }}">
+                                            {% if event.status == 'published' %}
+                                                <i class="fas fa-check-circle me-1"></i>Publié
+                                            {% elif event.status == 'draft' %}
+                                                <i class="fas fa-edit me-1"></i>Brouillon
+                                            {% else %}
+                                                <i class="fas fa-trash me-1"></i>Corbeille
+                                            {% endif %}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    {% if event.featured_image %}
+                                        <div class="text-center">
+                                            <img src="{{ event.featured_image.url }}" 
+                                                 alt="{{ event.title }}" 
+                                                 class="img-fluid rounded" 
+                                                 style="max-width: 200px;">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning mt-4">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Conséquences de la suppression
+                        </h6>
+                        <ul class="mb-0">
+                            <li>L'événement sera définitivement supprimé de la base de données</li>
+                            <li>Toutes les images associées seront supprimées</li>
+                            <li>Cette action ne peut pas être annulée</li>
+                            <li>Les liens vers cet événement ne fonctionneront plus</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="form-actions">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <a href="{% url 'content_management:event_detail' event.pk %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Annuler
+                                    </a>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-trash me-2"></i>Confirmer la suppression
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation supplémentaire avant soumission
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const confirmed = confirm('Êtes-vous ABSOLUMENT sûr de vouloir supprimer cet événement ? Cette action est irréversible.');
+        if (!confirmed) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1328 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Catégories - Gestion de contenu CSIG{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-tags me-2"></i>Catégories
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">Gérez l'organisation de votre contenu par catégories</p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'content_management:category_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouvelle catégorie
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="categories-container">
+    <!-- Statistiques simplifiées -->
+    <div class="stats-overview mb-4">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">{{ total_categories }}</h3>
+                        <p class="stat-label">Total catégories</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">{{ active_categories }}</h3>
+                        <p class="stat-label">Catégories actives</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-info">
+                    <div class="stat-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">{{ parent_categories }}</h3>
+                        <p class="stat-label">Catégories principales</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">{{ total_articles }}</h3>
+                        <p class="stat-label">Articles classés</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche simple -->
+    <div class="search-bar mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher une catégorie...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="results-count">
+                    <span id="resultsCount">{{ categories|length }}</span> catégorie(s) trouvée(s)
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des catégories -->
+    <div class="content-section">
+        <div class="table-responsive">
+            <table class="table table-hover category-table">
+                <thead class="table-light">
+                    <tr>
+                        <th width="5%">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
+                        </th>
+                        <th width="25%">
+                            <i class="fas fa-tag me-2"></i>Nom
+                        </th>
+                        <th width="35%">
+                            <i class="fas fa-align-left me-2"></i>Description
+                        </th>
+                        <th width="15%">
+                            <i class="fas fa-link me-2"></i>Slug
+                        </th>
+                        <th width="10%">
+                            <i class="fas fa-calendar me-2"></i>Date d'ajout
+                        </th>
+                        <th width="10%">
+                            <i class="fas fa-cogs me-2"></i>Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr class="category-row" data-category-id="{{ category.pk }}">
+                        <td>
+                            <input type="checkbox" class="form-check-input category-checkbox" value="{{ category.pk }}">
+                        </td>
+                        <td>
+                            <div class="category-name-cell">
+                                <div class="category-icon-small" style="background-color: {{ category.color|default:'#0d4786' }};">
+                                    <i class="fas {{ category.icon|default:'fa-tag' }}"></i>
+                                </div>
+                                <div class="category-info">
+                                    <strong class="category-name">{{ category.name }}</strong>
+                                    <div class="category-status">
+                                        <span class="status-badge status-{% if category.is_active %}active{% else %}inactive{% endif %}">
+                                            {% if category.is_active %}Active{% else %}Inactive{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="category-description">
+                                {% if category.description %}
+                                    {{ category.description|truncatechars:80 }}
+                                {% else %}
+                                    <span class="text-muted">Aucune description</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <code class="category-slug">{{ category.slug }}</code>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ category.created_at|date:"d/m/Y" }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'content_management:category_detail' category.pk %}" 
+                                   class="btn btn-outline-info btn-sm" title="Voir les détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'content_management:category_edit' category.pk %}" 
+                                   class="btn btn-outline-primary btn-sm" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-outline-danger btn-sm" title="Supprimer"
+                                        onclick="deleteCategory({{ category.pk }}, '{{ category.name }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 empty-row">
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                                <h5>Aucune catégorie trouvée</h5>
+                                <p>Commencez par créer votre première catégorie pour organiser votre contenu</p>
+                                <a href="{% url 'content_management:category_create' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Créer une catégorie
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2 text-danger"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer la catégorie <strong id="categoryNameToDelete"></strong> ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Cette action est irréversible et supprimera également tous les articles associés.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">
+                    <i class="fas fa-trash me-2"></i>Supprimer définitivement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Statistiques */
+.stats-overview {
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.2rem;
+    color: white;
+}
+
+.stat-primary .stat-icon { background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%); }
+.stat-success .stat-icon { background: linear-gradient(135deg, #28a745 0%, #34ce57 100%); }
+.stat-info .stat-icon { background: linear-gradient(135deg, #17a2b8 0%, #39c0ba 100%); }
+.stat-warning .stat-icon { background: linear-gradient(135deg, #ffc107 0%, #ffdb4d 100%); }
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.stat-label {
+    color: #6c757d;
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Barre de recherche */
+.search-bar {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.search-bar .input-group {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.search-bar .form-control {
+    border: 1px solid #ced4da;
+    border-left: none;
+}
+
+.search-bar .input-group-text {
+    background: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-right: none;
+}
+
+.results-count {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 0;
+}
+
+/* Tableau */
+.category-table {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e9ecef;
+}
+
+.category-table thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.category-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.category-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.category-table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+/* Cellule du nom de catégorie */
+.category-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.category-icon-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.category-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.category-name {
+    color: #2c3e50;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.category-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Description */
+.category-description {
+    color: #495057;
+    line-height: 1.4;
+    font-size: 0.9rem;
+}
+
+/* Slug */
+.category-slug {
+    background: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #6c757d;
+    border: 1px solid #e9ecef;
+}
+
+/* Boutons d'action */
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.btn-group-sm .btn i {
+    font-size: 0.8rem;
+}
+
+/* État vide */
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.empty-state h5 {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .category-table thead th:nth-child(4),
+    .category-table tbody td:nth-child(4) {
+        display: none;
+    }
+    
+    .category-table thead th:nth-child(5),
+    .category-table tbody td:nth-child(5) {
+        display: none;
+    }
+}
+
+@media (max-width: 992px) {
+    .category-table thead th:nth-child(3),
+    .category-table tbody td:nth-child(3) {
+        display: none;
+    }
+    
+    .stats-overview .col-md-3 {
+        margin-bottom: 1rem;
+    }
+    
+    .search-bar .col-md-6:last-child {
+        text-align: left;
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .category-table {
+        font-size: 0.9rem;
+    }
+    
+    .category-table thead th,
+    .category-table tbody td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .category-icon-small {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .category-name {
+        font-size: 0.9rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .search-bar {
+        padding: 1rem;
+    }
+    
+    .stats-overview .col-md-3 {
+        margin-bottom: 1rem;
+    }
+    
+    /* Masquer la colonne Description sur mobile */
+    .category-table thead th:nth-child(3),
+    .category-table tbody td:nth-child(3) {
+        display: none;
+    }
+    
+    /* Masquer la colonne Slug sur mobile */
+    .category-table thead th:nth-child(4),
+    .category-table tbody td:nth-child(4) {
+        display: none;
+    }
+    
+    /* Masquer la colonne Date sur mobile */
+    .category-table thead th:nth-child(5),
+    .category-table tbody td:nth-child(5) {
+        display: none;
+    }
+    
+    /* Ajuster la largeur des colonnes restantes */
+    .category-table thead th:nth-child(1) { width: 10%; }
+    .category-table thead th:nth-child(2) { width: 60%; }
+    .category-table thead th:nth-child(6) { width: 30%; }
+}
+
+@media (max-width: 576px) {
+    .category-table {
+        font-size: 0.8rem;
+    }
+    
+    .category-table thead th,
+    .category-table tbody td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .category-icon-small {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+    
+    .category-name {
+        font-size: 0.85rem;
+    }
+    
+    .category-description {
+        font-size: 0.8rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.15rem 0.3rem;
+        font-size: 0.75rem;
+    }
+    
+    .btn-group-sm .btn i {
+        font-size: 0.75rem;
+    }
+    
+    .search-bar {
+        padding: 0.75rem;
+    }
+    
+    .search-bar .input-group {
+        flex-direction: column;
+    }
+    
+    .search-bar .input-group-text {
+        border-radius: 8px 8px 0 0;
+        border-bottom: none;
+        border-right: 1px solid #ced4da;
+    }
+    
+    .search-bar .form-control {
+        border-radius: 0 0 8px 8px;
+        border-left: 1px solid #ced4da;
+    }
+    
+    .search-bar .btn {
+        margin-top: 0.5rem;
+        border-radius: 8px;
+    }
+    
+    .stats-overview {
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+    
+    .results-count {
+        font-size: 0.8rem;
+        text-align: center;
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-table {
+        font-size: 0.75rem;
+    }
+    
+    .category-table thead th,
+    .category-table tbody td {
+        padding: 0.4rem 0.2rem;
+    }
+    
+    .category-icon-small {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    .category-name {
+        font-size: 0.8rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.1rem 0.25rem;
+        font-size: 0.7rem;
+    }
+    
+    .btn-group-sm .btn i {
+        font-size: 0.7rem;
+    }
+    
+    .search-bar {
+        padding: 0.5rem;
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+    }
+    
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .empty-state {
+        padding: 1.5rem;
+    }
+    
+    .empty-icon {
+        font-size: 2.5rem;
+    }
+    
+    .empty-state h5 {
+        font-size: 1.1rem;
+    }
+    
+    .empty-state p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Gestion de l'orientation paysage sur mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .stats-overview .row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+        margin-bottom: 0;
+    }
+    
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-number {
+        font-size: 1.1rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
+    
+    .search-bar {
+        padding: 0.75rem;
+    }
+    
+    .category-table thead th,
+    .category-table tbody td {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+@media (max-width: 576px) and (orientation: landscape) {
+    .stats-overview .row {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.25rem;
+    }
+    
+    .stat-card {
+        padding: 0.5rem;
+    }
+    
+    .stat-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-number {
+        font-size: 1rem;
+    }
+    
+    .stat-label {
+        font-size: 0.65rem;
+    }
+    
+    .search-bar {
+        padding: 0.5rem;
+    }
+    
+    .category-table thead th,
+    .category-table tbody td {
+        padding: 0.4rem 0.2rem;
+    }
+}
+
+/* Règles globales pour empêcher le défilement horizontal */
+@media (max-width: 768px) {
+    body, html {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    
+    .container, .container-fluid {
+        overflow-x: hidden;
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .categories-container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .table-responsive {
+        overflow-x: hidden;
+    }
+    
+    .category-table {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+    
+    .search-bar {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+    
+    .stats-overview {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+    
+    /* Correction du header et navigation mobile */
+    .navbar {
+        padding: 0.5rem 1rem !important;
+    }
+    
+    .navbar-brand {
+        font-size: 1.1rem !important;
+        margin-right: 0 !important;
+    }
+    
+    .navbar-toggler {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.875rem !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    
+    .navbar-collapse {
+        background: rgba(13, 71, 134, 0.98) !important;
+        border-radius: 8px !important;
+        margin-top: 0.5rem !important;
+        padding: 1rem !important;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.5rem 0 !important;
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    
+    .navbar-nav .nav-link:last-child {
+        border-bottom: none !important;
+    }
+    
+    /* Correction des actions de page */
+    .page-actions {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        align-items: stretch !important;
+    }
+    
+    .page-actions .btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    /* Correction du titre de page */
+    .page-title {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .page-subtitle {
+        font-size: 0.9rem !important;
+        margin-bottom: 1rem !important;
+    }
+}
+
+/* Gestion des longs textes */
+@media (max-width: 768px) {
+    .category-name,
+    .category-description,
+    .category-slug,
+    .stat-number,
+    .stat-label {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+        white-space: normal;
+    }
+    
+    .category-info {
+        min-width: 0;
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .category-name-cell {
+        min-width: 0;
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+}
+
+/* Optimisation des tableaux sur mobile */
+@media (max-width: 768px) {
+    .category-table {
+        table-layout: fixed;
+    }
+    
+    .category-table thead th,
+    .category-table tbody td {
+        min-width: 0;
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .category-table tbody td {
+        vertical-align: top;
+    }
+}
+
+/* Ajustements pour les très petits écrans */
+@media (max-width: 360px) {
+    .category-table {
+        font-size: 0.7rem;
+    }
+    
+    .category-table thead th,
+    .category-table tbody td {
+        padding: 0.3rem 0.15rem;
+    }
+    
+    .category-icon-small {
+        width: 25px;
+        height: 25px;
+        font-size: 0.7rem;
+    }
+    
+    .category-name {
+        font-size: 0.75rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.08rem 0.2rem;
+        font-size: 0.65rem;
+    }
+    
+    .btn-group-sm .btn i {
+        font-size: 0.65rem;
+    }
+    
+    .stat-card {
+        padding: 0.5rem;
+    }
+    
+    .stat-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+    
+    .stat-number {
+        font-size: 1.1rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
+}
+
+/* Gestion du colspan pour la ligne vide selon la taille d'écran */
+@media (max-width: 1200px) {
+    .empty-row {
+        colspan: 4 !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .empty-row {
+        colspan: 3 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .empty-row {
+        colspan: 3 !important;
+    }
+}
+
+/* Styles pour améliorer l'expérience mobile */
+@media (max-width: 768px) {
+    .category-table tbody tr {
+        border-bottom: 2px solid #f1f3f4;
+    }
+    
+    .category-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .category-table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .category-table tbody tr:hover td {
+        background-color: #f8f9fa;
+    }
+    
+    /* Améliorer la lisibilité des boutons d'action */
+    .btn-group-sm {
+        display: flex;
+        gap: 0.25rem;
+        justify-content: center;
+    }
+    
+    .btn-group-sm .btn {
+        border-radius: 6px;
+        min-width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Améliorer l'affichage des badges de statut */
+    .status-badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+    }
+    
+    /* Améliorer l'affichage des icônes de catégorie */
+    .category-icon-small {
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Améliorer l'affichage des noms de catégorie */
+    .category-name {
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+    
+    .category-status {
+        margin-top: 0.25rem;
+    }
+}
+
+/* Améliorations pour les très petits écrans */
+@media (max-width: 480px) {
+    .btn-group-sm .btn {
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.65rem;
+    }
+    
+    .category-icon-small {
+        border-radius: 4px;
+    }
+    
+    .status-badge {
+        font-size: 0.6rem;
+        padding: 0.15rem 0.3rem;
+    }
+    
+    .empty-state .btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    /* Correction du header sur très petits écrans */
+    .navbar {
+        padding: 0.25rem 0.5rem !important;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem !important;
+    }
+    
+    .navbar-toggler {
+        padding: 0.2rem 0.4rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .page-title {
+        font-size: 1.25rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .page-subtitle {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .page-actions {
+        gap: 0.25rem !important;
+    }
+}
+
+/* Améliorations pour l'orientation paysage */
+@media (max-width: 768px) and (orientation: landscape) {
+    .stats-overview {
+        margin-bottom: 1rem;
+    }
+    
+    .search-bar {
+        margin-bottom: 1rem;
+    }
+    
+    .category-table thead th,
+    .category-table tbody td {
+        padding: 0.4rem 0.2rem;
+    }
+    
+    .btn-group-sm .btn {
+        min-width: 30px;
+        height: 30px;
+    }
+    
+    /* Correction du header en orientation paysage */
+    .navbar {
+        padding: 0.25rem 0.5rem !important;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem !important;
+    }
+    
+    .navbar-toggler {
+        padding: 0.2rem 0.4rem !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .page-title {
+        font-size: 1.3rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .page-subtitle {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.category-row {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Checkbox personnalisé */
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #0d4786;
+    border-color: #0d4786;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentCategoryId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSearch();
+    initializeSelectAll();
+    setupEventListeners();
+});
+
+function initializeSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            filterCategories(query);
+            updateResultsCount();
+        });
+    }
+    
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            filterCategories('');
+            updateResultsCount();
+        });
+    }
+}
+
+function initializeSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+    
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+}
+
+function setupEventListeners() {
+    const confirmDeleteBtn = document.getElementById('confirmDelete');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (currentCategoryId) {
+                performDelete(currentCategoryId);
+            }
+        });
+    }
+}
+
+function filterCategories(query) {
+    const categoryRows = document.querySelectorAll('.category-row');
+    
+    categoryRows.forEach(row => {
+        const name = row.querySelector('.category-name').textContent.toLowerCase();
+        const description = row.querySelector('.category-description')?.textContent.toLowerCase() || '';
+        const slug = row.querySelector('.category-slug')?.textContent.toLowerCase() || '';
+        
+        const matches = name.includes(query) || description.includes(query) || slug.includes(query);
+        
+        if (matches) {
+            row.style.display = 'table-row';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function updateResultsCount() {
+    const visibleRows = document.querySelectorAll('.category-row[style*="table-row"], .category-row:not([style*="none"])');
+    const resultsCount = document.getElementById('resultsCount');
+    
+    if (resultsCount) {
+        resultsCount.textContent = visibleRows.length;
+    }
+}
+
+function deleteCategory(categoryId, categoryName) {
+    currentCategoryId = categoryId;
+    
+    const categoryNameElement = document.getElementById('categoryNameToDelete');
+    if (categoryNameElement) {
+        categoryNameElement.textContent = categoryName;
+    }
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    deleteModal.show();
+}
+
+function performDelete(categoryId) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch('{% url "content_management:delete_category_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken,
+        },
+        body: `category_id=${categoryId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const categoryRow = document.querySelector(`[data-category-id="${categoryId}"]`);
+            if (categoryRow) {
+                categoryRow.style.opacity = '0.5';
+                categoryRow.style.pointerEvents = 'none';
+                
+                setTimeout(() => {
+                    categoryRow.remove();
+                    updateResultsCount();
+                    
+                    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+                    if (deleteModal) deleteModal.hide();
+                    
+                    showNotification('success', data.message);
+                }, 500);
+            }
+        } else {
+            showNotification('error', data.error || 'Erreur lors de la suppression');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('error', 'Erreur lors de la suppression');
+    });
+}
+
+function showNotification(type, message) {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Raccourcis clavier
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+    }
+    
+    if (e.key === 'Escape') {
+        const openModal = document.querySelector('.modal.show');
+        if (openModal) {
+            const modal = bootstrap.Modal.getInstance(openModal);
+            if (modal) modal.hide();
+        }
+    }
+});
+</script>
+{% endblock %}

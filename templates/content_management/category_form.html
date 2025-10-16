@@ -1,0 +1,804 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Modifier la catégorie - {{ form.instance.name }}
+    {% else %}
+        Nouvelle catégorie
+    {% endif %}
+    - Gestion de contenu CSIG
+{% endblock %}
+
+{% block page_title %}
+    {% if form.instance.pk %}
+        <i class="fas fa-edit me-2"></i>Modifier la catégorie
+    {% else %}
+        <i class="fas fa-plus me-2"></i>Nouvelle catégorie
+    {% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">
+        {% if form.instance.pk %}
+            Modifiez les informations de la catégorie "{{ form.instance.name }}"
+        {% else %}
+            Créez une nouvelle catégorie pour organiser votre contenu
+        {% endif %}
+    </p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'content_management:category_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+        <button type="submit" form="categoryForm" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>
+            {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %}
+        </button>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Informations de base</h3>
+                </div>
+                <div class="section-body">
+                    <form id="categoryForm" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Nom de la catégorie -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                <i class="fas fa-tag me-2"></i>Nom de la catégorie <span class="text-danger">*</span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Choisissez un nom clair et descriptif pour cette catégorie
+                            </div>
+                        </div>
+
+                        <!-- Nom en anglais (optionnel) -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.name_en.id_for_label }}" class="form-label">
+                                <i class="fas fa-language me-2"></i>Nom en anglais <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.name_en }}
+                            {% if form.name_en.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name_en.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Version anglaise du nom de la catégorie (optionnel)
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Description <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Décrivez brièvement le contenu de cette catégorie
+                            </div>
+                        </div>
+
+                        <!-- Description en anglais (optionnel) -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.description_en.id_for_label }}" class="form-label">
+                                <i class="fas fa-language me-2"></i>Description en anglais <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.description_en }}
+                            {% if form.description_en.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description_en.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Version anglaise de la description (optionnel)
+                            </div>
+                        </div>
+
+                        <!-- Icône -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.icon.id_for_label }}" class="form-label">
+                                <i class="fas fa-image me-2"></i>Icône de la catégorie <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.icon }}
+                            {% if form.icon.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.icon.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Choisissez une icône représentative (Font Awesome recommandé)
+                            </div>
+                        </div>
+
+                        <!-- Couleur -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.color.id_for_label }}" class="form-label">
+                                <i class="fas fa-palette me-2"></i>Couleur de la catégorie <span class="text-muted">(optionnel)</span>
+                            </label>
+                            <div class="color-picker-wrapper">
+                                {{ form.color }}
+                                <div class="color-preview" id="colorPreview"></div>
+                            </div>
+                            {% if form.color.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.color.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Sélectionnez une couleur pour identifier visuellement cette catégorie
+                            </div>
+                        </div>
+
+                        <!-- Catégorie parente -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.parent.id_for_label }}" class="form-label">
+                                <i class="fas fa-sitemap me-2"></i>Catégorie parente <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.parent }}
+                            {% if form.parent.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.parent.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Laissez vide si c'est une catégorie principale
+                            </div>
+                        </div>
+
+                        <!-- Ordre d'affichage -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.order.id_for_label }}" class="form-label">
+                                <i class="fas fa-sort-numeric-down me-2"></i>Ordre d'affichage <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.order }}
+                            {% if form.order.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.order.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Détermine l'ordre d'affichage des catégories (1 = premier)
+                            </div>
+                        </div>
+
+                        <!-- Statut -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                <i class="fas fa-toggle-on me-2"></i>Statut <span class="text-muted">(optionnel)</span>
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.status.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Activez ou désactivez cette catégorie
+                            </div>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="form-actions">
+                            <div class="d-flex gap-2 justify-content-between">
+                                <div>
+                                    <a href="{% url 'content_management:category_list' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Annuler
+                                    </a>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    {% if form.instance.pk %}
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i>Mettre à jour
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-plus me-2"></i>Créer la catégorie
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar avec aide et aperçu -->
+        <div class="col-lg-4">
+            <!-- Aide et conseils -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-lightbulb me-2"></i>Conseils</h3>
+                </div>
+                <div class="section-body">
+                    <div class="tips-container">
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h6>Nom descriptif</h6>
+                                <p>Choisissez un nom clair qui décrit bien le contenu de la catégorie</p>
+                            </div>
+                        </div>
+                        
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-sitemap"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h6>Hiérarchie logique</h6>
+                                <p>Organisez vos catégories en sous-catégories pour une navigation claire</p>
+                            </div>
+                        </div>
+                        
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-palette"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h6>Couleurs distinctives</h6>
+                                <p>Utilisez des couleurs différentes pour distinguer facilement vos catégories</p>
+                            </div>
+                        </div>
+                        
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h6>Champs optionnels</h6>
+                                <p>Les champs en anglais et autres détails sont optionnels. Seul le nom est obligatoire.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aperçu de la catégorie -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-eye me-2"></i>Aperçu</h3>
+                </div>
+                <div class="section-body">
+                    <div class="category-preview" id="categoryPreview">
+                        <div class="preview-header">
+                            <div class="preview-icon">
+                                <i class="fas fa-tag" id="previewIcon"></i>
+                            </div>
+                            <div class="preview-info">
+                                <h5 id="previewName">Nom de la catégorie</h5>
+                                <p id="previewDescription">Description de la catégorie</p>
+                                <small id="previewNameEn" class="text-muted" style="display: none;">Nom en anglais</small>
+                            </div>
+                        </div>
+                        <div class="preview-meta">
+                            <span class="meta-item">
+                                <i class="fas fa-sort-numeric-down me-1"></i>
+                                Ordre: <span id="previewOrder">1</span>
+                            </span>
+                            <span class="meta-item">
+                                <i class="fas fa-toggle-on me-1"></i>
+                                Statut: <span id="previewStatus">Actif</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Container principal */
+.form-container {
+    margin-bottom: 2rem;
+}
+
+/* Sections */
+.content-section {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.section-body {
+    padding: 2rem;
+}
+
+/* Formulaires */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-label .text-danger {
+    color: #dc3545;
+}
+
+.form-label .text-muted {
+    color: #6c757d;
+    font-weight: 400;
+}
+
+.form-control, .form-select {
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d4786;
+    box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Sélecteur de couleur */
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.color-preview {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+    background: #0d4786;
+}
+
+/* Boutons d'action */
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Conseils */
+.tips-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tip-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.tip-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #0d4786;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.tip-content h6 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.tip-content p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Aperçu */
+.category-preview {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.preview-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.preview-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    background: #0d4786;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.preview-info h5 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.preview-info p {
+    margin: 0 0 0.25rem 0;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.preview-info small {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.preview-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    background: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .section-body {
+        padding: 1.5rem;
+    }
+    
+    .color-picker-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-actions .d-flex {
+        justify-content: center;
+    }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.content-section {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.content-section:nth-child(1) { animation-delay: 0.1s; }
+.content-section:nth-child(2) { animation-delay: 0.2s; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des champs
+    initializeFormFields();
+    
+    // Mise à jour en temps réel de l'aperçu
+    setupLivePreview();
+    
+    // Validation du formulaire
+    setupFormValidation();
+    
+    // Gestion de la couleur
+    setupColorPicker();
+});
+
+function initializeFormFields() {
+    // Initialiser Select2 pour la catégorie parente
+    if (typeof $ !== 'undefined' && $.fn.select2) {
+        $('#{{ form.parent.id_for_label }}').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Sélectionner une catégorie parente...',
+            allowClear: true
+        });
+    }
+    
+    // Initialiser les tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+}
+
+function setupLivePreview() {
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    const nameEnField = document.getElementById('{{ form.name_en.id_for_label }}');
+    const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
+    const descriptionEnField = document.getElementById('{{ form.description_en.id_for_label }}');
+    const iconField = document.getElementById('{{ form.icon.id_for_label }}');
+    const orderField = document.getElementById('{{ form.order.id_for_label }}');
+    const statusField = document.getElementById('{{ form.status.id_for_label }}');
+    
+    // Mettre à jour l'aperçu en temps réel
+    [nameField, nameEnField, descriptionField, descriptionEnField, iconField, orderField, statusField].forEach(field => {
+        if (field) {
+            field.addEventListener('input', updatePreview);
+            field.addEventListener('change', updatePreview);
+        }
+    });
+    
+    // Mise à jour initiale
+    updatePreview();
+}
+
+function updatePreview() {
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    const nameEnField = document.getElementById('{{ form.name_en.id_for_label }}');
+    const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
+    const descriptionEnField = document.getElementById('{{ form.description_en.id_for_label }}');
+    const iconField = document.getElementById('{{ form.icon.id_for_label }}');
+    const orderField = document.getElementById('{{ form.order.id_for_label }}');
+    const statusField = document.getElementById('{{ form.status.id_for_label }}');
+    
+    // Mettre à jour le nom
+    const previewName = document.getElementById('previewName');
+    if (nameField && previewName) {
+        previewName.textContent = nameField.value || 'Nom de la catégorie';
+    }
+    
+    // Mettre à jour le nom en anglais (optionnel)
+    const previewNameEn = document.getElementById('previewNameEn');
+    if (nameEnField && previewNameEn) {
+        if (nameEnField.value.trim()) {
+            previewNameEn.textContent = nameEnField.value;
+            previewNameEn.style.display = 'block';
+        } else {
+            previewNameEn.style.display = 'none';
+        }
+    }
+    
+    // Mettre à jour la description
+    const previewDescription = document.getElementById('previewDescription');
+    if (descriptionField && previewDescription) {
+        previewDescription.textContent = descriptionField.value || 'Description de la catégorie';
+    }
+    
+    // Mettre à jour l'icône
+    const previewIcon = document.getElementById('previewIcon');
+    if (iconField && previewIcon) {
+        const iconValue = iconField.value || 'fa-tag';
+        previewIcon.className = `fas ${iconValue}`;
+    }
+    
+    // Mettre à jour l'ordre
+    const previewOrder = document.getElementById('previewOrder');
+    if (orderField && previewOrder) {
+        previewOrder.textContent = orderField.value || '1';
+    }
+    
+    // Mettre à jour le statut
+    const previewStatus = document.getElementById('previewStatus');
+    if (statusField && previewStatus) {
+        const statusText = statusField.options[statusField.selectedIndex]?.text || 'Actif';
+        previewStatus.textContent = statusText;
+    }
+}
+
+function setupFormValidation() {
+    const form = document.getElementById('categoryForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                showValidationErrors();
+            }
+        });
+    }
+}
+
+function validateForm() {
+    let isValid = true;
+    const form = document.getElementById('categoryForm');
+    
+    // Seuls les champs marqués comme required sont obligatoires
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+    
+    // Validation spécifique pour le nom (toujours obligatoire)
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    if (nameField && !nameField.value.trim()) {
+        nameField.classList.add('is-invalid');
+        isValid = false;
+    } else if (nameField) {
+        nameField.classList.remove('is-invalid');
+    }
+    
+    return isValid;
+}
+
+function showValidationErrors() {
+    if (window.AdminInterface && window.AdminInterface.showNotification) {
+        window.AdminInterface.showNotification('Veuillez corriger les erreurs dans le formulaire', 'error');
+    } else {
+        alert('Veuillez corriger les erreurs dans le formulaire');
+    }
+}
+
+function setupColorPicker() {
+    const colorField = document.getElementById('{{ form.color.id_for_label }}');
+    const colorPreview = document.getElementById('colorPreview');
+    
+    if (colorField && colorPreview) {
+        colorField.addEventListener('input', function() {
+            const color = this.value;
+            colorPreview.style.backgroundColor = color;
+            
+            // Ajuster la couleur du texte selon la luminosité
+            if (isLightColor(color)) {
+                colorPreview.style.color = '#000';
+            } else {
+                colorPreview.style.color = '#fff';
+            }
+        });
+        
+        // Initialiser avec la valeur actuelle
+        if (colorField.value) {
+            colorField.dispatchEvent(new Event('input'));
+        }
+    }
+}
+
+function isLightColor(color) {
+    if (!color || color.length < 6) return false;
+    
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128;
+}
+
+// Auto-sauvegarde du formulaire
+let autoSaveTimer;
+const form = document.getElementById('categoryForm');
+if (form) {
+    const inputs = form.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                // Ici vous pourriez implémenter l'auto-sauvegarde
+                console.log('Auto-sauvegarde...');
+            }, 2000);
+        });
+    });
+}
+</script>
+{% endblock %}

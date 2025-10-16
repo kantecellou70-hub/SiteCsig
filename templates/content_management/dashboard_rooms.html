@@ -1,0 +1,512 @@
+{% extends 'content_management/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Tableau de bord des salles" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+    }
+    
+    .dashboard-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #495057;
+        margin: 0;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0.5rem 0 0 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .stat-change {
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+    }
+    
+    .stat-change.positive {
+        color: #28a745;
+    }
+    
+    .stat-change.negative {
+        color: #dc3545;
+    }
+    
+    .dashboard-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #495057;
+        margin: 0;
+    }
+    
+    .section-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .upcoming-bookings {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+    
+    .booking-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border-left: 4px solid #007bff;
+        transition: all 0.2s;
+    }
+    
+    .booking-card:hover {
+        background: #e9ecef;
+        transform: translateX(2px);
+    }
+    
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+    
+    .booking-title {
+        font-weight: 600;
+        color: #495057;
+        margin: 0;
+        font-size: 1rem;
+    }
+    
+    .booking-status {
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-confirmed { background-color: #d4edda; color: #155724; }
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    
+    .booking-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .popular-rooms {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .room-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    
+    .room-card:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+    
+    .room-icon {
+        font-size: 2rem;
+        color: #007bff;
+        margin-bottom: 0.5rem;
+    }
+    
+    .room-name {
+        font-weight: 600;
+        color: #495057;
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .room-stats {
+        display: flex;
+        justify-content: space-around;
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .revenue-chart {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .chart-placeholder {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+    
+    .quick-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem;
+        }
+        
+        .dashboard-title {
+            font-size: 2rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .upcoming-bookings {
+            grid-template-columns: 1fr;
+        }
+        
+        .popular-rooms {
+            grid-template-columns: 1fr;
+        }
+        
+        .quick-actions {
+            flex-direction: column;
+        }
+        
+        .quick-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête du tableau de bord -->
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">{% trans "Tableau de bord des salles" %}</h1>
+        <p class="dashboard-subtitle">{% trans "Vue d'ensemble de la gestion des salles de conférence" %}</p>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <a href="{% url 'content_management:conference_room_create' %}" class="btn btn-success btn-lg">
+            <i class="fas fa-plus me-2"></i>{% trans "Nouvelle salle" %}
+        </a>
+        <a href="{% url 'content_management:room_booking_create' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-calendar-plus me-2"></i>{% trans "Nouvelle réservation" %}
+        </a>
+        <a href="{% url 'content_management:external_organization_create' %}" class="btn btn-info btn-lg">
+            <i class="fas fa-building me-2"></i>{% trans "Nouvelle organisation" %}
+        </a>
+        <a href="{% url 'content_management:room_maintenance_create' %}" class="btn btn-warning btn-lg">
+            <i class="fas fa-tools me-2"></i>{% trans "Nouvelle maintenance" %}
+        </a>
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-building text-primary"></i>
+            </div>
+            <h3 class="stat-number">{{ total_rooms }}</h3>
+            <p class="stat-label">{% trans "Total salles" %}</p>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> {{ available_rooms }} {% trans "disponibles" %}
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check text-success"></i>
+            </div>
+            <h3 class="stat-number">{{ total_bookings }}</h3>
+            <p class="stat-label">{% trans "Total réservations" %}</p>
+            <div class="stat-change">
+                {{ confirmed_bookings }} {% trans "confirmées" %} • {{ pending_bookings }} {% trans "en attente" %}
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-money-bill-wave text-warning"></i>
+            </div>
+            <h3 class="stat-number">{{ total_revenue|floatformat:0 }} GNF</h3>
+            <p class="stat-label">{% trans "Revenus totaux" %}</p>
+            <div class="stat-change">
+                {{ monthly_revenue|floatformat:0 }} GNF {% trans "ce mois" %}
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users text-info"></i>
+            </div>
+            <h3 class="stat-number">{{ total_organizations }}</h3>
+            <p class="stat-label">{% trans "Organisations" %}</p>
+            <div class="stat-change positive">
+                {{ active_organizations }} {% trans "actives" %}
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-tools text-secondary"></i>
+            </div>
+            <h3 class="stat-number">{{ active_maintenances }}</h3>
+            <p class="stat-label">{% trans "Maintenances actives" %}</p>
+            <div class="stat-change">
+                {{ planned_maintenances }} {% trans "planifiées" %}
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-day text-danger"></i>
+            </div>
+            <h3 class="stat-number">{{ today_bookings }}</h3>
+            <p class="stat-label">{% trans "Réservations aujourd'hui" %}</p>
+            <div class="stat-change">
+                {% trans "Salles occupées" %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Réservations à venir -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-calendar-alt me-2"></i>{% trans "Réservations à venir" %}
+            </h3>
+            <div class="section-actions">
+                <a href="{% url 'content_management:room_booking_list' %}" class="btn btn-outline-primary btn-sm">
+                    {% trans "Voir toutes" %}
+                </a>
+                <a href="{% url 'content_management:room_booking_calendar' %}" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-calendar me-1"></i>{% trans "Calendrier" %}
+                </a>
+            </div>
+        </div>
+        
+        {% if upcoming_bookings %}
+        <div class="upcoming-bookings">
+            {% for booking in upcoming_bookings %}
+            <div class="booking-card">
+                <div class="booking-header">
+                    <h6 class="booking-title">{{ booking.event_title }}</h6>
+                    <span class="booking-status status-{{ booking.status }}">
+                        {{ booking.get_status_display }}
+                    </span>
+                </div>
+                <div class="booking-details">
+                    <div>
+                        <i class="fas fa-building me-1"></i>{{ booking.room.name }}
+                    </div>
+                    <div>
+                        <i class="fas fa-users me-1"></i>{{ booking.organization.name }}
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar me-1"></i>{{ booking.start_time|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <i class="fas fa-clock me-1"></i>{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+            <h5>{% trans "Aucune réservation à venir" %}</h5>
+            <p>{% trans "Il n'y a actuellement aucune réservation confirmée dans les 7 prochains jours." %}</p>
+            <a href="{% url 'content_management:room_booking_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>{% trans "Créer une réservation" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Salles les plus populaires -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-star me-2"></i>{% trans "Salles les plus populaires" %}
+            </h3>
+            <div class="section-actions">
+                <a href="{% url 'content_management:conference_room_list' %}" class="btn btn-outline-primary btn-sm">
+                    {% trans "Gérer les salles" %}
+                </a>
+            </div>
+        </div>
+        
+        {% if popular_rooms %}
+        <div class="popular-rooms">
+            {% for room in popular_rooms %}
+            <div class="room-card">
+                <div class="room-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h6 class="room-name">{{ room.name }}</h6>
+                <div class="room-stats">
+                    <div>
+                        <strong>{{ room.booking_count }}</strong><br>
+                        <small>{% trans "réservations" %}</small>
+                    </div>
+                    <div>
+                        <strong>{{ room.price_per_hour|floatformat:0 }}</strong><br>
+                        <small>GNF/h</small>
+                    </div>
+                    <div>
+                        <strong>{{ room.price_per_day|floatformat:0 }}</strong><br>
+                        <small>GNF/j</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            <i class="fas fa-building fa-3x mb-3"></i>
+            <h5>{% trans "Aucune salle trouvée" %}</h5>
+            <p>{% trans "Il n'y a actuellement aucune salle de conférence avec des réservations." %}</p>
+            <a href="{% url 'content_management:conference_room_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>{% trans "Créer la première salle" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Graphique des revenus (placeholder) -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-chart-line me-2"></i>{% trans "Évolution des revenus" %}
+            </h3>
+            <div class="section-actions">
+                <button class="btn btn-outline-secondary btn-sm" onclick="alert('{% trans "Fonctionnalité à venir" %}')">
+                    {% trans "Exporter" %}
+                </button>
+            </div>
+        </div>
+        
+        <div class="revenue-chart">
+            <div class="chart-placeholder">
+                <i class="fas fa-chart-line fa-3x mb-3 d-block"></i>
+                <h5>{% trans "Graphique des revenus" %}</h5>
+                <p class="mb-0">{% trans "Cette fonctionnalité sera bientôt disponible pour visualiser l'évolution des revenus dans le temps." %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Ajouter des interactions JavaScript si nécessaire
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes de statistiques
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+        }, index * 100);
+    });
+    
+    // Mise à jour automatique des statistiques (optionnel)
+    // setInterval(function() {
+    //     // Code pour actualiser les données
+    // }, 300000); // Toutes les 5 minutes
+});
+</script>
+{% endblock %}

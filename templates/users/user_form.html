@@ -1,0 +1,401 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Modifier l'utilisateur - {{ form.instance.username }}
+    {% else %}
+        Nouvel utilisateur
+    {% endif %}
+    - Gestion des utilisateurs CSIG
+{% endblock %}
+
+{% block page_title %}
+    {% if form.instance.pk %}
+        <i class="fas fa-user-edit me-2"></i>Modifier l'utilisateur
+    {% else %}
+        <i class="fas fa-user-plus me-2"></i>Nouvel utilisateur
+    {% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">
+        {% if form.instance.pk %}
+            Modifiez les informations de l'utilisateur "{{ form.instance.username }}"
+        {% else %}
+            Créez un nouvel utilisateur pour votre plateforme
+        {% endif %}
+    </p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'users:user_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+        <button type="submit" form="userForm" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>
+            {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %}
+        </button>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Informations de base</h3>
+                </div>
+                <div class="section-body">
+                    <form id="userForm" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Nom d'utilisateur -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Nom d'utilisateur <span class="text-danger">*</span>
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.username.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Nom d'utilisateur unique pour la connexion
+                            </div>
+                        </div>
+
+                        <!-- Prénom -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Prénom <span class="text-danger">*</span>
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.first_name.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Nom de famille -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Nom de famille <span class="text-danger">*</span>
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.last_name.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Adresse email <span class="text-danger">*</span>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.email.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Mot de passe -->
+                        {% if not form.instance.pk %}
+                        <div class="form-group mb-4">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Mot de passe <span class="text-danger">*</span>
+                            </label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password1.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Le mot de passe doit contenir au moins 8 caractères
+                            </div>
+                        </div>
+
+                        <!-- Confirmation du mot de passe -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Confirmation du mot de passe <span class="text-danger">*</span>
+                            </label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password2.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Statut actif -->
+                        <div class="form-group mb-4">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    <i class="fas fa-toggle-on me-2"></i>Compte actif
+                                </label>
+                                {% if form.is_active.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.is_active.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Un compte inactif ne peut pas se connecter
+                            </div>
+                        </div>
+
+                        <!-- Statut staff -->
+                        <div class="form-group mb-4">
+                            <div class="form-check">
+                                {{ form.is_staff }}
+                                <label class="form-check-label" for="{{ form.is_staff.id_for_label }}">
+                                    <i class="fas fa-user-shield me-2"></i>Accès au panel d'administration
+                                </label>
+                                {% if form.is_staff.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.is_staff.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Superuser -->
+                        <div class="form-group mb-4">
+                            <div class="form-check">
+                                {{ form.is_superuser }}
+                                <label class="form-check-label" for="{{ form.is_superuser.id_for_label }}">
+                                    <i class="fas fa-crown me-2"></i>Super utilisateur
+                                </label>
+                                {% if form.is_superuser.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.is_superuser.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Un super utilisateur a tous les droits sur la plateforme
+                            </div>
+                        </div>
+
+                        <!-- Groupes -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.groups.id_for_label }}" class="form-label">
+                                <i class="fas fa-users me-2"></i>Groupes
+                            </label>
+                            {{ form.groups }}
+                            {% if form.groups.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.groups.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Permissions utilisateur -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.user_permissions.id_for_label }}" class="form-label">
+                                <i class="fas fa-key me-2"></i>Permissions utilisateur
+                            </label>
+                            {{ form.user_permissions }}
+                            {% if form.user_permissions.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.user_permissions.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Conseils -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-lightbulb me-2"></i>Conseils</h3>
+                </div>
+                <div class="section-body">
+                    <div class="tips-container">
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h6>Sécurité</h6>
+                                <p>Choisissez des mots de passe forts et uniques</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h6>Groupes</h6>
+                                <p>Utilisez les groupes pour gérer les permissions efficacement</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="tip-content">
+                                <h6>Permissions</h6>
+                                <p>Attribuez uniquement les permissions nécessaires</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aperçu -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-eye me-2"></i>Aperçu</h3>
+                </div>
+                <div class="section-body">
+                    <div class="category-preview">
+                        <div class="preview-header">
+                            <div class="preview-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="preview-info">
+                                <h5 id="previewName">Nom complet</h5>
+                                <p id="previewUsername">Nom d'utilisateur</p>
+                            </div>
+                        </div>
+                        <div class="preview-meta">
+                            <span class="meta-item">
+                                <i class="fas fa-envelope me-1"></i>
+                                <span id="previewEmail">Email</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions du formulaire -->
+    <div class="form-actions">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" form="userForm" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>
+                    {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mise à jour de l'aperçu en temps réel
+    const firstNameInput = document.getElementById('{{ form.first_name.id_for_label }}');
+    const lastNameInput = document.getElementById('{{ form.last_name.id_for_label }}');
+    const usernameInput = document.getElementById('{{ form.username.id_for_label }}');
+    const emailInput = document.getElementById('{{ form.email.id_for_label }}');
+    
+    const previewName = document.getElementById('previewName');
+    const previewUsername = document.getElementById('previewUsername');
+    const previewEmail = document.getElementById('previewEmail');
+    
+    function updatePreview() {
+        const firstName = firstNameInput ? firstNameInput.value : '';
+        const lastName = lastNameInput ? lastNameInput.value : '';
+        const username = usernameInput ? usernameInput.value : '';
+        const email = emailInput ? emailInput.value : '';
+        
+        if (firstName || lastName) {
+            previewName.textContent = `${firstName} ${lastName}`.trim() || 'Nom complet';
+        }
+        
+        if (username) {
+            previewUsername.textContent = username;
+        }
+        
+        if (email) {
+            previewEmail.textContent = email;
+        }
+    }
+    
+    // Écouter les changements sur tous les champs
+    [firstNameInput, lastNameInput, usernameInput, emailInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', updatePreview);
+        }
+    });
+    
+    // Initialiser l'aperçu
+    updatePreview();
+    
+    // Auto-sauvegarde
+    let autoSaveTimer;
+    const form = document.getElementById('userForm');
+    const inputs = form.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                // Ici vous pouvez ajouter la logique d'auto-sauvegarde
+                console.log('Auto-sauvegarde...');
+            }, 2000);
+        });
+    });
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            form.submit();
+        }
+    });
+});
+</script>
+{% endblock %}

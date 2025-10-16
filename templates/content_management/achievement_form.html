@@ -1,0 +1,472 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} une Réalisation - Page À propos{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+    
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .form-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .form-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 1.1rem;
+    }
+    
+    .form-label i {
+        color: #ff6b6b;
+        margin-right: 0.5rem;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+    
+    .form-control:focus {
+        border-color: #ff6b6b;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+        background: white;
+    }
+    
+    .form-control:focus::placeholder {
+        color: #6c757d;
+    }
+    
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .form-text i {
+        color: #ff6b6b;
+        margin-right: 0.25rem;
+    }
+    
+    .btn-container {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .icon-preview {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-top: 0.5rem;
+        border: 2px dashed #dee2e6;
+    }
+    
+    .icon-preview i {
+        font-size: 2rem;
+        color: #ff6b6b;
+    }
+    
+    .icon-preview-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .help-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border-left: 4px solid #ff6b6b;
+    }
+    
+    .help-section h4 {
+        color: #495057;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .help-section p {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .icon-examples {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .icon-example {
+        text-align: center;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .icon-example:hover {
+        border-color: #ff6b6b;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .icon-example i {
+        font-size: 1.5rem;
+        color: #ff6b6b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .icon-example span {
+        display: block;
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-family: monospace;
+    }
+    
+    .icon-example.selected {
+        border-color: #ff6b6b;
+        background: #fff5f5;
+        box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1.5rem;
+        }
+        
+        .form-header h1 {
+            font-size: 2rem;
+        }
+        
+        .form-card {
+            padding: 1.5rem;
+        }
+        
+        .btn-container {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+        
+        .icon-examples {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1><i class="fas fa-trophy me-3"></i>{{ action }} une Réalisation</h1>
+        <p>Configurez les accomplissements affichés sur la page À propos</p>
+    </div>
+</div>
+
+<div class="form-card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.icon.id_for_label }}" class="form-label">
+                <i class="fas fa-star"></i>Icône FontAwesome
+            </label>
+            {{ form.icon }}
+            {% if form.icon.help_text %}
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>{{ form.icon.help_text }}
+                </div>
+            {% endif %}
+            {% if form.icon.errors %}
+                <div class="text-danger mt-1">
+                    {% for error in form.icon.errors %}
+                        <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Aperçu de l'icône -->
+            <div class="icon-preview" id="iconPreview">
+                <i class="fas fa-trophy"></i>
+                <div class="icon-preview-text">Aperçu de l'icône</div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.text.id_for_label }}" class="form-label">
+                <i class="fas fa-text-width"></i>Description de la réalisation
+            </label>
+            {{ form.text }}
+            {% if form.text.help_text %}
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>{{ form.text.help_text }}
+                </div>
+            {% endif %}
+            {% if form.text.errors %}
+                <div class="text-danger mt-1">
+                    {% for error in form.text.errors %}
+                        <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.order.id_for_label }}" class="form-label">
+                <i class="fas fa-sort-numeric-up"></i>Ordre d'affichage
+            </label>
+            {{ form.order }}
+            {% if form.order.help_text %}
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>{{ form.order.help_text }}
+                </div>
+            {% endif %}
+            {% if form.order.errors %}
+                <div class="text-danger mt-1">
+                    {% for error in form.order.errors %}
+                        <small><i class="fas fa-exclamation-triangle me-1"></i>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <div class="form-check">
+                {{ form.is_active }}
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                    <i class="fas fa-toggle-on me-2"></i>Réalisation active
+                </label>
+            </div>
+            {% if form.is_active.help_text %}
+                <div class="form-text">
+                    <i class="fas fa-info-circle"></i>{{ form.is_active.help_text }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="btn-container">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                {% if action == 'Créer' %}Créer la réalisation{% else %}Enregistrer les modifications{% endif %}
+            </button>
+            <a href="{% url 'content_management:achievement_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>Retour à la liste
+            </a>
+        </div>
+    </form>
+    
+    <div class="help-section">
+        <h4><i class="fas fa-lightbulb me-2"></i>Aide pour les icônes FontAwesome</h4>
+        <p>Choisissez une icône qui représente bien votre réalisation. Voici quelques suggestions :</p>
+        
+        <div class="icon-examples">
+            <div class="icon-example" data-icon="fas fa-trophy">
+                <i class="fas fa-trophy"></i>
+                <span>fas fa-trophy</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-medal">
+                <i class="fas fa-medal"></i>
+                <span>fas fa-medal</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-star">
+                <i class="fas fa-star"></i>
+                <span>fas fa-star</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-award">
+                <i class="fas fa-award"></i>
+                <span>fas fa-award</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-crown">
+                <i class="fas fa-crown"></i>
+                <span>fas fa-crown</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-gem">
+                <i class="fas fa-gem"></i>
+                <span>fas fa-gem</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-fire">
+                <i class="fas fa-fire"></i>
+                <span>fas fa-fire</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-rocket">
+                <i class="fas fa-rocket"></i>
+                <span>fas fa-rocket</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-lightbulb">
+                <i class="fas fa-lightbulb"></i>
+                <span>fas fa-lightbulb</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-flask">
+                <i class="fas fa-flask"></i>
+                <span>fas fa-flask</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-microscope">
+                <i class="fas fa-microscope"></i>
+                <span>fas fa-microscope</span>
+            </div>
+            <div class="icon-example" data-icon="fas fa-graduation-cap">
+                <i class="fas fa-graduation-cap"></i>
+                <span>fas fa-graduation-cap</span>
+            </div>
+        </div>
+        
+        <p class="mt-3"><strong>Conseil :</strong> Cliquez sur une icône ci-dessus pour la sélectionner automatiquement dans le champ.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const iconInput = document.getElementById('{{ form.icon.id_for_label }}');
+    const iconPreview = document.getElementById('iconPreview');
+    const iconExamples = document.querySelectorAll('.icon-example');
+    
+    // Mise à jour de l'aperçu de l'icône
+    function updateIconPreview() {
+        const iconValue = iconInput.value.trim();
+        if (iconValue) {
+            iconPreview.innerHTML = `<i class="${iconValue}"></i><div class="icon-preview-text">Aperçu de l'icône</div>`;
+        } else {
+            iconPreview.innerHTML = `<i class="fas fa-trophy"></i><div class="icon-preview-text">Aperçu de l'icône</div>`;
+        }
+    }
+    
+    // Écouter les changements dans le champ icône
+    iconInput.addEventListener('input', updateIconPreview);
+    
+    // Sélection d'icône par clic
+    iconExamples.forEach(example => {
+        example.addEventListener('click', function() {
+            const iconClass = this.dataset.icon;
+            iconInput.value = iconClass;
+            updateIconPreview();
+            
+            // Mise à jour visuelle de la sélection
+            iconExamples.forEach(ex => ex.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+    
+    // Amélioration de l'expérience utilisateur
+    const inputs = document.querySelectorAll('.form-control');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+    });
+    
+    // Validation en temps réel
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const iconInput = document.getElementById('{{ form.icon.id_for_label }}');
+        const textInput = document.getElementById('{{ form.text.id_for_label }}');
+        
+        if (!iconInput.value.trim()) {
+            e.preventDefault();
+            alert('Veuillez saisir une icône FontAwesome');
+            iconInput.focus();
+            return false;
+        }
+        
+        if (!textInput.value.trim()) {
+            e.preventDefault();
+            alert('Veuillez saisir une description de la réalisation');
+            textInput.focus();
+            return false;
+        }
+    });
+    
+    // Initialiser l'aperçu si une valeur existe déjà
+    updateIconPreview();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,2240 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Accueil - CSIG - Cité des Sciences et de l'Innovation de Guinée{% endblock %}
+
+{% block content %}
+<!-- ============================================================================
+   SECTION HERO - CAROUSEL PRINCIPAL
+   ============================================================================ -->
+<section class="hero-section">
+    <div class="swiper main-carousel">
+        <div class="swiper-wrapper">
+            <!-- Slide 1: Message de bienvenue -->
+            <div class="swiper-slide hero-slide welcome-slide">
+                <div class="hero-background" style="background-image: url('{% static 'sfront/images/ban.jpg' %}')"></div>
+                <div class="hero-overlay"></div>
+                <div class="container">
+                    <div class="row align-items-center min-vh-100">
+                        <div class="col-12" data-aos="fade-up">
+                            <div class="hero-content text-center">
+                                <h1 class="hero-title">
+                                    Bienvenue à la <span class="text-csig-accent">Cité des Sciences</span> et de l'Innovation de Guinée
+                                </h1>
+                                <p class="hero-subtitle">
+                                    Centre d'excellence pour la recherche, l'innovation et le développement technologique en Guinée
+                                </p>
+                                <div class="hero-actions">
+                                    <a href="{% url 'sfront:about' %}" class="btn btn-primary btn-lg me-3">
+                                        <i class="fas fa-info-circle me-2"></i>Découvrir
+                                    </a>
+                                    <a href="{% url 'sfront:contact' %}" class="btn btn-outline-light btn-lg">
+                                        <i class="fas fa-envelope me-2"></i>Nous contacter
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: Actualité à la une -->
+            {% if featured_article %}
+            <div class="swiper-slide hero-slide featured-news-slide">
+                <div class="hero-background" style="background-image: url('{{ featured_article.featured_image.url }}')"></div>
+                <div class="hero-overlay"></div>
+                <div class="container">
+                    <div class="row align-items-center min-vh-100">
+                        <div class="col-12" data-aos="fade-up">
+                            <div class="hero-content text-center">
+                                <div class="hero-badge">
+                                    <i class="fas fa-star me-2"></i>À la une
+                                </div>
+                                <h2 class="hero-title">
+                                    {{ featured_article.title }}
+                                </h2>
+                                <p class="hero-subtitle">
+                                    {{ featured_article.excerpt|truncatewords:25 }}
+                                </p>
+                                <div class="hero-meta">
+                                    <span class="hero-date">
+                                        <i class="fas fa-calendar me-2"></i>
+                                        {{ featured_article.published_at|date:"d/m/Y" }}
+                                    </span>
+                                    <span class="hero-category">
+                                        <i class="fas fa-tag me-2"></i>
+                                        {{ featured_article.category.name|default:"Actualité" }}
+                                    </span>
+                                </div>
+                                <div class="hero-actions">
+                                    <a href="{% url 'sfront:article_detail' featured_article.slug %}" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-arrow-right me-2"></i>Lire la suite
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Slide 3: Innovation -->
+            <div class="swiper-slide hero-slide innovation-slide">
+                <div class="hero-background" style="background-image: url('{% static 'sfront/images/ban.jpg' %}')"></div>
+                <div class="hero-overlay"></div>
+                <div class="container">
+                    <div class="row align-items-center min-vh-100">
+                        <div class="col-12" data-aos="fade-up">
+                            <div class="hero-content text-center">
+                                <h2 class="hero-title">
+                                    Innovation et <span class="text-csig-accent">Développement</span> Technologique
+                                </h2>
+                                <p class="hero-subtitle">
+                                    Propulser la Guinée vers un avenir technologique avancé grâce à la recherche et l'innovation
+                                </p>
+                                <div class="hero-actions">
+                                    <a href="{% url 'sfront:programs' %}" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-rocket me-2"></i>Nos programmes
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistiques en dessous -->
+                    <div class="row mt-5">
+                        <div class="col-12" data-aos="fade-up" data-aos-delay="300">
+                            <div class="hero-stats text-center">
+                                <div class="row justify-content-center">
+                                    <div class="col-md-4">
+                                        <div class="stat-item">
+                                            <div class="stat-number counter" data-target="50">0</div>
+                                            <div class="stat-label">Projets Innovants</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="stat-item">
+                                            <div class="stat-number counter" data-target="200">0</div>
+                                            <div class="stat-label">Chercheurs</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="stat-item">
+                                            <div class="stat-number counter" data-target="25">0</div>
+                                            <div class="stat-label">Partenariats</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation du carousel -->
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        
+        <!-- Pagination du carousel -->
+        <div class="swiper-pagination"></div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION DOMAINES DE COLLABORATION - 3 PROGRAMMES
+   ============================================================================ -->
+<section class="domains-section section-padding">
+    <div class="container">
+        <div class="section-header text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                Nos <span class="text-csig-primary">Domaines de Collaboration</span>
+            </h2>
+            <p class="section-subtitle">
+                Découvrez nos programmes phares qui façonnent l'avenir de la science et de l'innovation en Guinée
+            </p>
+        </div>
+
+        <div class="row">
+            {% for program in programs|slice:":3" %}
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{% if forloop.counter == 1 %}100{% elif forloop.counter == 2 %}200{% else %}300{% endif %}">
+                <div class="program-card">
+                    <div class="program-image">
+                        {% if program.featured_image %}
+                            <img src="{{ program.featured_image.url }}" alt="{{ program.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="program-image-placeholder">
+                                <i class="fas fa-flask"></i>
+                            </div>
+                        {% endif %}
+                        <div class="program-overlay">
+                            <a href="{% url 'sfront:program_detail' program.slug %}" class="btn btn-light btn-sm">
+                                <i class="fas fa-arrow-right me-2"></i>En savoir plus
+                            </a>
+                        </div>
+                        {% if program.is_featured %}
+                        <div class="featured-badge">
+                            <i class="fas fa-star"></i> Mis en avant
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="program-content">
+                        <h3 class="program-title">{{ program.title }}</h3>
+                        <p class="program-description">
+                            {{ program.short_description|truncatewords:15 }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="empty-state">
+                    <i class="fas fa-flask fa-3x text-muted mb-3"></i>
+                    <h4>Aucun programme disponible</h4>
+                    <p class="text-muted">Les programmes seront bientôt disponibles</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'sfront:programs' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-th-large me-2"></i>Voir tous nos programmes
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION ACTUALITÉS ET ÉVÉNEMENTS
+   ============================================================================ -->
+<section class="news-events-section section-padding">
+    <div class="container">
+        <div class="section-header text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                <span class="text-csig-primary">Actualités</span> et <span class="text-csig-primary">Événements</span>
+            </h2>
+            <p class="section-subtitle">
+                Restez informé des dernières nouvelles scientifiques et des événements à venir
+            </p>
+        </div>
+
+        <div class="row">
+            <!-- Article principal - Largeur complète -->
+            {% if latest_article %}
+            <div class="col-12 mb-5" data-aos="fade-up">
+                <div class="main-article-card">
+                    <div class="row align-items-center">
+                        <div class="col-lg-6">
+                            <div class="main-article-image">
+                                {% if latest_article.featured_image %}
+                                    <img src="{{ latest_article.featured_image.url }}" alt="{{ latest_article.title }}" class="img-fluid">
+                                {% else %}
+                                    <div class="main-article-placeholder">
+                                        <i class="fas fa-newspaper"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="main-article-content">
+                                <div class="article-meta">
+                                    <span class="article-category">{{ latest_article.category.name|default:"Actualité" }}</span>
+                                    <span class="article-date">{{ latest_article.published_at|date:"d/m/Y" }}</span>
+                                </div>
+                                <h3 class="main-article-title">
+                                    <a href="{% url 'sfront:article_detail' latest_article.slug %}">{{ latest_article.title }}</a>
+                                </h3>
+                                <p class="main-article-excerpt">{{ latest_article.excerpt|truncatewords:30 }}</p>
+                                <a href="{% url 'sfront:article_detail' latest_article.slug %}" class="btn btn-primary">
+                                    <i class="fas fa-arrow-right me-2"></i>Lire la suite
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Deux autres articles et un événement sur la même ligne -->
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                {% if second_article %}
+                <div class="news-card">
+                    <div class="news-image">
+                        {% if second_article.featured_image %}
+                            <img src="{{ second_article.featured_image.url }}" alt="{{ second_article.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="news-image-placeholder">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        {% endif %}
+                        <div class="news-category">{{ second_article.category.name|default:"Actualité" }}</div>
+                    </div>
+                    <div class="news-content">
+                        <h4 class="news-title">
+                            <a href="{% url 'sfront:article_detail' second_article.slug %}">{{ second_article.title }}</a>
+                        </h4>
+                        <p class="news-excerpt">{{ second_article.excerpt|truncatewords:15 }}</p>
+                        <div class="news-meta">
+                            <span class="news-date">{{ second_article.published_at|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                {% if third_article %}
+                <div class="news-card">
+                    <div class="news-image">
+                        {% if third_article.featured_image %}
+                            <img src="{{ third_article.featured_image.url }}" alt="{{ third_article.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="news-image-placeholder">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                        {% endif %}
+                        <div class="news-category">{{ third_article.category.name|default:"Actualité" }}</div>
+                    </div>
+                    <div class="news-content">
+                        <h4 class="news-title">
+                            <a href="{% url 'sfront:article_detail' third_article.slug %}">{{ third_article.title }}</a>
+                        </h4>
+                        <p class="news-excerpt">{{ third_article.excerpt|truncatewords:15 }}</p>
+                        <div class="news-meta">
+                            <span class="news-date">{{ third_article.published_at|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                {% if latest_event %}
+                <div class="event-card">
+                    <div class="event-image">
+                        {% if latest_event.featured_image %}
+                            <img src="{{ latest_event.featured_image.url }}" alt="{{ latest_event.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="event-image-placeholder">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                        {% endif %}
+                        <div class="event-date">
+                            <span class="event-day">{{ latest_event.start_date|date:"d" }}</span>
+                            <span class="event-month">{{ latest_event.start_date|date:"M" }}</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h4 class="event-title">
+                            <a href="{% url 'sfront:event_detail' latest_event.slug %}">{{ latest_event.title }}</a>
+                        </h4>
+                        <p class="event-excerpt">{{ latest_event.description|truncatewords:15 }}</p>
+                        <div class="event-meta">
+                            <span class="event-location">{{ latest_event.location|default:"Lieu à préciser" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="text-center mt-5" data-aos="fade-up">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <a href="{% url 'sfront:news' %}" class="btn btn-outline-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-newspaper me-2"></i>Toutes les actualités
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'sfront:events' %}" class="btn btn-outline-primary btn-lg w-100">
+                        <i class="fas fa-calendar-alt me-2"></i>Tous les événements
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION PARTENAIRES
+   ============================================================================ -->
+<section class="partners-section section-padding">
+    <div class="container">
+        <div class="section-header text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                Nos <span class="text-csig-primary">Partenaires</span>
+            </h2>
+            <p class="section-subtitle">
+                Collaborations stratégiques pour l'innovation et le développement scientifique
+            </p>
+        </div>
+
+        <div class="partners-grid" data-aos="fade-up" data-aos-delay="200">
+            {% for partner in partners %}
+            <div class="partner-item" data-aos="zoom-in" data-aos-delay="{% if forloop.counter == 1 %}100{% elif forloop.counter == 2 %}200{% elif forloop.counter == 3 %}300{% elif forloop.counter == 4 %}400{% else %}500{% endif %}">
+                {% if partner.logo %}
+                    <img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="partner-logo">
+                {% else %}
+                    <div class="partner-placeholder">
+                        <i class="fas fa-handshake"></i>
+                        <span>{{ partner.name }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="empty-state">
+                    <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
+                    <h4>Aucun partenaire disponible</h4>
+                    <p class="text-muted">Nos partenariats seront bientôt visibles</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION CTA FINALE
+   ============================================================================ -->
+<section class="cta-section section-padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center" data-aos="fade-up">
+                <div class="cta-content">
+                    <h2 class="cta-title">Prêt à Rejoindre l'Innovation ?</h2>
+                    <p class="cta-subtitle">
+                        Découvrez nos programmes, participez à nos événements et contribuez 
+                        au développement scientifique de la Guinée
+                    </p>
+                    <div class="cta-actions">
+                        <a href="{% url 'sfront:programs' %}" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-graduation-cap me-2"></i>Nos Programmes
+                        </a>
+                        <a href="{% url 'sfront:contact' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-envelope me-2"></i>Nous Contacter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION VALEURS FONDAMENTALES
+   ============================================================================ -->
+<section class="values-section section-padding">
+    <div class="container">
+        <div class="section-header text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                Nos <span class="text-csig-primary">Valeurs Fondamentales</span>
+            </h2>
+            <p class="section-subtitle">
+                Les principes qui guident notre mission et notre vision pour l'innovation scientifique
+            </p>
+        </div>
+
+        <div class="values-grid" data-aos="fade-up" data-aos-delay="200">
+            {% for value in core_values|slice:":6" %}
+            <div class="value-item" data-aos="zoom-in" data-aos-delay="{% if forloop.counter == 1 %}100{% elif forloop.counter == 2 %}200{% elif forloop.counter == 3 %}300{% elif forloop.counter == 4 %}400{% elif forloop.counter == 5 %}500{% else %}600{% endif %}">
+                <div class="value-icon">
+                    <i class="{{ value.icon }}"></i>
+                </div>
+                <h4 class="value-title">{{ value.name }}</h4>
+                <p class="value-description">{{ value.description|truncatewords:15 }}</p>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="empty-state">
+                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                    <h4>Aucune valeur définie</h4>
+                    <p class="text-muted">Nos valeurs fondamentales seront bientôt visibles</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION PROJETS DE RECHERCHE
+   ============================================================================ -->
+<section class="projects-section section-padding">
+    <div class="container">
+        <div class="section-header text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                <span class="text-csig-primary">Projets de Recherche</span> Innovants
+            </h2>
+            <p class="section-subtitle">
+                Découvrez nos projets scientifiques qui façonnent l'avenir de la recherche en Guinée
+            </p>
+        </div>
+
+        <div class="row">
+            {% for project in projects|slice:":3" %}
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{% if forloop.counter == 1 %}100{% elif forloop.counter == 2 %}200{% else %}300{% endif %}">
+                <div class="project-card">
+                    <div class="project-image">
+                        {% if project.featured_image %}
+                            <img src="{{ project.featured_image.url }}" alt="{{ project.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="project-image-placeholder">
+                                <i class="fas fa-microscope"></i>
+                            </div>
+                        {% endif %}
+                        <div class="project-status status-{{ project.status }}">
+                            {{ project.get_status_display }}
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">{{ project.title }}</h3>
+                        <p class="project-description">
+                            {{ project.short_description|truncatewords:20 }}
+                        </p>
+                        <div class="project-meta">
+                            <span class="project-date">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ project.start_date|date:"M Y" }}
+                            </span>
+                            {% if project.budget %}
+                            <span class="project-budget">
+                                <i class="fas fa-coins me-1"></i>
+                                {{ project.budget }} GNF
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="project-footer">
+                            <a href="{% url 'sfront:project_detail' project.slug %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-arrow-right me-2"></i>En savoir plus
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="empty-state">
+                    <i class="fas fa-microscope fa-3x text-muted mb-3"></i>
+                    <h4>Aucun projet disponible</h4>
+                    <p class="text-muted">Nos projets de recherche seront bientôt visibles</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'sfront:projects' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-flask me-2"></i>Voir tous nos projets
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION ÉQUIPE SCIENTIFIQUE
+   ============================================================================ -->
+<section class="team-section section-padding">
+    <div class="container">
+        <div class="section-header text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                Notre <span class="text-csig-primary">Équipe Scientifique</span>
+            </h2>
+            <p class="section-subtitle">
+                Rencontrez les experts et chercheurs qui font avancer la science en Guinée
+            </p>
+        </div>
+
+        <div class="row">
+            {% for member in team_members|slice:":4" %}
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{% if forloop.counter == 1 %}100{% elif forloop.counter == 2 %}200{% elif forloop.counter == 3 %}300{% else %}400{% endif %}">
+                <div class="team-member-card">
+                    <div class="member-photo">
+                        {% if member.photo %}
+                            <img src="{{ member.photo.url }}" alt="{{ member.full_name }}" class="img-fluid">
+                        {% else %}
+                            <div class="member-photo-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        {% endif %}
+                        <div class="member-social">
+                            {% if member.linkedin %}
+                            <a href="{{ member.linkedin }}" target="_blank" class="social-link">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            {% endif %}
+                            {% if member.twitter %}
+                            <a href="{{ member.twitter }}" target="_blank" class="social-link">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="member-info">
+                        <h4 class="member-name">{{ member.full_name }}</h4>
+                        <p class="member-position">{{ member.job_title|default:"Chercheur" }}</p>
+                        <p class="member-category">{{ member.get_category_display }}</p>
+                        <p class="member-bio">{{ member.biography|truncatewords:12 }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="empty-state">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h4>Aucun membre d'équipe disponible</h4>
+                    <p class="text-muted">Notre équipe sera bientôt visible</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'sfront:team' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-users me-2"></i>Voir toute l'équipe
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION STATISTIQUES ET RÉALISATIONS
+   ============================================================================ -->
+<section class="stats-section section-padding">
+    <div class="container">
+        <div class="section-header text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                <span class="text-csig-primary">Chiffres Clés</span> et Réalisations
+            </h2>
+            <p class="section-subtitle">
+                L'impact de nos actions sur le développement scientifique de la Guinée
+            </p>
+        </div>
+
+        <div class="stats-grid" data-aos="fade-up" data-aos-delay="200">
+            {% for stat in hero_stats|slice:":4" %}
+            <div class="stat-card" data-aos="zoom-in" data-aos-delay="{% if forloop.counter == 1 %}100{% elif forloop.counter == 2 %}200{% elif forloop.counter == 3 %}300{% else %}400{% endif %}">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-number counter" data-target="{{ stat.number|default:'0' }}">0</div>
+                <div class="stat-label">{{ stat.label }}</div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="empty-state">
+                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                    <h4>Aucune statistique disponible</h4>
+                    <p class="text-muted">Nos statistiques seront bientôt visibles</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="achievements-showcase mt-5" data-aos="fade-up" data-aos-delay="400">
+            <h3 class="text-center mb-4">Nos Réalisations</h3>
+            <div class="row">
+                {% for achievement in achievements|slice:":3" %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="achievement-item">
+                        <div class="achievement-icon">
+                            <i class="{{ achievement.icon }}"></i>
+                        </div>
+                        <div class="achievement-content">
+                            <h5>{{ achievement.text|truncatewords:8 }}</h5>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================================
+   STYLES SPÉCIFIQUES À LA PAGE D'ACCUEIL
+   ============================================================================ */
+
+/* Section Hero */
+.hero-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-slide {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -2;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(13, 71, 134, 0.8) 0%, rgba(10, 54, 95, 0.9) 100%);
+    z-index: -1;
+}
+
+.hero-content {
+    color: var(--white);
+    z-index: 1;
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    font-family: var(--font-secondary);
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+.hero-badge {
+    display: inline-block;
+    background: var(--csig-accent);
+    color: var(--csig-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.hero-meta {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.hero-meta span {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+    color: var(--white);
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--csig-accent);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 1rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Navigation Swiper */
+.swiper-button-next,
+.swiper-button-prev {
+    color: var(--white);
+    background: rgba(13, 71, 134, 0.8);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    background: var(--csig-primary);
+    transform: scale(1.1);
+}
+
+.swiper-pagination-bullet {
+    background: var(--white);
+    opacity: 0.5;
+}
+
+.swiper-pagination-bullet-active {
+    background: var(--csig-accent);
+    opacity: 1;
+}
+
+/* Section Domaines */
+.domains-section {
+    padding: 6rem 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.domains-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23dee2e6" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.section-header {
+    margin-bottom: 4rem;
+    position: relative;
+    z-index: 2;
+}
+
+.section-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: var(--csig-primary);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+    border-radius: 2px;
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: var(--gray-600);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.8;
+    font-weight: 400;
+}
+
+.program-card {
+    background: var(--white);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    height: 100%;
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    z-index: 2;
+}
+
+.program-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(13, 71, 134, 0.2);
+    border-color: var(--csig-accent);
+}
+
+.program-image {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+
+.program-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.6s ease;
+}
+
+.program-card:hover .program-image img {
+    transform: scale(1.15);
+}
+
+.program-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--csig-primary);
+    font-size: 4rem;
+}
+
+.program-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(13, 71, 134, 0.95) 0%, rgba(10, 54, 95, 0.9) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.4s ease;
+}
+
+.program-card:hover .program-overlay {
+    opacity: 1;
+}
+
+.program-overlay .btn {
+    background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%);
+    border: none;
+    color: var(--csig-primary);
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    transform: translateY(20px);
+    transition: all 0.4s ease;
+}
+
+.program-card:hover .program-overlay .btn {
+    transform: translateY(0);
+}
+
+.featured-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%);
+    color: var(--csig-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    z-index: 3;
+}
+
+.program-content {
+    padding: 1.5rem;
+}
+
+.program-title {
+    color: var(--csig-primary);
+    font-weight: 800;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    line-height: 1.4;
+    min-height: 3.5rem;
+}
+
+.program-description {
+    color: var(--gray-700);
+    line-height: 1.7;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    min-height: 3rem;
+}
+
+/* Section Actualités et Événements */
+.news-events-section {
+    padding: 6rem 0;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    position: relative;
+}
+
+.news-events-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(135deg, transparent 0%, rgba(13, 71, 134, 0.05) 100%);
+}
+
+.main-article-card {
+    background: var(--white);
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.main-article-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(13, 71, 134, 0.15);
+    border-color: var(--csig-accent);
+}
+
+.main-article-image {
+    height: 350px;
+    overflow: hidden;
+    position: relative;
+}
+
+.main-article-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.3));
+}
+
+.main-article-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.6s ease;
+}
+
+.main-article-card:hover .main-article-image img {
+    transform: scale(1.1);
+}
+
+.main-article-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 25px;
+    color: var(--csig-primary);
+    font-size: 5rem;
+}
+
+.main-article-content {
+    padding: 2.5rem;
+    position: relative;
+}
+
+.article-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.article-category {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, #0a3a6b 100%);
+    color: var(--white);
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(13, 71, 134, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.article-date {
+    color: var(--gray-600);
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.article-date::before {
+    content: '📅';
+    font-size: 1.1rem;
+}
+
+.main-article-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.3;
+    color: var(--csig-primary);
+}
+
+.main-article-title a {
+    color: var(--csig-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.main-article-title a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.main-article-title a:hover::after {
+    width: 100%;
+}
+
+.main-article-title a:hover {
+    color: var(--csig-primary-dark);
+}
+
+.main-article-excerpt {
+    font-size: 1.15rem;
+    color: var(--gray-600);
+    margin-bottom: 2rem;
+    line-height: 1.7;
+    font-weight: 400;
+}
+
+/* Cartes d'actualités et d'événements */
+.news-card,
+.event-card {
+    background: var(--white);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    height: 100%;
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.news-card:hover,
+.event-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(13, 71, 134, 0.15);
+    border-color: var(--csig-accent);
+}
+
+.news-image,
+.event-image {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+
+.news-image img,
+.event-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.6s ease;
+}
+
+.news-card:hover .news-image img,
+.event-card:hover .event-image img {
+    transform: scale(1.1);
+}
+
+.news-image-placeholder,
+.event-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--csig-primary);
+    font-size: 3rem;
+}
+
+.news-category {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: linear-gradient(135deg, var(--csig-primary) 0%, #0a3a6b 100%);
+    color: var(--white);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(13, 71, 134, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.event-date {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%);
+    color: var(--csig-primary);
+    padding: 0.75rem;
+    border-radius: 15px;
+    text-align: center;
+    min-width: 70px;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.event-day {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--csig-primary);
+}
+
+.event-month {
+    display: block;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--csig-primary);
+    letter-spacing: 0.5px;
+}
+
+.news-content,
+.event-content {
+    padding: 1.8rem;
+}
+
+.news-title,
+.event-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+    min-height: 3rem;
+}
+
+.news-title a,
+.event-title a {
+    color: var(--csig-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.news-title a::after,
+.event-title a::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+    transition: width 0.3s ease;
+    border-radius: 1px;
+}
+
+.news-title a:hover::after,
+.event-title a:hover::after {
+    width: 100%;
+}
+
+.news-title a:hover,
+.event-title a:hover {
+    color: var(--csig-primary-dark);
+}
+
+.news-excerpt,
+.event-excerpt {
+    color: var(--gray-600);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    min-height: 3rem;
+}
+
+.news-meta,
+.event-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--gray-500);
+    font-weight: 500;
+}
+
+.event-location {
+    color: var(--gray-500);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.event-location::before {
+    content: '📍';
+    font-size: 1rem;
+}
+
+/* Section Partenaires */
+.partners-section {
+    padding: 6rem 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.partners-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="2" fill="%23dee2e6"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+    opacity: 0.2;
+}
+
+.partners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+    position: relative;
+    z-index: 2;
+}
+
+.partner-item {
+    background: var(--white);
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-height: 120px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.partner-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(13, 71, 134, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.partner-item:hover::before {
+    left: 100%;
+}
+
+.partner-item:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 20px 40px rgba(13, 71, 134, 0.15);
+    border-color: var(--csig-accent);
+}
+
+.partner-logo {
+    max-width: 100%;
+    max-height: 80px;
+    object-fit: contain;
+    transition: all 0.4s ease;
+    filter: grayscale(100%);
+}
+
+.partner-item:hover .partner-logo {
+    filter: grayscale(0%);
+    transform: scale(1.1);
+}
+
+.partner-placeholder {
+    text-align: center;
+    color: var(--gray-500);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.partner-placeholder i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+    color: var(--csig-primary);
+    opacity: 0.7;
+}
+
+/* Section CTA */
+.cta-section {
+    padding: 6rem 0;
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="hexagons" width="50" height="43.4" patternUnits="userSpaceOnUse"><polygon points="25,0 50,14.4 50,28.9 25,43.3 0,28.9 0,14.4" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23hexagons)"/></svg>');
+    opacity: 0.3;
+}
+
+.cta-content {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.cta-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.cta-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-accent), #ffffff);
+    border-radius: 2px;
+}
+
+.cta-subtitle {
+    font-size: 1.3rem;
+    opacity: 0.95;
+    margin-bottom: 3rem;
+    line-height: 1.8;
+    font-weight: 400;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta-actions {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.cta-actions .btn {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.cta-actions .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s ease;
+    z-index: -1;
+}
+
+.cta-actions .btn:hover::before {
+    left: 100%;
+}
+
+.cta-actions .btn-primary {
+    background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%);
+    border: none;
+    color: var(--csig-primary);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
+.cta-actions .btn-primary:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
+}
+
+.cta-actions .btn-outline-primary {
+    background: transparent;
+    border: 3px solid var(--csig-accent);
+    color: var(--csig-accent);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+}
+
+    .cta-actions .btn-outline-primary:hover {
+        background: var(--csig-accent);
+        color: var(--csig-primary);
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
+    }
+
+    /* ============================================================================
+       NOUVELLES SECTIONS
+       ============================================================================ */
+
+    /* Section Valeurs Fondamentales */
+    .values-section {
+        padding: 6rem 0;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        position: relative;
+    }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .value-item {
+        background: var(--white);
+        padding: 2.5rem 2rem;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(255,255,255,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .value-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+
+    .value-item:hover::before {
+        transform: scaleX(1);
+    }
+
+    .value-item:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(13, 71, 134, 0.15);
+        border-color: var(--csig-accent);
+    }
+
+    .value-icon {
+        margin-bottom: 1.5rem;
+    }
+
+    .value-icon i {
+        font-size: 3.5rem;
+        color: var(--csig-accent);
+        background: linear-gradient(135deg, var(--csig-accent) 0%, var(--csig-primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .value-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--csig-primary);
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .value-description {
+        color: var(--gray-600);
+        line-height: 1.7;
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+
+    /* Section Projets de Recherche */
+    .projects-section {
+        padding: 6rem 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .projects-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="circles" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="2" fill="%23dee2e6"/></pattern></defs><rect width="100" height="100" fill="url(%23circles)"/></svg>');
+        opacity: 0.2;
+    }
+
+    .project-card {
+        background: var(--white);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 100%;
+        border: 1px solid rgba(255,255,255,0.2);
+        position: relative;
+        z-index: 2;
+    }
+
+    .project-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(13, 71, 134, 0.15);
+        border-color: var(--csig-accent);
+    }
+
+    .project-image {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .project-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: all 0.6s ease;
+    }
+
+    .project-card:hover .project-image img {
+        transform: scale(1.1);
+    }
+
+    .project-image-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--csig-primary);
+        font-size: 4rem;
+    }
+
+    .project-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .status-planning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+    }
+
+    .status-completed {
+        background: linear-gradient(135deg, #cce7ff 0%, #b3d9ff 100%);
+        color: #004085;
+    }
+
+    .status-on_hold {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+    }
+
+    .project-content {
+        padding: 2rem;
+    }
+
+    .project-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--csig-primary);
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        min-height: 3.5rem;
+    }
+
+    .project-description {
+        color: var(--gray-600);
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        min-height: 4rem;
+    }
+
+    .project-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .project-date,
+    .project-budget {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .project-footer {
+        text-align: center;
+    }
+
+    .project-footer .btn {
+        background: linear-gradient(135deg, var(--csig-primary) 0%, #0a3a6b 100%);
+        border: none;
+        color: var(--white);
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .project-footer .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(13, 71, 134, 0.3);
+    }
+
+    /* Section Équipe Scientifique */
+    .team-section {
+        padding: 6rem 0;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        position: relative;
+    }
+
+    .team-member-card {
+        background: var(--white);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 100%;
+        border: 1px solid rgba(255,255,255,0.2);
+        text-align: center;
+    }
+
+    .team-member-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(13, 71, 134, 0.15);
+        border-color: var(--csig-accent);
+    }
+
+    .member-photo {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    }
+
+    .member-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: all 0.6s ease;
+    }
+
+    .team-member-card:hover .member-photo img {
+        transform: scale(1.1);
+    }
+
+    .member-photo-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--csig-primary);
+        font-size: 4rem;
+    }
+
+    .member-social {
+        position: absolute;
+        bottom: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 0.5rem;
+        opacity: 0;
+        transition: all 0.4s ease;
+    }
+
+    .team-member-card:hover .member-social {
+        opacity: 1;
+        bottom: 1.5rem;
+    }
+
+    .social-link {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%);
+        color: var(--csig-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+
+    .social-link:hover {
+        transform: scale(1.1);
+        color: var(--csig-primary);
+        text-decoration: none;
+    }
+
+    .member-info {
+        padding: 1.5rem;
+    }
+
+    .member-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--csig-primary);
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .member-position {
+        color: var(--csig-accent);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .member-category {
+        color: var(--gray-600);
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+        padding: 0.25rem 0.75rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 50px;
+        display: inline-block;
+    }
+
+    .member-bio {
+        color: var(--gray-600);
+        line-height: 1.6;
+        font-size: 0.9rem;
+        margin-bottom: 0;
+        min-height: 3rem;
+    }
+
+    /* Section Statistiques et Réalisations */
+    .stats-section {
+        padding: 6rem 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="triangles" width="40" height="40" patternUnits="userSpaceOnUse"><polygon points="20,0 40,20 20,40 0,20" fill="none" stroke="%23dee2e6" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23triangles)"/></svg>');
+        opacity: 0.2;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .stat-card {
+        background: var(--white);
+        padding: 2.5rem 2rem;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(255,255,255,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(13, 71, 134, 0.15);
+        border-color: var(--csig-accent);
+    }
+
+    .stat-icon {
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-icon i {
+        font-size: 3rem;
+        color: var(--csig-accent);
+        background: linear-gradient(135deg, var(--csig-accent) 0%, var(--csig-primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 900;
+        color: var(--csig-primary);
+        margin-bottom: 1rem;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: var(--gray-600);
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.4;
+        margin-bottom: 0;
+    }
+
+    .achievements-showcase {
+        position: relative;
+        z-index: 2;
+    }
+
+    .achievements-showcase h3 {
+        color: var(--csig-primary);
+        font-weight: 700;
+        font-size: 1.8rem;
+    }
+
+    .achievement-item {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transition: all 0.4s ease;
+        border: 1px solid rgba(255,255,255,0.2);
+        height: 100%;
+    }
+
+    .achievement-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(13, 71, 134, 0.15);
+        border-color: var(--csig-accent);
+    }
+
+    .achievement-icon {
+        margin-bottom: 1rem;
+    }
+
+    .achievement-icon i {
+        font-size: 2.5rem;
+        color: var(--csig-accent);
+    }
+
+    .achievement-content h5 {
+        color: var(--csig-primary);
+        font-weight: 600;
+        margin-bottom: 0;
+        line-height: 1.4;
+    }
+
+    /* États vides */
+    .empty-state {
+        padding: 3rem 1rem;
+        color: var(--gray-500);
+    }
+    
+    .empty-state i {
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h4 {
+        margin-bottom: 0.5rem;
+        color: var(--gray-600);
+    }
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+    }
+    
+    .hero-actions .btn {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .main-article-content {
+        padding: 1.5rem;
+    }
+    
+    .cta-actions {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* Correction de l'espace blanc sur smartphone */
+    .hero-section {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .hero-slide {
+        min-height: calc(100vh - 120px) !important;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    .hero-content {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .hero-meta {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .hero-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .partners-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .partner-item {
+        padding: 1.5rem;
+        min-height: 100px;
+    }
+    
+    .main-article-image {
+        height: 200px;
+    }
+    
+    /* Nouvelles sections responsive */
+    .values-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .value-item {
+        padding: 2rem 1.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .stat-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+    }
+    
+    .project-card,
+    .team-member-card {
+        margin-bottom: 2rem;
+    }
+    
+    .achievement-item {
+        margin-bottom: 1.5rem;
+    }
+}
+
+
+
+@media (max-width: 575.98px) {
+    .hero-title {
+        font-size: 1.75rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .hero-stats {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .main-article-title {
+        font-size: 1.5rem;
+    }
+    
+    .cta-title {
+        font-size: 2rem;
+    }
+    
+    .cta-actions {
+        flex-direction: column;
+    }
+    
+    .cta-actions .btn {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    /* Nouvelles sections responsive très petits écrans */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .value-item,
+    .stat-card,
+    .project-card,
+    .team-member-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animation des compteurs
+document.addEventListener('DOMContentLoaded', function() {
+    const counters = document.querySelectorAll('.counter');
+    const speed = 200;
+
+    const animateCounter = (counter) => {
+        const target = +counter.getAttribute('data-target');
+        const count = +counter.innerText;
+        const increment = target / speed;
+
+        if (count < target) {
+            counter.innerText = Math.ceil(count + increment);
+            setTimeout(() => animateCounter(counter), 1);
+        } else {
+            counter.innerText = target;
+        }
+    };
+
+    // Démarrer l'animation quand l'élément est visible
+    const observerOptions = {
+        threshold: 0.5
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const counter = entry.target;
+                animateCounter(counter);
+                observer.unobserve(counter);
+            }
+        });
+    }, observerOptions);
+
+    counters.forEach(counter => {
+        observer.observe(counter);
+    });
+});
+</script>
+{% endblock %}

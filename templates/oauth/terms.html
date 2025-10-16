@@ -1,0 +1,159 @@
+{% extends 'oauth/base.html' %}
+{% load static %}
+
+{% block title %}Conditions d'utilisation - CSIG{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-card-header text-center">
+        <h2 class="auth-title">
+            <i class="fas fa-gavel me-2"></i>Conditions d'utilisation
+        </h2>
+        <p class="auth-description">Lisez attentivement nos conditions d'utilisation</p>
+    </div>
+    
+    <div class="auth-card-body">
+        <div class="terms-content">
+            <h5 class="mb-3">1. Acceptation des conditions</h5>
+            <p class="mb-3">
+                En utilisant la plateforme CSIG (Cité des Sciences et de l'Innovation de Guinée), 
+                vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas 
+                ces conditions, veuillez ne pas utiliser la plateforme.
+            </p>
+            
+            <h5 class="mb-3">2. Description du service</h5>
+            <p class="mb-3">
+                CSIG est une plateforme de gestion de contenu scientifique et innovant, 
+                permettant aux utilisateurs autorisés de créer, modifier et publier du contenu 
+                relatif aux sciences et à l'innovation en Guinée.
+            </p>
+            
+            <h5 class="mb-3">3. Compte utilisateur</h5>
+            <p class="mb-3">
+                Pour accéder à certaines fonctionnalités, vous devez créer un compte utilisateur. 
+                Vous êtes responsable de maintenir la confidentialité de vos informations de connexion 
+                et de toutes les activités qui se produisent sous votre compte.
+            </p>
+            
+            <h5 class="mb-3">4. Utilisation acceptable</h5>
+            <p class="mb-3">
+                Vous vous engagez à utiliser la plateforme uniquement à des fins légales et appropriées. 
+                Il est interdit d'utiliser la plateforme pour :
+            </p>
+            <ul class="mb-3">
+                <li>Publier du contenu diffamatoire, offensant ou illégal</li>
+                <li>Violer les droits de propriété intellectuelle</li>
+                <li>Transmettre des virus ou du code malveillant</li>
+                <li>Tenter d'accéder non autorisé aux systèmes</li>
+                <li>Spammer ou envoyer du contenu non sollicité</li>
+            </ul>
+            
+            <h5 class="mb-3">5. Contenu utilisateur</h5>
+            <p class="mb-3">
+                En publiant du contenu sur la plateforme, vous accordez à CSIG une licence 
+                non exclusive, mondiale et gratuite d'utiliser, reproduire et distribuer 
+                ce contenu dans le cadre de la plateforme.
+            </p>
+            
+            <h5 class="mb-3">6. Propriété intellectuelle</h5>
+            <p class="mb-3">
+                La plateforme et son contenu original sont protégés par les droits d'auteur 
+                et autres lois sur la propriété intellectuelle. CSIG conserve tous les droits 
+                sur la plateforme et son contenu.
+            </p>
+            
+            <h5 class="mb-3">7. Confidentialité</h5>
+            <p class="mb-3">
+                Votre vie privée est importante pour nous. Consultez notre politique de 
+                confidentialité pour comprendre comment nous collectons, utilisons et 
+                protégeons vos informations personnelles.
+            </p>
+            
+            <h5 class="mb-3">8. Limitation de responsabilité</h5>
+            <p class="mb-3">
+                CSIG ne sera pas responsable des dommages indirects, accessoires, 
+                spéciaux ou consécutifs résultant de l'utilisation de la plateforme.
+            </p>
+            
+            <h5 class="mb-3">9. Modifications des conditions</h5>
+            <p class="mb-3">
+                CSIG se réserve le droit de modifier ces conditions à tout moment. 
+                Les modifications prendront effet immédiatement après leur publication. 
+                Votre utilisation continue de la plateforme constitue votre acceptation 
+                des nouvelles conditions.
+            </p>
+            
+            <h5 class="mb-3">10. Résiliation</h5>
+            <p class="mb-3">
+                CSIG peut suspendre ou résilier votre compte à tout moment, 
+                avec ou sans préavis, pour violation de ces conditions ou pour 
+                toute autre raison jugée appropriée.
+            </p>
+            
+            <h5 class="mb-3">11. Droit applicable</h5>
+            <p class="mb-3">
+                Ces conditions sont régies par les lois de la République de Guinée. 
+                Tout litige sera résolu par les tribunaux compétents de Guinée.
+            </p>
+            
+            <h5 class="mb-3">12. Contact</h5>
+            <p class="mb-3">
+                Si vous avez des questions concernant ces conditions d'utilisation, 
+                veuillez nous contacter à l'adresse suivante :
+            </p>
+            <div class="contact-info p-3 bg-light rounded">
+                <p class="mb-1"><strong>CSIG - Cité des Sciences et de l'Innovation de Guinée</strong></p>
+                <p class="mb-1">Email : contact@csig.gn</p>
+                <p class="mb-1">Téléphone : +224 XXX XXX XXX</p>
+                <p class="mb-0">Adresse : Conakry, Guinée</p>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-4">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Note importante :</strong> Ces conditions d'utilisation ont été mises à jour 
+            pour la dernière fois le {{ "now"|date:"d/m/Y" }}. Veuillez les consulter régulièrement 
+            pour vous tenir informé des éventuelles modifications.
+        </div>
+    </div>
+    
+    <div class="auth-card-footer text-center">
+        <p class="mb-0">
+            <a href="{% url 'oauth:login' %}" class="auth-link">
+                <i class="fas fa-arrow-left me-1"></i>Retour à la connexion
+            </a>
+            <span class="mx-2">•</span>
+            <a href="{% url 'oauth:privacy' %}" class="auth-link">
+                <i class="fas fa-shield-alt me-1"></i>Politique de confidentialité
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Ajouter des classes Bootstrap aux éléments
+    $('.terms-content h5').addClass('text-primary fw-bold');
+    $('.terms-content ul').addClass('list-unstyled');
+    $('.terms-content li').addClass('mb-2 ps-3');
+    $('.terms-content li:before').addClass('fas fa-chevron-right text-primary me-2');
+    
+    // Animation au défilement
+    $('.terms-content h5').each(function(index) {
+        $(this).attr('data-aos', 'fade-up');
+        $(this).attr('data-aos-delay', index * 100);
+    });
+    
+    // Initialiser AOS si disponible
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,424 @@
+# CSIG - Cité des Sciences et de l'Innovation de Guinée
+
+## 📋 Description du Projet
+
+Le projet CSIG est une plateforme web complète pour la gestion et la présentation de la Cité des Sciences et de l'Innovation de Guinée. Il comprend :
+
+- **Site public** : Présentation des programmes, projets, événements, équipe
+- **Gestion de contenu** : Interface d'administration pour gérer tous les contenus
+- **Système de réservation** : Gestion des salles de conférence
+- **Newsletter** : Système d'abonnement et de campagnes
+- **Recherche avancée** : Fonctionnalité de recherche dans tous les contenus
+
+## 🛠️ Technologies Utilisées
+
+- **Backend** : Django 5.2+ avec Python 3.9+
+- **Base de données** : PostgreSQL (recommandé) ou SQLite (développement)
+- **Cache** : Redis
+- **Frontend** : Bootstrap 5, HTML5, CSS3, JavaScript
+- **Éditeur de texte** : CKEditor5
+- **Tâches asynchrones** : Celery
+
+## 📋 Prérequis
+
+### Option 1 : Installation Manuelle
+
+- **Python 3.11+**
+- **PostgreSQL 12+** (ou SQLite pour le développement)
+- **Redis 6+**
+- **Git**
+
+### Option 2 : Installation avec Docker
+
+- **Docker** et **Docker Compose**
+- **Git**
+
+## 🚀 Installation et Configuration
+
+### 1. Cloner le Projet
+
+```bash
+git clone <url-du-repo>
+cd csig
+```
+
+### 2. Créer l'Environnement Virtuel
+
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. Installer les Dépendances
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configuration de la Base de Données
+
+#### Option A : PostgreSQL (Recommandé pour la production)
+
+1. **Installer PostgreSQL** sur votre machine
+2. **Créer une base de données** :
+   ```sql
+   CREATE DATABASE csig_db;
+   CREATE USER csig_user WITH PASSWORD 'votre_mot_de_passe';
+   GRANT ALL PRIVILEGES ON DATABASE csig_db TO csig_user;
+   ```
+
+3. **Configurer les paramètres** dans `csigwebsite/settings.py` :
+   ```python
+   DATABASES = {
+       'default': {
+           'ENGINE': 'django.db.backends.postgresql',
+           'NAME': 'csig_db',
+           'USER': 'csig_user',
+           'PASSWORD': 'votre_mot_de_passe',
+           'HOST': 'localhost',
+           'PORT': '5432',
+       }
+   }
+   ```
+
+#### Option B : SQLite (Simple pour le développement)
+
+Modifier `csigwebsite/settings.py` :
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+```
+
+### 5. Configuration de Redis
+
+#### Option A : Installation Manuelle
+
+1. **Windows** :
+   - Télécharger Redis depuis [GitHub](https://github.com/microsoftarchive/redis/releases)
+   - Ou utiliser WSL2 avec Ubuntu
+
+2. **Linux/Mac** :
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get install redis-server
+   
+   # macOS avec Homebrew
+   brew install redis
+   ```
+
+3. **Démarrer Redis** :
+   ```bash
+   redis-server
+   ```
+
+#### Option B : Docker (Recommandé)
+
+```bash
+docker run -d --name redis-csig -p 6379:6379 redis:alpine
+```
+
+### 6. Configuration des Variables d'Environnement
+
+Créer un fichier `.env` à la racine du projet :
+
+```env
+# Base de données
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=csig_db
+DB_USER=csig_user
+DB_PASSWORD=votre_mot_de_passe
+DB_HOST=localhost
+DB_PORT=5432
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# Django
+SECRET_KEY=votre_secret_key_très_long_et_complexe
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Email (optionnel)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=votre_email@gmail.com
+EMAIL_HOST_PASSWORD=votre_mot_de_passe_app
+```
+
+### 7. Migrations et Superutilisateur
+
+```bash
+# Appliquer les migrations
+python manage.py migrate
+
+# Créer un superutilisateur
+python manage.py createsuperuser
+```
+
+### 8. Chargement des Données de Test (Optionnel)
+
+vous pouvez charger le fichier `data.json` :
+
+```bash
+python manage.py loaddata data.json
+```
+
+## 🎯 Lancement du Projet
+
+### 1. Démarrer Redis
+
+```bash
+# Si installé manuellement
+redis-server
+
+# Si avec Docker
+docker start redis-csig
+```
+
+### 2. Démarrer Celery (Tâches asynchrones)
+
+```bash
+# Windows
+celery -A jobs worker --loglevel=info --pool=solo
+
+# Linux/Mac
+celery -A jobs worker --loglevel=info --pool=solo &
+```
+
+### 3. Démarrer le Serveur Django
+
+```bash
+python manage.py runserver
+```
+
+Le site sera accessible à : `http://127.0.0.1:8000/`
+
+## 📁 Structure du Projet
+
+```
+csig/
+├── csigwebsite/          # Configuration Django principale
+├── sfront/              # Application frontend public
+├── content_management/  # Application de gestion de contenu
+├── users/               # Gestion des utilisateurs
+├── oauth/               # Authentification OAuth
+├── jobs/                # Gestion des emplois
+├── templates/           # Templates HTML
+├── static/              # Fichiers statiques (CSS, JS, images)
+├── media/               # Fichiers uploadés par les utilisateurs
+├── requirements.txt     # Dépendances Python
+├── manage.py           # Script de gestion Django
+└── README.md           # Ce fichier
+```
+
+## 🔧 Commandes Utiles
+
+### Gestion de la Base de Données
+
+```bash
+# Créer une nouvelle migration
+python manage.py makemigrations
+
+# Appliquer les migrations
+python manage.py migrate
+
+# Créer un superutilisateur
+python manage.py createsuperuser
+
+# Charger des données
+python manage.py loaddata data.json
+
+# Exporter des données
+python manage.py dumpdata > backup.json
+```
+
+### Gestion des Fichiers Statiques
+
+```bash
+# Collecter les fichiers statiques
+python manage.py collectstatic
+
+# Vider le cache
+python manage.py clear_cache
+```
+
+### Tests
+
+```bash
+# Lancer les tests
+python manage.py test
+
+# Tests avec couverture
+coverage run --source='.' manage.py test
+coverage report
+```
+
+## 🌐 Accès aux Interfaces
+
+### Site Public
+- **URL** : `http://127.0.0.1:8000/`
+- **Pages principales** :
+  - Accueil : `/`
+  - Programmes : `/programmes/`
+  - Projets : `/projets/`
+  - Événements : `/evenements/`
+  - Équipe : `/equipe/`
+  - À propos : `/a-propos/`
+  - Contact : `/contact/`
+
+### Interface d'Administration
+- **URL** : `http://127.0.0.1:8000/oauth/login/`
+- **Connexion** : Utilisez le superutilisateur créé
+
+### Gestion de Contenu
+- **URL** : `http://127.0.0.1:8000/content-management/`
+- **Connexion** : Utilisez le superutilisateur créé
+- **Fonctionnalités** :
+  - Gestion des articles
+  - Gestion des programmes
+  - Gestion des projets
+  - Gestion des événements
+  - Gestion de l'équipe
+  - Gestion des partenaires
+  - Système de newsletter
+  - Réservation de salles
+
+## 🐳 Installation avec Docker (Alternative)
+
+### 1. Créer docker-compose.yml
+
+```yaml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: csig_db
+      POSTGRES_USER: csig_user
+      POSTGRES_PASSWORD: csig_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgres://csig_user:csig_password@db:5432/csig_db
+      - REDIS_URL=redis://redis:6379/0
+
+volumes:
+  postgres_data:
+```
+
+### 2. Créer Dockerfile
+
+```dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+```
+
+### 3. Lancer avec Docker
+
+```bash
+# Construire et démarrer
+docker-compose up --build
+
+# En arrière-plan
+docker-compose up -d
+
+# Arrêter
+docker-compose down
+```
+
+## 🔍 Dépannage
+
+### Problèmes Courants
+
+1. **Erreur de connexion à la base de données** :
+   - Vérifiez que PostgreSQL est démarré
+   - Vérifiez les paramètres de connexion dans `settings.py`
+
+2. **Erreur Redis** :
+   - Vérifiez que Redis est démarré : `redis-cli ping`
+   - Vérifiez l'URL Redis dans les settings
+
+3. **Erreur de migrations** :
+   ```bash
+   python manage.py migrate --fake-initial
+   ```
+
+4. **Problème de permissions sur les fichiers** :
+   ```bash
+   chmod -R 755 media/
+   chmod -R 755 static/
+   ```
+
+### Logs et Debug
+
+```bash
+# Activer le mode debug
+DEBUG=True dans settings.py
+
+# Voir les logs Django
+python manage.py runserver --verbosity=2
+
+# Logs Celery
+celery -A csigwebsite worker --loglevel=debug
+```
+
+## 📞 Support
+
+Pour toute question ou problème :
+
+1. Vérifiez d'abord cette documentation
+2. Consultez les logs d'erreur
+3. Vérifiez que tous les services sont démarrés
+4. Contactez l'équipe de développement
+
+## 📝 Notes Importantes
+
+- **Production** : Changez `DEBUG=False` et configurez `ALLOWED_HOSTS`
+- **Sécurité** : Utilisez des mots de passe forts et changez les clés par défaut
+- **Sauvegarde** : Effectuez des sauvegardes régulières de la base de données
+- **Mise à jour** : Gardez les dépendances à jour pour la sécurité
+
+---
+
+**Bon développement ! 🚀**

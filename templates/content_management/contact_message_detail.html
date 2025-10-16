@@ -1,0 +1,345 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Message de {{ message.name }} - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.message-detail-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.message-header {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+    padding: 2rem;
+}
+
+.message-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.message-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.message-body {
+    padding: 2rem;
+}
+
+.message-info-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #e53e3e;
+}
+
+.message-info-section h3 {
+    color: #495057;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.message-info-section h3 i {
+    color: #e53e3e;
+    font-size: 1.1rem;
+}
+
+.message-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.message-info-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.message-info-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.message-info-value {
+    color: #495057;
+    font-weight: 500;
+}
+
+.message-content-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #17a2b8;
+}
+
+.message-content-section h3 {
+    color: #495057;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.message-content-section h3 i {
+    color: #17a2b8;
+    font-size: 1.1rem;
+}
+
+.message-content {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    line-height: 1.6;
+    color: #495057;
+    white-space: pre-wrap;
+}
+
+.message-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn {
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c53030 0%, #a93232 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+    color: white;
+}
+
+.message-avatar {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.message-avatar i {
+    font-size: 4rem;
+    color: #e53e3e;
+    opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .message-detail-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .message-header {
+        padding: 1.5rem;
+    }
+    
+    .message-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .message-body {
+        padding: 1.5rem;
+    }
+    
+    .message-info-section,
+    .message-content-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .message-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .message-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .message-header {
+        padding: 1rem;
+    }
+    
+    .message-body {
+        padding: 1rem;
+    }
+    
+    .message-info-section,
+    .message-content-section {
+        padding: 0.75rem;
+    }
+    
+    .message-content {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-envelope me-2"></i>Message de {{ message.name|default:"Anonyme" }}
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Détails du message reçu via le formulaire de contact</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:contact_message_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="message-detail-container">
+    <!-- En-tête du message -->
+    <div class="message-header">
+        <h1>
+            <i class="fas fa-envelope me-3"></i>Message de {{ message.name|default:"Anonyme" }}
+        </h1>
+        <p>Détails du message reçu le {{ message.created_at|date:"d/m/Y à H:i" }}</p>
+    </div>
+
+    <!-- Corps du message -->
+    <div class="message-body">
+        <!-- Informations de l'expéditeur -->
+        <div class="message-info-section">
+            <h3>
+                <i class="fas fa-user"></i>
+                Informations de l'expéditeur
+            </h3>
+            
+            <div class="message-avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            
+            <div class="message-info-grid">
+                <div class="message-info-item">
+                    <div class="message-info-label">Nom</div>
+                    <div class="message-info-value">{{ message.name|default:"Anonyme" }}</div>
+                </div>
+                
+                <div class="message-info-item">
+                    <div class="message-info-label">Email</div>
+                    <div class="message-info-value">
+                        <a href="mailto:{{ message.email }}" class="text-decoration-none">
+                            {{ message.email }}
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="message-info-item">
+                    <div class="message-info-label">Sujet</div>
+                    <div class="message-info-value">{{ message.subject|default:"Aucun sujet" }}</div>
+                </div>
+                
+                <div class="message-info-item">
+                    <div class="message-info-label">Date d'envoi</div>
+                    <div class="message-info-value">{{ message.created_at|date:"d/m/Y H:i" }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenu du message -->
+        <div class="message-content-section">
+            <h3>
+                <i class="fas fa-comment"></i>
+                Contenu du message
+            </h3>
+            
+            <div class="message-content">
+                {{ message.message|linebreaks }}
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="message-actions">
+            <a href="{% url 'content_management:contact_message_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>Retour à la liste
+            </a>
+            
+            <a href="mailto:{{ message.email }}?subject=Re: {{ message.subject|default:'Votre message' }}" class="btn btn-primary">
+                <i class="fas fa-reply"></i>Répondre
+            </a>
+            
+            <a href="{% url 'content_management:contact_message_confirm_delete' message.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i>Supprimer
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

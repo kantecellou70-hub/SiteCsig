@@ -1,0 +1,303 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Quartiers de la Cité - CSIG{% endblock %}
+{% block page_title %}Quartiers de la Cité{% endblock %}
+{% block page_subtitle %}Gérez les différents espaces de votre cité des sciences{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'content_management:city_district_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i>Ajouter un quartier
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-building me-2"></i>Liste des quartiers
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if districts %}
+                <!-- Version Desktop -->
+                <div class="d-none d-lg-block">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="border-0">Ordre</th>
+                                    <th class="border-0">Icône</th>
+                                    <th class="border-0">Nom</th>
+                                    <th class="border-0">Description</th>
+                                    <th class="border-0">Image</th>
+                                    <th class="border-0">Statut</th>
+                                    <th class="border-0">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for district in districts %}
+                                <tr class="district-row">
+                                    <td class="align-middle">
+                                        <span class="badge bg-primary rounded-pill">{{ district.order }}</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="district-icon-display">
+                                            <i class="{{ district.icon }} fa-2x text-primary"></i>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">
+                                        <strong class="text-dark">{{ district.name }}</strong>
+                                    </td>
+                                    <td class="align-middle">
+                                        <p class="text-muted mb-0">{{ district.description|truncatewords:10 }}</p>
+                                    </td>
+                                    <td class="align-middle">
+                                        {% if district.image %}
+                                            <div class="district-image-preview">
+                                                <img src="{{ district.image.url }}" alt="{{ district.name }}" class="img-thumbnail">
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted small">Aucune image</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        {% if district.is_active %}
+                                            <span class="badge bg-success rounded-pill">
+                                                <i class="fas fa-check me-1"></i>Actif
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary rounded-pill">
+                                                <i class="fas fa-pause me-1"></i>Inactif
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        <a href="{% url 'content_management:city_district_edit' district.pk %}" 
+                                           class="btn btn-sm btn-outline-primary rounded-pill">
+                                            <i class="fas fa-edit me-1"></i>Modifier
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Version Mobile -->
+                <div class="d-lg-none">
+                    <div class="row g-3 p-3">
+                        {% for district in districts %}
+                        <div class="col-12">
+                            <div class="district-card-mobile">
+                                <div class="district-header">
+                                    <div class="district-icon-mobile">
+                                        <i class="{{ district.icon }} fa-2x text-primary"></i>
+                                    </div>
+                                    <div class="district-info">
+                                        <h6 class="mb-1">{{ district.name }}</h6>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-primary rounded-pill">{{ district.order }}</span>
+                                            {% if district.is_active %}
+                                                <span class="badge bg-success rounded-pill">
+                                                    <i class="fas fa-check me-1"></i>Actif
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary rounded-pill">
+                                                    <i class="fas fa-pause me-1"></i>Inactif
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="district-body">
+                                    <p class="text-muted mb-2">{{ district.description|truncatewords:15 }}</p>
+                                    {% if district.image %}
+                                    <div class="district-image-mobile mb-2">
+                                        <img src="{{ district.image.url }}" alt="{{ district.name }}" class="img-fluid rounded">
+                                    </div>
+                                    {% endif %}
+                                    <div class="district-actions">
+                                        <a href="{% url 'content_management:city_district_edit' district.pk %}" 
+                                           class="btn btn-primary btn-sm w-100">
+                                            <i class="fas fa-edit me-2"></i>Modifier
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-building fa-4x text-muted"></i>
+                        </div>
+                        <h5 class="mt-3 mb-2">Aucun quartier configuré</h5>
+                        <p class="text-muted mb-4">Commencez par ajouter des quartiers pour votre cité des sciences.</p>
+                        <a href="{% url 'content_management:city_district_create' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Ajouter le premier quartier
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles pour la version desktop */
+.district-row:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+.district-icon-display {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.district-image-preview img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+/* Styles pour la version mobile */
+.district-card-mobile {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.district-card-mobile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.district-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.district-icon-mobile {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.district-info h6 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin: 0;
+}
+
+.district-body {
+    padding: 1rem;
+}
+
+.district-image-mobile img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.district-actions {
+    margin-top: 1rem;
+}
+
+/* État vide */
+.empty-state {
+    padding: 2rem;
+}
+
+.empty-state-icon {
+    opacity: 0.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .district-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    
+    .district-icon-mobile {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .district-info h6 {
+        font-size: 1rem;
+    }
+    
+    .district-body {
+        padding: 0.75rem;
+    }
+}
+
+/* Animations */
+.district-card-mobile {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Badges améliorés */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #545b62 100%) !important;
+}
+</style>
+{% endblock %}

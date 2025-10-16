@@ -1,0 +1,866 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Notifications des newsletters - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.notifications-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.notifications-header {
+    background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.notifications-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.notifications-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.notifications-body {
+    padding: 2rem;
+}
+
+.notifications-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #6f42c1;
+}
+
+.notifications-section h3 {
+    color: #495057;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.notifications-section h3 i {
+    color: #6f42c1;
+    font-size: 1.1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-label i {
+    color: #6f42c1;
+    width: 20px;
+}
+
+.form-control, .form-select, .form-textarea {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.form-control:focus, .form-select:focus, .form-textarea:focus {
+    border-color: #6f42c1;
+    box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+    outline: none;
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: #6f42c1;
+    border-color: #6f42c1;
+}
+
+.btn-success {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.btn-info {
+    background: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-warning {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.template-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid #6f42c1;
+    transition: transform 0.2s ease;
+}
+
+.template-card:hover {
+    transform: translateX(5px);
+}
+
+.template-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.template-name {
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.template-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.template-content {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.template-subject {
+    font-weight: 600;
+    color: #6f42c1;
+    margin-bottom: 0.5rem;
+}
+
+.template-body {
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 3px solid #6f42c1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #6f42c1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.target-audience {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+}
+
+.audience-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.audience-option input[type="radio"] {
+    margin: 0;
+}
+
+.audience-option label {
+    margin: 0;
+    cursor: pointer;
+}
+
+.audience-count {
+    background: #e9ecef;
+    color: #495057;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+.preview-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border: 1px solid #dee2e6;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.preview-title {
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+}
+
+.preview-toggle {
+    background: none;
+    border: none;
+    color: #6f42c1;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.preview-toggle:hover {
+    text-decoration: underline;
+}
+
+.preview-content {
+    display: none;
+}
+
+.preview-content.show {
+    display: block;
+}
+
+.preview-email {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.preview-email .email-header {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.preview-email .email-subject {
+    font-weight: 600;
+    color: #495057;
+}
+
+.preview-email .email-to {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+.preview-email .email-body {
+    color: #495057;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 768px) {
+    .notifications-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .notifications-header {
+        padding: 1.5rem;
+    }
+    
+    .notifications-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .notifications-body {
+        padding: 1rem;
+    }
+    
+    .notifications-section {
+        padding: 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .template-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .template-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-bell me-2"></i>Notifications des newsletters
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Envoyez des notifications et gérez vos templates</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:newsletter_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux newsletters
+    </a>
+    <button class="btn btn-primary" onclick="showSendNotificationModal()">
+        <i class="fas fa-paper-plane me-2"></i>Nouvelle notification
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="notifications-container">
+    <!-- En-tête -->
+    <div class="notifications-header">
+        <h1>
+            <i class="fas fa-bell me-3"></i>Notifications des newsletters
+        </h1>
+        <p>Envoyez des notifications ciblées à vos abonnés</p>
+    </div>
+
+    <!-- Corps des notifications -->
+    <div class="notifications-body">
+        <!-- Statistiques -->
+        <div class="notifications-section">
+            <h3>
+                <i class="fas fa-chart-bar"></i>
+                Statistiques des notifications
+            </h3>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ notification_stats.total_sent }}</div>
+                    <div class="stat-label">Total envoyées</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ notification_stats.total_opened }}</div>
+                    <div class="stat-label">Ouvertes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ notification_stats.total_clicked }}</div>
+                    <div class="stat-label">Clics</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ notification_templates|length }}</div>
+                    <div class="stat-label">Templates</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Envoi de notification -->
+        <div class="notifications-section">
+            <h3>
+                <i class="fas fa-paper-plane"></i>
+                Envoyer une notification
+            </h3>
+            
+            <form method="post" id="sendNotificationForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="send_notification">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="notificationType" class="form-label">
+                                <i class="fas fa-tag"></i>Type de notification
+                            </label>
+                            <select class="form-select" id="notificationType" name="notification_type" required>
+                                <option value="">Sélectionner un type</option>
+                                <option value="welcome">Bienvenue</option>
+                                <option value="promotion">Promotion</option>
+                                <option value="reminder">Rappel</option>
+                                <option value="news">Actualités</option>
+                                <option value="custom">Personnalisée</option>
+                            </select>
+                            <div class="form-text">Type de notification à envoyer</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="targetSubscribers" class="form-label">
+                                <i class="fas fa-users"></i>Destinataires
+                            </label>
+                            <select class="form-select" id="targetSubscribers" name="target_subscribers" required>
+                                <option value="">Sélectionner les destinataires</option>
+                                <option value="all">Tous les abonnés</option>
+                                <option value="active">Abonnés actifs uniquement</option>
+                                <option value="inactive">Abonnés inactifs uniquement</option>
+                                <option value="fr">Abonnés francophones</option>
+                                <option value="en">Abonnés anglophones</option>
+                            </select>
+                            <div class="form-text">Sélectionnez votre audience cible</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notificationSubject" class="form-label">
+                        <i class="fas fa-heading"></i>Sujet de la notification
+                    </label>
+                    <input type="text" class="form-control" id="notificationSubject" name="subject" 
+                           placeholder="Sujet de votre notification" required>
+                    <div class="form-text">Sujet qui apparaîtra dans la boîte de réception</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notificationMessage" class="form-label">
+                        <i class="fas fa-envelope-open-text"></i>Message de la notification
+                    </label>
+                    <textarea class="form-textarea" id="notificationMessage" name="message" 
+                              placeholder="Contenu de votre notification..." required></textarea>
+                    <div class="form-text">Contenu principal de la notification</div>
+                </div>
+                
+                <!-- Audience cible -->
+                <div class="target-audience">
+                    <h6 class="mb-3">
+                        <i class="fas fa-bullseye me-2"></i>Audience cible
+                    </h6>
+                    
+                    <div class="audience-option">
+                        <input type="radio" id="audienceAll" name="audience" value="all" checked>
+                        <label for="audienceAll">Tous les abonnés</label>
+                        <span class="audience-count" id="countAll">0</span>
+                    </div>
+                    
+                    <div class="audience-option">
+                        <input type="radio" id="audienceActive" name="audience" value="active">
+                        <label for="audienceActive">Abonnés actifs uniquement</label>
+                        <span class="audience-count" id="countActive">0</span>
+                    </div>
+                    
+                    <div class="audience-option">
+                        <input type="radio" id="audienceInactive" name="audience" value="inactive">
+                        <label for="audienceInactive">Abonnés inactifs uniquement</label>
+                        <span class="audience-count" id="countInactive">0</span>
+                    </div>
+                    
+                    <div class="audience-option">
+                        <input type="radio" id="audienceFr" name="audience" value="fr">
+                        <label for="audienceFr">Abonnés francophones</label>
+                        <span class="audience-count" id="countFr">0</span>
+                    </div>
+                    
+                    <div class="audience-option">
+                        <input type="radio" id="audienceEn" name="audience" value="en">
+                        <label for="audienceEn">Abonnés anglophones</label>
+                        <span class="audience-count" id="countEn">0</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-paper-plane me-2"></i>Envoyer la notification
+                    </button>
+                    <button type="button" class="btn btn-info ms-2" onclick="previewNotification()">
+                        <i class="fas fa-eye me-2"></i>Aperçu
+                    </button>
+                    <button type="button" class="btn btn-warning ms-2" onclick="saveAsTemplate()">
+                        <i class="fas fa-save me-2"></i>Sauvegarder comme template
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Aperçu de la notification -->
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <div class="preview-header">
+                    <h6 class="preview-title">Aperçu de la notification</h6>
+                    <button type="button" class="preview-toggle" onclick="togglePreview()">
+                        <i class="fas fa-eye-slash me-1"></i>Masquer
+                    </button>
+                </div>
+                <div class="preview-content show" id="previewContent">
+                    <div class="preview-email">
+                        <div class="email-header">
+                            <div class="email-subject" id="previewSubject">Sujet de la notification</div>
+                            <div class="email-to">À: [Destinataire]</div>
+                        </div>
+                        <div class="email-body" id="previewBody">Contenu de la notification...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Templates de notification -->
+        <div class="notifications-section">
+            <h3>
+                <i class="fas fa-file-alt"></i>
+                Templates de notification
+            </h3>
+            
+            {% if notification_templates %}
+                {% for template in notification_templates %}
+                <div class="template-card">
+                    <div class="template-header">
+                        <h6 class="template-name">{{ template.name }}</h6>
+                        <div class="template-actions">
+                            <button type="button" class="btn btn-sm btn-info" onclick="useTemplate('{{ template.name }}')">
+                                <i class="fas fa-copy me-1"></i>Utiliser
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning" onclick="editTemplate('{{ template.name }}')">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteTemplate('{{ template.name }}')">
+                                <i class="fas fa-trash me-1"></i>Supprimer
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="template-content">
+                        <div class="template-subject">{{ template.subject }}</div>
+                        <div class="template-body">{{ template.content|truncatechars:150 }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-file-alt fa-3x mb-3"></i>
+                    <h5>Aucun template trouvé</h5>
+                    <p>Créez votre premier template pour faciliter l'envoi de notifications.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour sauvegarder un template -->
+<div class="modal fade" id="saveTemplateModal" tabindex="-1" aria-labelledby="saveTemplateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveTemplateModalLabel">
+                    <i class="fas fa-save me-2"></i>Sauvegarder comme template
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="saveTemplateForm">
+                    <div class="form-group">
+                        <label for="templateName" class="form-label">Nom du template</label>
+                        <input type="text" class="form-control" id="templateName" name="template_name" 
+                               placeholder="Nom du template" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="templateSubject" class="form-label">Sujet</label>
+                        <input type="text" class="form-control" id="templateSubject" name="template_subject" 
+                               placeholder="Sujet du template" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="templateContent" class="form-label">Contenu</label>
+                        <textarea class="form-control" id="templateContent" name="template_content" 
+                                  placeholder="Contenu du template" rows="4" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="confirmSaveTemplate()">
+                    <i class="fas fa-save me-2"></i>Sauvegarder
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let currentAudienceCounts = {
+    all: {{ notification_stats.total_sent|default:0 }},
+    active: {{ notification_stats.total_sent|default:0 }},
+    inactive: 0,
+    fr: 0,
+    en: 0
+};
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    updateAudienceCounts();
+    initFormValidation();
+});
+
+// Mettre à jour les compteurs d'audience
+function updateAudienceCounts() {
+    // TODO: Récupérer les vrais compteurs depuis l'API
+    document.getElementById('countAll').textContent = currentAudienceCounts.all;
+    document.getElementById('countActive').textContent = currentAudienceCounts.active;
+    document.getElementById('countInactive').textContent = currentAudienceCounts.inactive;
+    document.getElementById('countFr').textContent = currentAudienceCounts.fr;
+    document.getElementById('countEn').textContent = currentAudienceCounts.en;
+}
+
+// Aperçu de la notification
+function previewNotification() {
+    const subject = document.getElementById('notificationSubject').value;
+    const message = document.getElementById('notificationMessage').value;
+    
+    if (!subject || !message) {
+        alert('Veuillez remplir le sujet et le message avant de prévisualiser.');
+        return;
+    }
+    
+    document.getElementById('previewSubject').textContent = subject;
+    document.getElementById('previewBody').textContent = message;
+    document.getElementById('previewSection').style.display = 'block';
+}
+
+// Basculer l'aperçu
+function togglePreview() {
+    const previewContent = document.getElementById('previewContent');
+    const toggleBtn = document.querySelector('.preview-toggle i');
+    
+    if (previewContent.classList.contains('show')) {
+        previewContent.classList.remove('show');
+        toggleBtn.className = 'fas fa-eye me-1';
+        document.querySelector('.preview-toggle').innerHTML = '<i class="fas fa-eye me-1"></i>Afficher';
+    } else {
+        previewContent.classList.add('show');
+        toggleBtn.className = 'fas fa-eye-slash me-1';
+        document.querySelector('.preview-toggle').innerHTML = '<i class="fas fa-eye-slash me-1"></i>Masquer';
+    }
+}
+
+// Sauvegarder comme template
+function saveAsTemplate() {
+    const subject = document.getElementById('notificationSubject').value;
+    const message = document.getElementById('notificationMessage').value;
+    
+    if (!subject || !message) {
+        alert('Veuillez remplir le sujet et le message avant de sauvegarder.');
+        return;
+    }
+    
+    document.getElementById('templateSubject').value = subject;
+    document.getElementById('templateContent').value = message;
+    
+    const modal = new bootstrap.Modal(document.getElementById('saveTemplateModal'));
+    modal.show();
+}
+
+// Confirmer la sauvegarde du template
+function confirmSaveTemplate() {
+    const form = document.getElementById('saveTemplateForm');
+    const formData = new FormData(form);
+    
+    // Ajouter l'action
+    formData.append('action', 'save_template');
+    
+    // Soumettre le formulaire
+    fetch('{% url "content_management:newsletter_notifications" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Template sauvegardé avec succès !');
+            location.reload();
+        } else {
+            alert('Erreur lors de la sauvegarde : ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la sauvegarde du template.');
+    });
+}
+
+// Utiliser un template
+function useTemplate(templateName) {
+    // TODO: Récupérer le contenu du template depuis l'API
+    alert(`Utilisation du template : ${templateName}`);
+}
+
+// Modifier un template
+function editTemplate(templateName) {
+    // TODO: Ouvrir le modal d'édition du template
+    alert(`Modification du template : ${templateName}`);
+}
+
+// Supprimer un template
+function deleteTemplate(templateName) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le template "${templateName}" ?`)) {
+        // TODO: Implémenter la suppression du template
+        alert(`Template "${templateName}" supprimé avec succès !`);
+        location.reload();
+    }
+}
+
+// Afficher le modal d'envoi de notification
+function showSendNotificationModal() {
+    // Scroll vers le formulaire d'envoi
+    document.getElementById('sendNotificationForm').scrollIntoView({ 
+        behavior: 'smooth' 
+    });
+}
+
+// Validation du formulaire
+function initFormValidation() {
+    const form = document.getElementById('sendNotificationForm');
+    
+    form.addEventListener('submit', function(e) {
+        const subject = document.getElementById('notificationSubject').value.trim();
+        const message = document.getElementById('notificationMessage').value.trim();
+        const type = document.getElementById('notificationType').value;
+        const target = document.getElementById('targetSubscribers').value;
+        
+        if (!subject || !message || !type || !target) {
+            e.preventDefault();
+            alert('Veuillez remplir tous les champs obligatoires.');
+            return;
+        }
+        
+        // Confirmation avant envoi
+        if (!confirm('Êtes-vous sûr de vouloir envoyer cette notification ?')) {
+            e.preventDefault();
+            return;
+        }
+        
+        // Afficher un indicateur de chargement
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Envoi en cours...';
+        submitBtn.disabled = true;
+    });
+}
+
+// Écouter les changements de type de notification
+document.getElementById('notificationType').addEventListener('change', function() {
+    const type = this.value;
+    const subject = document.getElementById('notificationSubject');
+    const message = document.getElementById('notificationMessage');
+    
+    // Remplir automatiquement selon le type
+    switch(type) {
+        case 'welcome':
+            subject.value = 'Bienvenue sur notre newsletter !';
+            message.value = 'Merci de vous être abonné à notre newsletter. Nous sommes ravis de vous accueillir dans notre communauté !';
+            break;
+        case 'promotion':
+            subject.value = 'Offre spéciale pour nos abonnés !';
+            message.value = 'Découvrez nos dernières offres exclusives réservées à nos abonnés fidèles.';
+            break;
+        case 'reminder':
+            subject.value = 'Rappel : Votre abonnement expire bientôt';
+            message.value = 'N\'oubliez pas de renouveler votre abonnement pour continuer à recevoir nos newsletters.';
+            break;
+        case 'news':
+            subject.value = 'Actualités : Dernières nouvelles';
+            message.value = 'Restez informé avec nos dernières actualités et mises à jour importantes.';
+            break;
+        default:
+            subject.value = '';
+            message.value = '';
+    }
+});
+
+// Écouter les changements d'audience
+document.querySelectorAll('input[name="audience"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const audience = this.value;
+        const count = currentAudienceCounts[audience] || 0;
+        
+        // Mettre à jour l'affichage du nombre de destinataires
+        console.log(`Audience sélectionnée : ${audience} (${count} destinataires)`);
+    });
+});
+</script>
+{% endblock %}

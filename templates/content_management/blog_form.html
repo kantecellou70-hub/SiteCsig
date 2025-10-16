@@ -1,0 +1,836 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}
+    {% if is_create %}Nouveau blog{% else %}Modifier {{ blog.title }}{% endif %}
+{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:blog_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux blogs
+    </a>
+    {% if not is_create %}
+        <a href="{% url 'content_management:blog_detail' blog.slug %}" class="btn btn-outline-primary">
+            <i class="fas fa-eye me-2"></i>Voir le blog
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="blog-form-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>
+                        <i class="fas fa-edit me-2"></i>
+                        {% if is_create %}Nouveau blog{% else %}Modifier {{ blog.title }}{% endif %}
+                    </h3>
+                    <p class="text-muted mb-0">
+                        {% if is_create %}
+                            Créez un nouveau blog pour partager vos contenus
+                        {% else %}
+                            Modifiez les informations du blog
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="section-body">
+                    <!-- Messages Django -->
+                    {% if messages %}
+                        <div class="messages-container mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" class="blog-form" id="blogForm">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <!-- Titre -->
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="{{ form.title.id_for_label }}" class="form-label">
+                                        <i class="fas fa-heading me-2"></i>Titre du blog *
+                                    </label>
+                                    {{ form.title }}
+                                    {% if form.title.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.title.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Personna -->
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.personna.id_for_label }}" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Personna *
+                                    </label>
+                                    {{ form.personna }}
+                                    {% if form.personna.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.personna.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image principale -->
+                        <div class="form-group">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">
+                                <i class="fas fa-image me-2"></i>Image principale
+                            </label>
+                            {{ form.image }}
+                            {% if form.image.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.image.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Format recommandé : JPG, PNG. Taille max : 5MB. Dimensions recommandées : 1200x630px
+                            </div>
+                        </div>
+
+
+
+                        <!-- Contenu -->
+                        <div class="form-group">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Contenu *
+                            </label>
+                            <div id="ckeditor-container">
+                                {{ form.content }}
+                            </div>
+                            {% if form.content.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.content.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Utilisez l'éditeur riche CKEditor5 pour formater votre contenu (gras, italique, souligné, listes, etc.)
+                            </div>
+                        </div>
+
+                        <!-- URL de la vidéo -->
+                        <div class="form-group">
+                            <label for="{{ form.video_url.id_for_label }}" class="form-label">
+                                <i class="fas fa-video me-2"></i>URL de la vidéo
+                            </label>
+                            {{ form.video_url }}
+                            {% if form.video_url.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.video_url.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                URL YouTube, Vimeo ou autre plateforme vidéo
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Statut -->
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label">
+                                        <i class="fas fa-toggle-on me-2"></i>Statut *
+                                    </label>
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.status.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Statut actif -->
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        {{ form.is_active }}
+                                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                            <i class="fas fa-eye me-2"></i>Blog actif
+                                        </label>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.is_active.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Un blog actif est visible publiquement
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mis en avant -->
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        {{ form.featured }}
+                                        <label class="form-check-label" for="{{ form.featured.id_for_label }}">
+                                            <i class="fas fa-star me-2"></i>Mis en avant
+                                        </label>
+                                    </div>
+                                    {% if form.featured.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.featured.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Afficher ce blog en priorité
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>
+                                {% if is_create %}Créer le blog{% else %}Mettre à jour{% endif %}
+                            </button>
+                            <a href="{% url 'content_management:blog_list' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Conseils d'écriture -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-lightbulb me-2"></i>Conseils d'écriture</h3>
+                </div>
+                <div class="section-body">
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <i class="fas fa-heading me-2 text-primary"></i>
+                            <div>
+                                <strong>Titre accrocheur</strong>
+                                <p>Un titre clair et engageant attire plus de lecteurs</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <i class="fas fa-image me-2 text-success"></i>
+                            <div>
+                                <strong>Image de qualité</strong>
+                                <p>Une image pertinente améliore l'engagement</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <i class="fas fa-quote-left me-2 text-warning"></i>
+                            <div>
+                                <strong>Début accrocheur</strong>
+                                <p>Les premiers paragraphes doivent captiver le lecteur</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <i class="fas fa-align-left me-2 text-info"></i>
+                            <div>
+                                <strong>Structure claire</strong>
+                                <p>Organisez votre contenu avec des titres et paragraphes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statuts des blogs -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Statuts des blogs</h3>
+                </div>
+                <div class="section-body">
+                    <div class="status-list">
+                        <div class="status-item">
+                            <div class="status-icon published">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="status-content">
+                                <h6>Publié</h6>
+                                <p>Le blog est visible publiquement et peut être partagé</p>
+                            </div>
+                        </div>
+
+                        <div class="status-item">
+                            <div class="status-icon draft">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="status-content">
+                                <h6>Brouillon</h6>
+                                <p>Le blog est en cours de rédaction, non visible publiquement</p>
+                            </div>
+                        </div>
+
+                        <div class="status-item">
+                            <div class="status-icon pending">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="status-content">
+                                <h6>En attente</h6>
+                                <p>Le blog est soumis pour validation avant publication</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aperçu en temps réel -->
+            {% if not is_create %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-eye me-2"></i>Aperçu</h3>
+                </div>
+                <div class="section-body">
+                    <div class="preview-card">
+                        <div class="preview-header">
+                            {% if blog.image %}
+                                <img src="{{ blog.image.url }}" alt="{{ blog.title }}" class="preview-image">
+                            {% else %}
+                                <div class="preview-image-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="preview-content">
+                            <h6 class="preview-title">{{ blog.title }}</h6>
+                            <p class="preview-excerpt">{{ blog.content|striptags|truncatechars:100 }}</p>
+                            <div class="preview-meta">
+                                <span class="preview-date">{{ blog.created_at|date:"d/m/Y" }}</span>
+                                {% if blog.personna %}
+                                <span class="preview-personna">{{ blog.personna.name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.blog-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.blog-form {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--box-shadow);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control, .form-select {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-text {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.invalid-feedback {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-check {
+    margin-bottom: 0.5rem;
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Conseils d'écriture */
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tip-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.tip-item i {
+    font-size: 1.25rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+.tip-item strong {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.tip-item p {
+    color: var(--gray-600);
+    margin: 0;
+    font-size: 0.75rem;
+}
+
+/* Statuts des blogs */
+.status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.status-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.status-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.status-icon.published {
+    background: var(--success-color);
+}
+
+.status-icon.draft {
+    background: var(--warning-color);
+}
+
+.status-icon.pending {
+    background: var(--info-color);
+}
+
+.status-content h6 {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+}
+
+.status-content p {
+    color: var(--gray-600);
+    margin: 0;
+    font-size: 0.75rem;
+}
+
+/* Aperçu */
+.preview-card {
+    background: white;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+}
+
+.preview-header {
+    position: relative;
+}
+
+.preview-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.preview-image-placeholder {
+    width: 100%;
+    height: 150px;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-400);
+    font-size: 2rem;
+}
+
+.preview-content {
+    padding: 1rem;
+}
+
+.preview-title {
+    color: var(--gray-800);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+}
+
+.preview-excerpt {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+}
+
+.preview-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.preview-date, .preview-personna {
+    color: var(--gray-500);
+    font-size: 0.75rem;
+}
+
+.preview-personna {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* Styles pour CKEditor5 */
+.ckeditor-container {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.ckeditor-container .ck-editor__main {
+    min-height: 300px;
+}
+
+.ckeditor-container .ck-editor__main .ck-content {
+    min-height: 300px;
+    padding: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.ckeditor-container .ck-toolbar {
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+}
+
+.ckeditor-container .ck-button {
+    color: var(--gray-700);
+}
+
+.ckeditor-container .ck-button:hover {
+    background: var(--gray-200);
+}
+
+.ckeditor-container .ck-button.ck-on {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .blog-form {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+    
+    .tip-item, .status-item {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .blog-form {
+        padding: 0.75rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prévisualisation du titre en temps réel
+    const titleInput = document.querySelector('#{{ form.title.id_for_label }}');
+    const previewTitle = document.querySelector('.preview-title');
+    
+    if (titleInput && previewTitle) {
+        titleInput.addEventListener('input', function() {
+            previewTitle.textContent = this.value || 'Titre du blog';
+        });
+    }
+    
+
+    
+    // Validation de la longueur du titre
+    titleInput.addEventListener('input', function() {
+        const maxLength = 100;
+        const currentLength = this.value.length;
+        
+        if (currentLength > maxLength) {
+            this.classList.add('is-invalid');
+            if (!this.nextElementSibling || !this.nextElementSibling.classList.contains('invalid-feedback')) {
+                const feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback d-block';
+                feedback.textContent = `Le titre ne peut pas dépasser ${maxLength} caractères (actuellement ${currentLength})`;
+                this.parentNode.appendChild(feedback);
+            }
+        } else {
+            this.classList.remove('is-invalid');
+            const feedback = this.parentNode.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.remove();
+            }
+        }
+    });
+    
+
+    
+            // Validation du formulaire
+        const blogForm = document.getElementById('blogForm');
+        if (blogForm) {
+            blogForm.addEventListener('submit', function(e) {
+                // Validation des champs requis
+                const title = document.querySelector('#{{ form.title.id_for_label }}').value.trim();
+                const personna = document.querySelector('#{{ form.personna.id_for_label }}').value;
+                const status = document.querySelector('#{{ form.status.id_for_label }}').value;
+                
+                let isValid = true;
+                let errorMessage = '';
+                
+                if (!title) {
+                    isValid = false;
+                    errorMessage += '- Le titre du blog est requis\n';
+                }
+                
+                if (!personna) {
+                    isValid = false;
+                    errorMessage += '- La personnalité est requise\n';
+                }
+                
+                if (!status) {
+                    isValid = false;
+                    errorMessage += '- Le statut est requis\n';
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Veuillez corriger les erreurs suivantes :\n' + errorMessage);
+                    return false;
+                }
+            });
+        }
+        
+        // Initialisation manuelle de CKEditor5 pour le champ content
+        const contentField = document.querySelector('#{{ form.content.id_for_label }}');
+        const ckeditorContainer = document.getElementById('ckeditor-container');
+        
+        if (contentField && window.ClassicEditor && ckeditorContainer) {
+            // Supprimer l'attribut required du champ original pour éviter les erreurs de validation
+            contentField.removeAttribute('required');
+            
+            // Attendre que CKEditor soit complètement chargé
+            setTimeout(() => {
+                ClassicEditor
+                    .create(contentField, {
+                        toolbar: {
+                            items: [
+                                'heading', '|',
+                                'bold', 'italic', 'underline', 'strikethrough', '|',
+                                'link', '|',
+                                'bulletedList', 'numberedList', '|',
+                                'indent', 'outdent', '|',
+                                'blockQuote', 'insertTable', '|',
+                                'undo', 'redo'
+                            ]
+                        },
+                        language: 'fr',
+                        placeholder: 'Commencez à écrire votre contenu...',
+                        heading: {
+                            options: [
+                                { model: 'paragraph', title: 'Paragraphe', class: 'ck-heading_paragraph' },
+                                { model: 'heading1', view: 'h1', title: 'Titre 1', class: 'ck-heading_heading1' },
+                                { model: 'heading2', view: 'h2', title: 'Titre 2', class: 'ck-heading_heading2' },
+                                { model: 'heading3', view: 'h3', title: 'Titre 3', class: 'ck-heading_heading3' },
+                                { model: 'heading4', view: 'h4', title: 'Titre 4', class: 'ck-heading_heading4' }
+                            ]
+                        },
+                        table: {
+                            contentToolbar: [
+                                'tableColumn',
+                                'tableRow',
+                                'mergeTableCells'
+                            ]
+                        },
+                        link: {
+                            addTargetToExternalLinks: true,
+                            defaultProtocol: 'https://'
+                        }
+                    })
+                    .then(editor => {
+                        console.log('CKEditor5 initialisé avec succès pour le champ content');
+                        
+                        // Ajouter des classes CSS pour le style
+                        editor.ui.view.element.classList.add('ckeditor-container');
+                        
+                        // Cacher complètement le champ original
+                        contentField.style.display = 'none';
+                        contentField.style.position = 'absolute';
+                        contentField.style.left = '-9999px';
+                        
+                        // Créer un champ caché pour la validation
+                        const hiddenContentField = document.createElement('input');
+                        hiddenContentField.type = 'hidden';
+                        hiddenContentField.name = 'content';
+                        hiddenContentField.id = 'hidden_content';
+                        ckeditorContainer.appendChild(hiddenContentField);
+                        
+                        // Gérer la soumission du formulaire
+                        const form = contentField.closest('form');
+                        if (form) {
+                            // Supprimer l'ancien event listener s'il existe
+                            form.removeEventListener('submit', form._ckeditorSubmitHandler);
+                            
+                            // Créer un nouveau gestionnaire de soumission
+                            form._ckeditorSubmitHandler = function(e) {
+                                // Mettre à jour la valeur du champ caché avant soumission
+                                const content = editor.getData().trim();
+                                hiddenContentField.value = content;
+                                
+                                // Validation : vérifier que le contenu n'est pas vide
+                                if (!content) {
+                                    e.preventDefault();
+                                    alert('Le contenu du blog est requis.');
+                                    
+                                    // Mettre le focus sur l'éditeur
+                                    editor.focus();
+                                    return false;
+                                }
+                                
+                                // Mettre à jour aussi le champ original pour Django
+                                contentField.value = content;
+                            };
+                            
+                            form.addEventListener('submit', form._ckeditorSubmitHandler);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de l\'initialisation de CKEditor5:', error);
+                        
+                        // Réafficher le champ original en cas d'erreur
+                        contentField.style.display = 'block';
+                        contentField.style.position = 'static';
+                        contentField.style.left = 'auto';
+                        contentField.setAttribute('required', 'required');
+                        
+                        // Afficher un message d'erreur
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'alert alert-warning';
+                        errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>L\'éditeur riche n\'a pas pu être chargé. Utilisez le champ de texte simple.';
+                        ckeditorContainer.appendChild(errorDiv);
+                    });
+            }, 100);
+        } else {
+            console.error('CKEditor5, le champ content ou le conteneur n\'est pas disponible');
+        }
+});
+</script>
+{% endblock %}

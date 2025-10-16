@@ -1,0 +1,1376 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Liste des inscriptions" %} - {{ event.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Prévention du débordement horizontal */
+    body {
+        overflow-x: hidden;
+        max-width: 100vw;
+        box-sizing: border-box;
+    }
+    
+    .container {
+        max-width: 100%;
+        overflow-x: hidden;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        box-sizing: border-box;
+    }
+    
+    /* Styles principaux */
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        max-width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    
+    .form-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        word-wrap: break-word;
+    }
+    
+    .form-header h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0;
+        opacity: 0.9;
+        word-wrap: break-word;
+    }
+    
+    .back-link {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        white-space: nowrap;
+    }
+    
+    .back-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .registrations-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .registrations-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem;
+        border-bottom: 2px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        box-sizing: border-box;
+    }
+    
+    .registrations-title {
+        color: #333;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        word-wrap: break-word;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-secondary-custom {
+        background: #6c757d;
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-success-custom {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 0.875rem;
+    }
+    
+    .btn-success-custom:hover {
+        background: #218838;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .btn-warning-custom {
+        background: linear-gradient(135deg, #ffc107 0%, #ffb84d 100%);
+        border: none;
+        color: #212529;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 0.875rem;
+    }
+    
+    .btn-warning-custom:hover {
+        background: #e0a800;
+        color: #212529;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .btn-danger-custom {
+        background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 0.875rem;
+    }
+    
+    .btn-danger-custom:hover {
+        background: #c82333;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .bulk-actions {
+        background: rgba(13, 71, 134, 0.1);
+        padding: 0.5rem;
+        border-radius: 10px;
+        border: 1px solid rgba(13, 71, 134, 0.2);
+    }
+    
+    .btn-group .btn {
+        margin: 0 0.25rem;
+    }
+    
+    .btn-group .btn:first-child {
+        margin-left: 0;
+    }
+    
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+    
+    /* Table design matching article/event tables */
+    .registrations-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        min-width: 0;
+        table-layout: fixed;
+    }
+    
+    .registrations-table th {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 1rem 0.75rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .registrations-table td {
+        padding: 1rem 0.75rem;
+        border: none;
+        border-bottom: 1px solid #f1f3f4;
+        vertical-align: middle;
+        transition: all 0.3s ease;
+        word-wrap: break-word;
+        max-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .registrations-table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .registration-id {
+        font-weight: 700;
+        color: #0d4786;
+        font-size: 1rem;
+        text-align: center;
+        white-space: nowrap;
+    }
+    
+    .registration-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+    
+    .registration-name {
+        font-weight: 700;
+        color: #0d4786;
+        font-size: 1rem;
+        line-height: 1.3;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .registration-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+        white-space: nowrap;
+    }
+    
+    .registration-email {
+        color: #0d4786;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .registration-email:hover {
+        color: #1a6bb8;
+        text-decoration: underline;
+    }
+    
+    .registration-phone {
+        color: #0d4786;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .registration-phone:hover {
+        color: #1a6bb8;
+        text-decoration: underline;
+    }
+    
+    .registration-date {
+        text-align: center;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .registration-date .date {
+        color: #0d4786;
+        font-size: 1.1rem;
+    }
+    
+    .registration-date .time {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        text-align: center;
+        white-space: nowrap;
+    }
+    
+    .status-pending {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+    }
+    
+    .status-confirmed {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+    }
+    
+    .status-cancelled {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+    }
+    
+    .registration-actions {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        text-decoration: none;
+    }
+    
+    .action-btn.view {
+        background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+        color: white;
+    }
+    
+    .no-registrations {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .no-registrations i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .filters-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem;
+        border-bottom: 2px solid #e9ecef;
+        box-sizing: border-box;
+    }
+    
+    .filters-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    
+    .filters-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .filter-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .filter-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+    
+    .filter-control:focus {
+        border-color: #0d4786;
+        box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25);
+    }
+    
+    .pagination-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding: 2rem;
+        flex-wrap: wrap;
+        box-sizing: border-box;
+    }
+    
+    .page-info {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+    
+    /* Custom Modal Styles */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+    }
+    
+    .custom-modal-content {
+        background: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .custom-modal-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px 15px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .custom-modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .custom-modal-close {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        line-height: 1;
+    }
+    
+    .custom-modal-close:hover {
+        opacity: 0.8;
+    }
+    
+    .custom-modal-body {
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .custom-modal-message {
+        font-size: 1.1rem;
+        color: #333;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+    
+    .custom-modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .custom-modal-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 120px;
+    }
+    
+    .custom-modal-btn.confirm {
+        background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+        color: white;
+    }
+    
+    .custom-modal-btn.confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+    }
+    
+    .custom-modal-btn.cancel {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .custom-modal-btn.cancel:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+    
+    /* Custom Modal Styles */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+    }
+    
+    .custom-modal-content {
+        background: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .custom-modal-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px 15px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .custom-modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .custom-modal-close {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        line-height: 1;
+    }
+    
+    .custom-modal-close:hover {
+        opacity: 0.8;
+    }
+    
+    .custom-modal-body {
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .custom-modal-message {
+        font-size: 1.1rem;
+        color: #333;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+    
+    .custom-modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .custom-modal-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 120px;
+    }
+    
+    .custom-modal-btn.confirm {
+        background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+        color: white;
+    }
+    
+    .custom-modal-btn.confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+    }
+    
+    .custom-modal-btn.cancel {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .custom-modal-btn.cancel:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+    
+    /* Responsive design */
+    @media (max-width: 1200px) {
+        .filters-form {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+    }
+    
+    @media (max-width: 992px) {
+        .registrations-table {
+            font-size: 0.9rem;
+        }
+        
+        .registrations-table th,
+        .registrations-table td {
+            padding: 0.75rem 0.5rem;
+        }
+        
+        .filters-form {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .form-header {
+            padding: 1.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-header h1 {
+            font-size: 2rem;
+        }
+        
+        .form-header h3 {
+            font-size: 1.2rem;
+        }
+        
+        .registrations-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .registrations-table {
+            font-size: 0.875rem;
+        }
+        
+        .registrations-table th,
+        .registrations-table td {
+            padding: 0.75rem 0.5rem;
+        }
+        
+        .filters-form {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+        
+        .filters-section {
+            padding: 1.5rem;
+        }
+        
+        /* Masquer les colonnes Contact, Téléphone, Date et Statut sur mobile */
+        .registrations-table th:nth-child(4),
+        .registrations-table td:nth-child(4),
+        .registrations-table th:nth-child(5),
+        .registrations-table td:nth-child(5),
+        .registrations-table th:nth-child(6),
+        .registrations-table td:nth-child(6),
+        .registrations-table th:nth-child(7),
+        .registrations-table td:nth-child(7) {
+            display: none;
+        }
+        
+        .registration-actions {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            font-size: 0.8rem;
+        }
+        
+        .pagination-section {
+            padding: 1.5rem;
+            gap: 0.5rem;
+        }
+        
+        .pagination-section .btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Ajuster les largeurs des colonnes restantes sur mobile */
+        .registrations-table th:first-child,
+        .registrations-table td:first-child {
+            width: 60px;
+            min-width: 60px;
+            max-width: 60px;
+        }
+        
+        .registrations-table th:nth-child(2),
+        .registrations-table td:nth-child(2) {
+            width: 80px;
+            min-width: 80px;
+            max-width: 80px;
+        }
+        
+        .registrations-table th:nth-child(3),
+        .registrations-table td:nth-child(3) {
+            min-width: 0;
+            width: auto;
+        }
+        
+        .registrations-table th:last-child,
+        .registrations-table td:last-child {
+            width: 60px;
+            min-width: 60px;
+            max-width: 60px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .form-header {
+            padding: 1rem 0;
+        }
+        
+        .form-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .form-header h3 {
+            font-size: 1rem;
+        }
+        
+        .registrations-header {
+            padding: 1rem;
+        }
+        
+        .registrations-table {
+            font-size: 0.8rem;
+        }
+        
+        .registrations-table th,
+        .registrations-table td {
+            padding: 0.5rem 0.25rem;
+        }
+        
+        .filters-section {
+            padding: 1rem;
+        }
+        
+        .pagination-section {
+            padding: 1rem;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .page-info {
+            text-align: center;
+            order: -1;
+        }
+        
+        /* Ajuster encore plus les largeurs sur très petit écran */
+        .registrations-table th:first-child,
+        .registrations-table td:first-child {
+            width: 50px;
+            min-width: 50px;
+            max-width: 50px;
+        }
+        
+        .registrations-table th:nth-child(2),
+        .registrations-table td:nth-child(2) {
+            width: 60px;
+            min-width: 60px;
+            max-width: 60px;
+        }
+        
+        .registrations-table th:last-child,
+        .registrations-table td:last-child {
+            width: 50px;
+            min-width: 50px;
+            max-width: 50px;
+        }
+        
+        .registration-id {
+            font-size: 0.8rem;
+        }
+        
+        .registration-name {
+            font-size: 0.8rem;
+        }
+        
+        .registration-meta {
+            font-size: 0.7rem;
+        }
+        
+        .custom-modal-content {
+            width: 95%;
+            margin: 10% auto;
+        }
+        
+        .custom-modal-body {
+            padding: 1.5rem;
+        }
+        
+        .custom-modal-actions {
+            flex-direction: column;
+        }
+        
+        .custom-modal-btn {
+            min-width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="form-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-3">
+                    <i class="fas fa-users me-3"></i>
+                    {% trans "Liste des inscriptions" %}
+                </h1>
+                <h3 class="mb-0">{{ event.title }}</h3>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'content_management:event_registration_form_manage' event.pk %}" class="back-link">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    {% trans "Retour à la gestion" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="registrations-container">
+        <div class="registrations-header">
+            <h4 class="registrations-title">
+                <i class="fas fa-list me-2"></i>
+                {% trans "Inscriptions reçues" %}
+            </h4>
+            
+            <div class="d-flex flex-wrap gap-2">
+                <!-- Actions en lot -->
+                <div class="bulk-actions me-3" id="bulkActions" style="display: none;">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-success-custom btn-sm" onclick="bulkAction('confirm')">
+                            <i class="fas fa-check me-1"></i>
+                            {% trans "Confirmer" %}
+                        </button>
+                        <button type="button" class="btn btn-warning-custom btn-sm" onclick="bulkAction('pending')">
+                            <i class="fas fa-clock me-1"></i>
+                            {% trans "En attente" %}
+                        </button>
+                        <button type="button" class="btn btn-danger-custom btn-sm" onclick="bulkAction('cancel')">
+                            <i class="fas fa-times me-1"></i>
+                            {% trans "Annuler" %}
+                        </button>
+                        <button type="button" class="btn btn-danger-custom btn-sm" onclick="bulkAction('delete')">
+                            <i class="fas fa-trash me-1"></i>
+                            {% trans "Supprimer" %}
+                        </button>
+                    </div>
+                </div>
+                
+                <a href="{% url 'content_management:event_registrations_export' event.pk %}" class="btn btn-primary-custom me-2">
+                    <i class="fas fa-download me-2"></i>
+                    {% trans "Exporter (Excel)" %}
+                </a>
+                
+                <a href="{% url 'sfront:event_registration_public' event.slug %}" target="_blank" class="btn btn-secondary-custom">
+                    <i class="fas fa-external-link-alt me-2"></i>
+                    {% trans "Voir le formulaire" %}
+                </a>
+            </div>
+        </div>
+        
+        <!-- Filtres -->
+        <div class="filters-section">
+            <h5 class="filters-title">
+                <i class="fas fa-filter me-2"></i>
+                {% trans "Filtres" %}
+            </h5>
+            
+            <form method="get" class="filters-form">
+                <div class="filter-group">
+                    <label for="status" class="filter-label">{% trans "Statut" %}</label>
+                    <select name="status" id="status" class="filter-control">
+                        <option value="">{% trans "Tous les statuts" %}</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>
+                            {% trans "En attente" %}
+                        </option>
+                        <option value="confirmed" {% if request.GET.status == 'confirmed' %}selected{% endif %}>
+                            {% trans "Confirmée" %}
+                        </option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>
+                            {% trans "Annulée" %}
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="search" class="filter-label">{% trans "Recherche" %}</label>
+                    <input type="text" name="search" id="search" class="filter-control" 
+                           placeholder="{% trans 'Nom, email...' %}" 
+                           value="{{ request.GET.search|default:'' }}">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="date_from" class="filter-label">{% trans "Date de début" %}</label>
+                    <input type="date" name="date_from" id="date_from" class="filter-control"
+                           value="{{ request.GET.date_from|default:'' }}">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="date_to" class="filter-label">{% trans "Date de fin" %}</label>
+                    <input type="date" name="date_to" id="date_to" class="filter-control"
+                           value="{{ request.GET.date_to|default:'' }}">
+                </div>
+                
+                <div class="filter-group">
+                    <button type="submit" class="btn btn-primary-custom">
+                        <i class="fas fa-search me-2"></i>
+                        {% trans "Filtrer" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Tableau des inscriptions -->
+        {% if registrations %}
+            <div class="table-responsive">
+                <table class="registrations-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll" class="form-check-input" onchange="toggleSelectAll()">
+                            </th>
+                            <th>{% trans "ID" %}</th>
+                            <th>{% trans "Participant" %}</th>
+                            <th>{% trans "Contact" %}</th>
+                            <th>{% trans "Téléphone" %}</th>
+                            <th>{% trans "Date d'inscription" %}</th>
+                            <th>{% trans "Statut" %}</th>
+                            <th>{% trans "Détails" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registration in registrations %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="registration_ids" value="{{ registration.pk }}" 
+                                       class="form-check-input registration-checkbox" onchange="updateBulkActions()">
+                            </td>
+                            <td>
+                                <div class="registration-id">{{ registration.registration_id }}</div>
+                            </td>
+                            <td>
+                                <div class="registration-info">
+                                    <div class="registration-name">{{ registration.first_name }} {{ registration.last_name }}</div>
+                                    <div class="registration-meta">
+                                        <i class="fas fa-user me-1"></i>{% trans "Participant" %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="mailto:{{ registration.email }}" class="registration-email">{{ registration.email }}</a>
+                            </td>
+                            <td>
+                                {% if registration.phone %}
+                                    <a href="tel:{{ registration.phone }}" class="registration-phone">{{ registration.phone }}</a>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="registration-date">
+                                    <div class="date">{{ registration.registration_date|date:"d/m/Y" }}</div>
+                                    <div class="time">{{ registration.registration_date|date:"H:i" }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge status-{{ registration.status }}">
+                                    {% if registration.status == 'pending' %}
+                                        {% trans "En attente" %}
+                                    {% elif registration.status == 'confirmed' %}
+                                        {% trans "Confirmée" %}
+                                    {% elif registration.status == 'cancelled' %}
+                                        {% trans "Annulée" %}
+                                    {% else %}
+                                        {{ registration.get_status_display }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="registration-actions">
+                                    <a href="{% url 'content_management:event_registration_detail' event.pk registration.pk %}" 
+                                       class="action-btn view" title="{% trans 'Voir les détails' %}">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="pagination-section">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}" 
+                       class="btn btn-secondary-custom">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}" 
+                       class="btn btn-secondary-custom">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                {% endif %}
+                
+                <span class="page-info">
+                    {% trans "Page" %} {{ page_obj.number }} {% trans "sur" %} {{ page_obj.paginator.num_pages }}
+                </span>
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}" 
+                       class="btn btn-secondary-custom">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}" 
+                       class="btn btn-secondary-custom">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="no-registrations">
+                <i class="fas fa-users"></i>
+                <h5>{% trans "Aucune inscription trouvée" %}</h5>
+                <p>{% trans "Aucune inscription ne correspond aux critères de recherche." %}</p>
+            </div>
+        {% endif %}
+        
+        <!-- Actions -->
+        <div class="text-center" style="padding: 2rem;">
+            <a href="{% url 'content_management:event_registration_form_manage' event.pk %}" class="btn btn-secondary-custom">
+                <i class="fas fa-arrow-left me-2"></i>
+                {% trans "Retour à la gestion" %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- CSRF Token pour les requêtes AJAX -->
+<form id="csrfForm" style="display: none;">{% csrf_token %}</form>
+
+<!-- Modal de confirmation personnalisé -->
+<div id="customConfirmModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h5 class="custom-modal-title" id="confirmModalTitle">{% trans "Confirmation" %}</h5>
+            <button type="button" class="custom-modal-close" onclick="closeCustomModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            <p class="custom-modal-message" id="confirmModalMessage"></p>
+            <div class="custom-modal-actions">
+                <button type="button" class="custom-modal-btn confirm" id="confirmModalConfirm">
+                    {% trans "Confirmer" %}
+                </button>
+                <button type="button" class="custom-modal-btn cancel" onclick="closeCustomModal()">
+                    {% trans "Annuler" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let selectedRegistrations = new Set();
+let currentBulkAction = null;
+
+// Raccourcis clavier
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey || e.metaKey) {
+        switch(e.key) {
+            case 'f':
+                e.preventDefault();
+                document.getElementById('search').focus();
+                break;
+            case 'e':
+                e.preventDefault();
+                window.location.href = "{% url 'content_management:event_registrations_export' event.pk %}";
+                break;
+            case 'Escape':
+                e.preventDefault();
+                window.location.href = "{% url 'content_management:event_registration_form_manage' event.pk %}";
+                break;
+        }
+    }
+});
+
+// Sélectionner/désélectionner toutes les inscriptions
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.registration-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+        if (selectAllCheckbox.checked) {
+            selectedRegistrations.add(checkbox.value);
+        } else {
+            selectedRegistrations.delete(checkbox.value);
+        }
+    });
+    
+    updateBulkActions();
+}
+
+// Mettre à jour l'affichage des actions en lot
+function updateBulkActions() {
+    const checkboxes = document.querySelectorAll('.registration-checkbox:checked');
+    const bulkActions = document.getElementById('bulkActions');
+    
+    selectedRegistrations.clear();
+    checkboxes.forEach(checkbox => {
+        selectedRegistrations.add(checkbox.value);
+    });
+    
+    if (selectedRegistrations.size > 0) {
+        bulkActions.style.display = 'block';
+    } else {
+        bulkActions.style.display = 'none';
+    }
+    
+    // Mettre à jour la case à cocher "Sélectionner tout"
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const totalCheckboxes = document.querySelectorAll('.registration-checkbox');
+    selectAllCheckbox.checked = selectedRegistrations.size === totalCheckboxes.length;
+    selectAllCheckbox.indeterminate = selectedRegistrations.size > 0 && selectedRegistrations.size < totalCheckboxes.length;
+}
+
+// Afficher le modal de confirmation personnalisé
+function showCustomConfirmModal(action, count) {
+    const actionText = {
+        'confirm': 'confirmer',
+        'cancel': 'annuler',
+        'pending': 'remettre en attente',
+        'delete': 'supprimer'
+    };
+    
+    const actionDisplay = {
+        'confirm': '{% trans "Confirmer" %}',
+        'cancel': '{% trans "Annuler" %}',
+        'pending': '{% trans "Remettre en attente" %}',
+        'delete': '{% trans "Supprimer" %}'
+    };
+    
+    const messageText = {
+        'confirm': `Êtes-vous sûr de vouloir confirmer ${count} inscription(s) ?`,
+        'cancel': `Êtes-vous sûr de vouloir annuler ${count} inscription(s) ?`,
+        'pending': `Êtes-vous sûr de vouloir remettre en attente ${count} inscription(s) ?`,
+        'delete': `Êtes-vous sûr de vouloir supprimer définitivement ${count} inscription(s) ? Cette action est irréversible.`
+    };
+    
+    const modalTitle = document.getElementById('confirmModalTitle');
+    const modalMessage = document.getElementById('confirmModalMessage');
+    const modalConfirm = document.getElementById('confirmModalConfirm');
+    
+    modalTitle.textContent = actionDisplay[action];
+    modalMessage.textContent = messageText[action];
+    modalConfirm.textContent = actionDisplay[action];
+    
+    // Changer la couleur du bouton de confirmation selon l'action
+    modalConfirm.className = 'custom-modal-btn confirm';
+    if (action === 'delete') {
+        modalConfirm.style.background = 'linear-gradient(135deg, #dc3545 0%, #e74c3c 100%)';
+    } else if (action === 'confirm') {
+        modalConfirm.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+    } else if (action === 'cancel') {
+        modalConfirm.style.background = 'linear-gradient(135deg, #dc3545 0%, #e74c3c 100%)';
+    } else {
+        modalConfirm.style.background = 'linear-gradient(135deg, #ffc107 0%, #ffb84d 100%)';
+        modalConfirm.style.color = '#212529';
+    }
+    
+    currentBulkAction = action;
+    document.getElementById('customConfirmModal').style.display = 'block';
+}
+
+// Fermer le modal personnalisé
+function closeCustomModal() {
+    document.getElementById('customConfirmModal').style.display = 'none';
+    currentBulkAction = null;
+}
+
+// Action en lot
+function bulkAction(action) {
+    if (selectedRegistrations.size === 0) {
+        showCustomConfirmModal('error', 0);
+        return;
+    }
+    
+    showCustomConfirmModal(action, selectedRegistrations.size);
+}
+
+// Exécuter l'action en lot après confirmation
+function executeBulkAction() {
+    if (!currentBulkAction || selectedRegistrations.size === 0) {
+        closeCustomModal();
+        return;
+    }
+    
+    // Créer le formulaire pour l'action en lot
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{% url 'content_management:event_registrations_bulk_action' event.pk %}";
+    
+    // Ajouter le token CSRF
+    const csrfToken = document.querySelector('#csrfForm [name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Ajouter l'action
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = currentBulkAction;
+    form.appendChild(actionInput);
+    
+    // Ajouter les IDs des inscriptions sélectionnées
+    selectedRegistrations.forEach(id => {
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'registration_ids';
+        idInput.value = id;
+        form.appendChild(idInput);
+    });
+    
+    // Fermer le modal
+    closeCustomModal();
+    
+    // Soumettre le formulaire
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Initialiser les actions en lot
+document.addEventListener('DOMContentLoaded', function() {
+    updateBulkActions();
+    
+    // Ajouter l'écouteur d'événement pour le bouton de confirmation
+    document.getElementById('confirmModalConfirm').addEventListener('click', executeBulkAction);
+    
+    // Fermer le modal en cliquant à l'extérieur
+    document.getElementById('customConfirmModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeCustomModal();
+        }
+    });
+    
+    // Fermer le modal avec la touche Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeCustomModal();
+        }
+    });
+});
+</script>
+{% endblock %}

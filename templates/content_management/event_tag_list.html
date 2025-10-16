@@ -1,0 +1,317 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des tags d'événements{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tag-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .tag-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .tag-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .tag-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .search-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0d4786;
+    }
+    
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    
+    .tag-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .tag-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="tag-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="fas fa-tags me-3"></i>Gestion des tags d'événements
+                </h1>
+                <p class="mb-0 opacity-75">Organisez et catégorisez vos événements scientifiques avec des tags personnalisés</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'content_management:event_tag_create' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>Nouveau tag
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ tags.count }}</div>
+                <div class="stats-label">Total des tags</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ tags_with_events|default:0 }}</div>
+                <div class="stats-label">Tags utilisés</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ recent_tags|default:0 }}</div>
+                <div class="stats-label">Nouveaux ce mois</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ popular_tags|default:0 }}</div>
+                <div class="stats-label">Tags populaires</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recherche et filtres -->
+    <div class="search-section">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un tag...">
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn btn-outline-secondary" id="clearSearch">
+                    <i class="fas fa-times me-2"></i>Effacer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des tags -->
+    <div class="row" id="tagsContainer">
+        {% if tags %}
+            {% for tag in tags %}
+            <div class="col-lg-4 col-md-6 mb-4 tag-item" data-tag-name="{{ tag.name|lower }}">
+                <div class="card tag-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="tag-color" style="background-color: {{ tag.color }};"></div>
+                                <h5 class="card-title mb-0">{{ tag.name }}</h5>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'content_management:event_tag_edit' tag.pk %}">
+                                            <i class="fas fa-edit me-2"></i>Modifier
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'content_management:event_tag_delete' tag.pk %}">
+                                            <i class="fas fa-trash me-2"></i>Supprimer
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        {% if tag.description %}
+                        <p class="tag-description">{{ tag.description }}</p>
+                        {% endif %}
+                        
+                        <div class="tag-actions mt-3">
+                            <a href="{% url 'content_management:event_tag_edit' tag.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </a>
+                            <a href="{% url 'content_management:event_tag_delete' tag.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash me-1"></i>Supprimer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-tags"></i>
+                    <h3>Aucun tag créé</h3>
+                    <p class="mb-4">Commencez par créer votre premier tag pour organiser vos événements</p>
+                    <a href="{% url 'content_management:event_tag_create' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>Créer un tag
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const tagsContainer = document.getElementById('tagsContainer');
+    const tagItems = document.querySelectorAll('.tag-item');
+
+    // Fonction de recherche
+    function performSearch() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        tagItems.forEach(item => {
+            const tagName = item.getAttribute('data-tag-name');
+            if (tagName.includes(searchTerm)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Afficher/masquer le message "aucun résultat"
+        const visibleItems = Array.from(tagItems).filter(item => item.style.display !== 'none');
+        if (visibleItems.length === 0 && searchTerm !== '') {
+            showNoResultsMessage();
+        } else {
+            hideNoResultsMessage();
+        }
+    }
+
+    // Afficher le message "aucun résultat"
+    function showNoResultsMessage() {
+        if (!document.getElementById('noResultsMessage')) {
+            const noResultsDiv = document.createElement('div');
+            noResultsDiv.className = 'col-12';
+            noResultsDiv.id = 'noResultsMessage';
+            noResultsDiv.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>Aucun tag trouvé</h3>
+                    <p>Aucun tag ne correspond à votre recherche "{{ searchInput.value }}"</p>
+                </div>
+            `;
+            tagsContainer.appendChild(noResultsDiv);
+        }
+    }
+
+    // Masquer le message "aucun résultat"
+    function hideNoResultsMessage() {
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        if (noResultsMessage) {
+            noResultsMessage.remove();
+        }
+    }
+
+    // Événements
+    searchInput.addEventListener('input', performSearch);
+    
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        performSearch();
+        searchInput.focus();
+    });
+
+    // Recherche avec la touche Entrée
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + F pour focus sur la recherche
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        }
+        
+        // Échap pour effacer la recherche
+        if (e.key === 'Escape') {
+            searchInput.value = '';
+            performSearch();
+            searchInput.blur();
+        }
+    });
+});
+</script>
+{% endblock %}

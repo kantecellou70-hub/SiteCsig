@@ -1,0 +1,420 @@
+{% extends 'oauth/base.html' %}
+{% load static %}
+
+{% block title %}Profil - CSIG{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-card-header text-center">
+        <h2 class="auth-title">
+            <i class="fas fa-user-edit me-2"></i>Mon profil
+        </h2>
+        <p class="auth-description">Gérez vos informations personnelles et votre mot de passe</p>
+    </div>
+    
+    <div class="auth-card-body">
+        <!-- Informations personnelles -->
+        <form method="post" class="auth-form" data-validate>
+            {% csrf_token %}
+            
+            <h5 class="mb-3">
+                <i class="fas fa-user me-2"></i>Informations personnelles
+            </h5>
+            
+            <div class="row">
+                <!-- Prénom -->
+                <div class="col-md-6 mb-3">
+                    <label for="first_name" class="form-label">
+                        <i class="fas fa-user me-2"></i>Prénom
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" name="first_name" id="first_name" class="form-control" 
+                               value="{{ user.first_name }}" placeholder="Votre prénom">
+                    </div>
+                </div>
+                
+                <!-- Nom -->
+                <div class="col-md-6 mb-3">
+                    <label for="last_name" class="form-label">
+                        <i class="fas fa-user me-2"></i>Nom
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" name="last_name" id="last_name" class="form-control" 
+                               value="{{ user.last_name }}" placeholder="Votre nom">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email -->
+            <div class="mb-3">
+                <label for="email" class="form-label">
+                    <i class="fas fa-envelope me-2"></i>Adresse email
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                    <input type="email" name="email" id="email" class="form-control" 
+                           value="{{ user.email }}" placeholder="votre.email@exemple.com" required>
+                </div>
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>Votre email est utilisé pour la connexion et les notifications.
+                </small>
+            </div>
+            
+            <!-- Bouton de mise à jour -->
+            <div class="mb-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-save me-2"></i>Mettre à jour le profil
+                </button>
+            </div>
+        </form>
+        
+        <hr class="my-4">
+        
+        <!-- Changement de mot de passe -->
+        <form method="post" class="auth-form" data-validate>
+            {% csrf_token %}
+            
+            <h5 class="mb-3">
+                <i class="fas fa-lock me-2"></i>Changer le mot de passe
+            </h5>
+            
+            <!-- Mot de passe actuel -->
+            <div class="mb-3">
+                <label for="current_password" class="form-label">
+                    <i class="fas fa-key me-2"></i>Mot de passe actuel
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-key"></i>
+                    </span>
+                    <input type="password" name="current_password" id="current_password" 
+                           class="form-control" placeholder="Votre mot de passe actuel">
+                    <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>Requis pour confirmer le changement de mot de passe.
+                </small>
+            </div>
+            
+            <!-- Nouveau mot de passe -->
+            <div class="mb-3">
+                <label for="new_password" class="form-label">
+                    <i class="fas fa-lock me-2"></i>Nouveau mot de passe
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" name="new_password" id="new_password" 
+                           class="form-control" placeholder="Nouveau mot de passe">
+                    <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle me-1"></i>Minimum 8 caractères, incluant lettres, chiffres et symboles.
+                </small>
+                
+                <!-- Indicateur de force du mot de passe -->
+                <div class="password-strength mt-2" id="passwordStrength" style="display: none;">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Force du mot de passe:</small>
+                        <small class="strength-text"></small>
+                    </div>
+                    <div class="progress mt-1" style="height: 4px;">
+                        <div class="password-strength-bar progress-bar" role="progressbar"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Confirmation du nouveau mot de passe -->
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">
+                    <i class="fas fa-lock me-2"></i>Confirmer le nouveau mot de passe
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" name="confirm_password" id="confirm_password" 
+                           class="form-control" placeholder="Confirmer le nouveau mot de passe">
+                    <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="invalid-feedback" id="passwordMismatch" style="display: none;">
+                    <i class="fas fa-exclamation-circle me-1"></i>Les mots de passe ne correspondent pas.
+                </div>
+            </div>
+            
+            <!-- Bouton de changement de mot de passe -->
+            <div class="mb-3">
+                <button type="submit" class="btn btn-warning w-100" id="changePasswordBtn" disabled>
+                    <i class="fas fa-key me-2"></i>Changer le mot de passe
+                </button>
+            </div>
+        </form>
+        
+        <!-- Informations du compte -->
+        <hr class="my-4">
+        
+        <div class="account-info">
+            <h5 class="mb-3">
+                <i class="fas fa-info-circle me-2"></i>Informations du compte
+            </h5>
+            
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <strong><i class="fas fa-user me-2"></i>Nom d'utilisateur :</strong>
+                    <span class="text-muted">{{ user.username }}</span>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <strong><i class="fas fa-calendar me-2"></i>Membre depuis :</strong>
+                    <span class="text-muted">{{ user.date_joined|date:"d/m/Y" }}</span>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <strong><i class="fas fa-clock me-2"></i>Dernière connexion :</strong>
+                    <span class="text-muted">{{ user.last_login|date:"d/m/Y H:i"|default:"Jamais" }}</span>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <strong><i class="fas fa-shield-alt me-2"></i>Statut :</strong>
+                    <span class="badge bg-success">Actif</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="auth-card-footer text-center">
+        <p class="mb-0">
+            <a href="{% url 'content_management:dashboard' %}" class="auth-link">
+                <i class="fas fa-tachometer-alt me-1"></i>Retour au tableau de bord
+            </a>
+            <span class="mx-2">•</span>
+            <a href="{% url 'oauth:logout' %}" class="auth-link text-danger">
+                <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Toggle password visibility
+    $('#toggleCurrentPassword, #toggleNewPassword, #toggleConfirmPassword').on('click', function() {
+        const passwordField = $(this).siblings('input[type="password"], input[type="text"]');
+        const icon = $(this).find('i');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            passwordField.attr('type', 'password');
+            icon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+    
+    // Validation du nouveau mot de passe
+    $('#new_password').on('input', function() {
+        const password = $(this).val();
+        if (password.length > 0) {
+            const strength = calculatePasswordStrength(password);
+            updatePasswordStrengthIndicator(strength);
+            $('#passwordStrength').show();
+        } else {
+            $('#passwordStrength').hide();
+        }
+        validatePasswordChange();
+    });
+    
+    // Validation de la confirmation
+    $('#confirm_password').on('input', function() {
+        validatePasswordChange();
+    });
+    
+    // Validation du mot de passe actuel
+    $('#current_password').on('input', function() {
+        validatePasswordChange();
+    });
+    
+    // Validation en temps réel
+    $('input[required]').on('blur', function() {
+        validateField(this);
+    });
+    
+    $('input[required]').on('input', function() {
+        clearFieldValidation(this);
+    });
+});
+
+// Calculer la force du mot de passe
+function calculatePasswordStrength(password) {
+    let score = 0;
+    
+    if (password.length >= 8) score++;
+    if (password.match(/[a-z]/)) score++;
+    if (password.match(/[A-Z]/)) score++;
+    if (password.match(/[0-9]/)) score++;
+    if (password.match(/[^a-zA-Z0-9]/)) score++;
+    
+    if (score <= 2) return 'weak';
+    if (score <= 3) return 'medium';
+    return 'strong';
+}
+
+// Mettre à jour l'indicateur de force
+function updatePasswordStrengthIndicator(strength) {
+    const strengthBar = $('.password-strength-bar');
+    const strengthText = $('.strength-text');
+    
+    strengthBar.removeClass('bg-danger bg-warning bg-success');
+    strengthText.removeClass('text-danger text-warning text-success');
+    
+    switch (strength) {
+        case 'weak':
+            strengthBar.addClass('bg-danger').css('width', '33%');
+            strengthText.addClass('text-danger').text('Faible');
+            break;
+        case 'medium':
+            strengthBar.addClass('bg-warning').css('width', '66%');
+            strengthText.addClass('text-warning').text('Moyenne');
+            break;
+        case 'strong':
+            strengthBar.addClass('bg-success').css('width', '100%');
+            strengthText.addClass('text-success').text('Forte');
+            break;
+    }
+}
+
+// Valider le changement de mot de passe
+function validatePasswordChange() {
+    const currentPassword = $('#current_password').val();
+    const newPassword = $('#new_password').val();
+    const confirmPassword = $('#confirm_password').val();
+    const changePasswordBtn = $('#changePasswordBtn');
+    
+    let isValid = true;
+    
+    // Vérifier que tous les champs sont remplis
+    if (newPassword || confirmPassword || currentPassword) {
+        if (!currentPassword) {
+            isValid = false;
+        }
+        if (!newPassword) {
+            isValid = false;
+        }
+        if (!confirmPassword) {
+            isValid = false;
+        }
+        
+        // Vérifier que les mots de passe correspondent
+        if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+            $('#passwordMismatch').show();
+            isValid = false;
+        } else {
+            $('#passwordMismatch').hide();
+        }
+        
+        // Vérifier la longueur du nouveau mot de passe
+        if (newPassword && newPassword.length < 8) {
+            isValid = false;
+        }
+    }
+    
+    changePasswordBtn.prop('disabled', !isValid);
+}
+
+// Validation des champs
+function validateField(field) {
+    const value = field.value.trim();
+    let isValid = true;
+    let errorMessage = '';
+    
+    if (field.hasAttribute('required') && !value) {
+        isValid = false;
+        errorMessage = 'Ce champ est requis';
+    }
+    
+    if (isValid && value) {
+        if (field.type === 'email' && !isValidEmail(value)) {
+            isValid = false;
+            errorMessage = 'Format d\'email invalide';
+        }
+    }
+    
+    if (isValid) {
+        markFieldAsValid(field);
+    } else {
+        markFieldAsInvalid(field, errorMessage);
+    }
+    
+    return isValid;
+}
+
+// Marquer un champ comme valide
+function markFieldAsValid(field) {
+    field.classList.remove('is-invalid');
+    field.classList.add('is-valid');
+    
+    // Supprimer les messages d'erreur
+    const errorDiv = field.parentNode.querySelector('.invalid-feedback');
+    if (errorDiv) {
+        errorDiv.remove();
+    }
+}
+
+// Marquer un champ comme invalide
+function markFieldAsInvalid(field, message) {
+    field.classList.remove('is-valid');
+    field.classList.add('is-invalid');
+    
+    // Supprimer l'ancien message d'erreur
+    const existingError = field.parentNode.querySelector('.invalid-feedback');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    // Ajouter le nouveau message d'erreur
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'invalid-feedback';
+    errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i>${message}`;
+    
+    // Insérer après le groupe d'input
+    const inputGroup = field.closest('.input-group') || field.parentNode;
+    inputGroup.parentNode.insertBefore(errorDiv, inputGroup.nextSibling);
+}
+
+// Effacer la validation d'un champ
+function clearFieldValidation(field) {
+    field.classList.remove('is-valid', 'is-invalid');
+    
+    // Supprimer les messages de validation
+    const errorDiv = field.parentNode.querySelector('.invalid-feedback');
+    if (errorDiv) {
+        errorDiv.remove();
+    }
+    
+    const validDiv = field.parentNode.querySelector('.valid-feedback');
+    if (validDiv) {
+        validDiv.remove();
+    }
+}
+
+// Validation email
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+</script>
+{% endblock %}

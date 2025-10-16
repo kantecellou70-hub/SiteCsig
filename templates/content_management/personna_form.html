@@ -1,0 +1,412 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}
+    {% if is_create %}Nouveau personna{% else %}Modifier {{ personna.name }}{% endif %}
+{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:personna_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux personnas
+    </a>
+    {% if not is_create %}
+        <a href="{% url 'content_management:personna_detail' personna.slug %}" class="btn btn-outline-primary">
+            <i class="fas fa-eye me-2"></i>Voir le personna
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="personna-form-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>
+                        <i class="fas fa-user-tie me-2"></i>
+                        {% if is_create %}Nouveau personna{% else %}Modifier {{ personna.name }}{% endif %}
+                    </h3>
+                    <p class="text-muted mb-0">
+                        {% if is_create %}
+                            Créez un nouveau personna pour organiser vos blogs
+                        {% else %}
+                            Modifiez les informations du personna
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="section-body">
+                    <!-- Messages Django -->
+                    {% if messages %}
+                        <div class="messages-container mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" class="personna-form">
+                        {% csrf_token %}
+
+                        <!-- Nom -->
+                        <div class="form-group">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Nom *
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Le nom sera automatiquement converti en slug pour l'URL
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Description *
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Décrivez brièvement ce personna et son rôle
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Statut actif -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        {{ form.is_active }}
+                                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                            <i class="fas fa-check-circle me-2"></i>Personna actif
+                                        </label>
+                                    </div>
+                                    {% if form.is_active.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.is_active.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Un personna actif peut être associé à des blogs
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mis en avant -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        {{ form.featured }}
+                                        <label class="form-check-label" for="{{ form.featured.id_for_label }}">
+                                            <i class="fas fa-star me-2"></i>Mis en avant
+                                        </label>
+                                    </div>
+                                    {% if form.featured.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.featured.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Afficher ce personna en priorité
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>
+                                {% if is_create %}Créer le personna{% else %}Mettre à jour{% endif %}
+                            </button>
+                            <a href="{% url 'content_management:personna_list' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Conseils -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-lightbulb me-2"></i>Conseils</h3>
+                </div>
+                <div class="section-body">
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <i class="fas fa-user me-2 text-primary"></i>
+                            <div>
+                                <strong>Nom clair</strong>
+                                <p>Choisissez un nom simple et descriptif</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <i class="fas fa-align-left me-2 text-success"></i>
+                            <div>
+                                <strong>Description concise</strong>
+                                <p>Expliquez le rôle en quelques phrases</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <i class="fas fa-link me-2 text-warning"></i>
+                            <div>
+                                <strong>Slug automatique</strong>
+                                <p>L'URL sera générée automatiquement</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exemples -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Exemples</h3>
+                </div>
+                <div class="section-body">
+                    <div class="examples-list">
+                        <div class="example-item">
+                            <div class="example-header">
+                                <i class="fas fa-user-tie"></i>
+                                <h6>Journaliste</h6>
+                            </div>
+                            <p>Spécialiste de l'information et de l'actualité</p>
+                        </div>
+
+                        <div class="example-item">
+                            <div class="example-header">
+                                <i class="fas fa-microscope"></i>
+                                <h6>Chercheur</h6>
+                            </div>
+                            <p>Expert en recherche scientifique et académique</p>
+                        </div>
+
+                        <div class="example-item">
+                            <div class="example-header">
+                                <i class="fas fa-lightbulb"></i>
+                                <h6>Expert</h6>
+                            </div>
+                            <p>Spécialiste reconnu dans un domaine particulier</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.personna-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.personna-form {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--box-shadow);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control, .form-select {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-text {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.invalid-feedback {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-check {
+    margin-bottom: 0.5rem;
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Conseils */
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tip-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.tip-item i {
+    font-size: 1.25rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+.tip-item strong {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.tip-item p {
+    color: var(--gray-600);
+    margin: 0;
+    font-size: 0.75rem;
+}
+
+/* Exemples */
+.examples-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.example-item {
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.example-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.example-header i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.example-header h6 {
+    color: var(--gray-800);
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.example-item p {
+    color: var(--gray-600);
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .personna-form {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+    
+    .tip-item, .example-item {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .personna-form {
+        padding: 0.75rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

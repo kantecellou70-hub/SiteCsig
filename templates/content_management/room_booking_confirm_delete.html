@@ -1,0 +1,373 @@
+{% extends 'content_management/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Supprimer la réservation" %} - {{ booking.event_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .delete-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+    }
+    
+    .delete-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+    }
+    
+    .delete-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+    
+    .warning-section {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .warning-icon {
+        font-size: 2rem;
+        color: #856404;
+        margin-bottom: 1rem;
+    }
+    
+    .warning-title {
+        color: #856404;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .warning-text {
+        color: #856404;
+        margin-bottom: 0;
+    }
+    
+    .booking-summary {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #dc3545;
+    }
+    
+    .summary-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+    
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .summary-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .summary-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .summary-value {
+        color: #495057;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    .impact-section {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .impact-title {
+        color: #721c24;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .impact-list {
+        color: #721c24;
+        margin-bottom: 0;
+    }
+    
+    .impact-list li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .alternatives-section {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .alternatives-title {
+        color: #0c5460;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .alternatives-list {
+        color: #0c5460;
+        margin-bottom: 0;
+    }
+    
+    .alternatives-list li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .confirmation-form {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .confirmation-input {
+        max-width: 300px;
+        margin: 0 auto 1rem;
+    }
+    
+    .confirmation-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #dc3545;
+        margin-bottom: 1rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .delete-header {
+            padding: 1.5rem;
+        }
+        
+        .delete-title {
+            font-size: 1.5rem;
+        }
+        
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête de suppression -->
+    <div class="delete-header">
+        <div class="delete-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h1 class="delete-title">{% trans "Supprimer la réservation" %}</h1>
+        <p class="delete-subtitle">{{ booking.event_title }}</p>
+    </div>
+
+    <!-- Avertissement principal -->
+    <div class="warning-section">
+        <div class="text-center">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="warning-title">{% trans "Attention ! Cette action est irréversible" %}</h3>
+            <p class="warning-text">
+                {% trans "Vous êtes sur le point de supprimer définitivement cette réservation de salle. Cette action ne peut pas être annulée et toutes les données associées seront perdues." %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Résumé de la réservation -->
+    <div class="booking-summary">
+        <h4 class="summary-title">{% trans "Résumé de la réservation à supprimer" %}</h4>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <span class="summary-label">{% trans "Événement" %}</span>
+                <span class="summary-value">{{ booking.event_title }}</span>
+            </div>
+            
+            <div class="summary-item">
+                <span class="summary-label">{% trans "Salle" %}</span>
+                <span class="summary-value">{{ booking.room.name }}</span>
+            </div>
+            
+            <div class="summary-item">
+                <span class="summary-label">{% trans "Organisation" %}</span>
+                <span class="summary-value">{{ booking.organization.name }}</span>
+            </div>
+            
+            <div class="summary-item">
+                <span class="summary-label">{% trans "Date" %}</span>
+                <span class="summary-value">{{ booking.start_time|date:"d/m/Y" }}</span>
+            </div>
+            
+            <div class="summary-item">
+                <span class="summary-label">{% trans "Heure" %}</span>
+                <span class="summary-value">{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</span>
+            </div>
+            
+            <div class="summary-item">
+                <span class="summary-label">{% trans "Prix total" %}</span>
+                <span class="summary-value">{{ booking.total_price|floatformat:0 }} GNF</span>
+            </div>
+            
+            <div class="summary-item">
+                <span class="summary-label">{% trans "Statut" %}</span>
+                <span class="summary-value">{{ booking.get_status_display }}</span>
+            </div>
+            
+            <div class="summary-item">
+                <span class="summary-label">{% trans "Participants" %}</span>
+                <span class="summary-value">{{ booking.attendees_count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Impact de la suppression -->
+    <div class="impact-section">
+        <h4 class="impact-title">{% trans "Impact de cette suppression" %}</h4>
+        <ul class="impact-list">
+            <li>{% trans "La réservation sera définitivement supprimée de la base de données" %}</li>
+            <li>{% trans "Tous les paiements associés seront également supprimés" %}</li>
+            <li>{% trans "L'historique et les notes administrateur seront perdus" %}</li>
+            <li>{% trans "La salle sera libérée pour d'autres réservations" %}</li>
+            <li>{% trans "Aucune notification ne sera envoyée automatiquement" %}</li>
+        </ul>
+    </div>
+
+    <!-- Alternatives recommandées -->
+    <div class="alternatives-section">
+        <h4 class="alternatives-title">{% trans "Alternatives recommandées" %}</h4>
+        <ul class="alternatives-list">
+            <li><strong>{% trans "Désactiver temporairement :" %}</strong> {% trans "Changez le statut en 'Annulée' au lieu de supprimer" %}</li>
+            <li><strong>{% trans "Modifier la réservation :" %}</strong> {% trans "Ajustez les dates ou les détails si nécessaire" %}</li>
+            <li><strong>{% trans "Archiver :" %}</strong> {% trans "Gardez les données pour les rapports et l'historique" %}</li>
+            <li><strong>{% trans "Contacter l'organisation :" %}</strong> {% trans "Vérifiez s'il y a une possibilité de report" %}</li>
+        </ul>
+    </div>
+
+    <!-- Formulaire de confirmation -->
+    <div class="confirmation-form">
+        <h4 class="mb-4">{% trans "Confirmation finale" %}</h4>
+        
+        <div class="confirmation-text">
+            {% trans "Pour confirmer la suppression, tapez" %} <strong>SUPPRIMER</strong>
+        </div>
+        
+        <form method="post" id="deleteForm">
+            {% csrf_token %}
+            <div class="confirmation-input">
+                <input type="text" 
+                       class="form-control form-control-lg text-center" 
+                       id="confirmationText" 
+                       placeholder="SUPPRIMER"
+                       required>
+                <div class="invalid-feedback">
+                    {% trans "Veuillez taper SUPPRIMER pour confirmer" %}
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger btn-lg" id="deleteBtn" disabled>
+                    <i class="fas fa-trash me-2"></i>{% trans "Supprimer définitivement" %}
+                </button>
+                <a href="{% url 'content_management:room_booking_detail' booking.pk %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>{% trans "Annuler et retourner" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmationInput = document.getElementById('confirmationText');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const deleteForm = document.getElementById('deleteForm');
+    
+    // Vérifier la saisie de confirmation
+    confirmationInput.addEventListener('input', function() {
+        if (this.value.trim() === 'SUPPRIMER') {
+            deleteBtn.disabled = false;
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            deleteBtn.disabled = true;
+            this.classList.remove('is-valid');
+            if (this.value.trim() !== '') {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        }
+    });
+    
+    // Confirmation finale avant soumission
+    deleteForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (confirm('{% trans "Êtes-vous ABSOLUMENT sûr de vouloir supprimer cette réservation ? Cette action est irréversible et ne peut pas être annulée." %}')) {
+            this.submit();
+        }
+    });
+    
+    // Focus sur le champ de confirmation
+    confirmationInput.focus();
+});
+</script>
+{% endblock %}

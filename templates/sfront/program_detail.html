@@ -1,0 +1,1061 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}{{ program.title }} - CSIG{% endblock %}
+
+{% block content %}
+<!-- ============================================================================
+   SECTION HERO - PROGRAMME
+   ============================================================================ -->
+<section class="program-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="program-hero-content">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'sfront:home' %}">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'sfront:programs' %}">Programmes</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ program.title }}</li>
+                        </ol>
+                    </nav>
+                    
+                    <div class="program-badges mb-3">
+                        {% if program.level %}
+                            <span class="badge bg-primary me-2">{{ program.get_level_display }}</span>
+                        {% endif %}
+                        {% if program.duration %}
+                            <span class="badge bg-info me-2">{{ program.duration }}</span>
+                        {% endif %}
+                        {% if program.price == 0 %}
+                            <span class="badge bg-success">Gratuit</span>
+                        {% else %}
+                            <span class="badge bg-warning">{{ program.price }} GNF</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h1 class="program-title">{{ program.title }}</h1>
+                    
+                    {% if program.excerpt %}
+                        <p class="program-excerpt">{{ program.excerpt }}</p>
+                    {% endif %}
+                    
+                    <div class="program-actions">
+                        <a href="#program-content" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-play me-2"></i>Découvrir
+                        </a>
+                        {% if program.registration_url %}
+                            <a href="{{ program.registration_url }}" class="btn btn-outline-primary btn-lg" target="_blank">
+                                <i class="fas fa-user-plus me-2"></i>S'inscrire
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="program-hero-image">
+                    {% if program.featured_image %}
+                        <img src="{{ program.featured_image.url }}" alt="{{ program.title }}" class="img-fluid rounded-3 shadow">
+                    {% else %}
+                        <div class="program-placeholder">
+                            <i class="fas fa-graduation-cap fa-4x text-muted"></i>
+                            <p class="mt-3 text-muted">Image du programme</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION CONTENU PRINCIPAL
+   ============================================================================ -->
+<section id="program-content" class="program-content-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Description du programme -->
+                <div class="content-card mb-4">
+                    <h2 class="section-title">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>
+                        Description
+                    </h2>
+                    <div class="program-description">
+                        {{ program.description|safe }}
+                    </div>
+                </div>
+                
+                <!-- Objectifs du programme -->
+                {% if program.objectives %}
+                <div class="content-card mb-4">
+                    <h2 class="section-title">
+                        <i class="fas fa-bullseye me-2 text-primary"></i>
+                        Objectifs
+                    </h2>
+                    <div class="objectives-list">
+                        {{ program.objectives|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Programme détaillé -->
+                {% if program.curriculum %}
+                <div class="content-card mb-4">
+                    <h2 class="section-title">
+                        <i class="fas fa-list-ol me-2 text-primary"></i>
+                        Programme détaillé
+                    </h2>
+                    <div class="curriculum-content">
+                        {{ program.curriculum|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Prérequis -->
+                {% if program.prerequisites %}
+                <div class="content-card mb-4">
+                    <h2 class="section-title">
+                        <i class="fas fa-clipboard-check me-2 text-primary"></i>
+                        Prérequis
+                    </h2>
+                    <div class="prerequisites-content">
+                        {{ program.prerequisites|safe }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Méthodes d'évaluation -->
+                {% if program.evaluation_methods %}
+                <div class="content-card mb-4">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        Méthodes d'évaluation
+                    </h2>
+                    <div class="evaluation-content">
+                        {{ program.evaluation_methods|safe }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Informations pratiques -->
+                <div class="content-card mb-4">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                        Informations pratiques
+                    </h3>
+                    
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-clock me-2 text-muted"></i>Durée :</strong>
+                        <span>{{ program.duration|default:"Non spécifiée" }}</span>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-signal me-2 text-muted"></i>Niveau :</strong>
+                        <span>{{ program.get_level_display|default:"Tous niveaux" }}</span>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-users me-2 text-muted"></i>Places :</strong>
+                        <span>{{ program.max_participants|default:"Illimité" }}</span>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-map-marker-alt me-2 text-muted"></i>Lieu :</strong>
+                        <span>{{ program.location|default:"À définir" }}</span>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-language me-2 text-muted"></i>Langue :</strong>
+                        <span>{{ program.language|default:"Français" }}</span>
+                    </div>
+                    
+                    {% if program.start_date %}
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-calendar me-2 text-muted"></i>Date de début :</strong>
+                        <span>{{ program.start_date|date:"d/m/Y" }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if program.registration_deadline %}
+                    <div class="info-item mb-3">
+                        <strong><i class="fas fa-hourglass-end me-2 text-muted"></i>Date limite d'inscription :</strong>
+                        <span>{{ program.registration_deadline|date:"d/m/Y" }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Prix et inscription -->
+                <div class="content-card mb-4">
+                    <h3 class="card-title">
+                        <i class="fas fa-credit-card me-2 text-primary"></i>
+                        Tarifs et inscription
+                    </h3>
+                    
+                    <div class="price-display mb-3">
+                        {% if program.price == 0 %}
+                            <div class="free-price">
+                                <span class="price-amount">Gratuit</span>
+                                <small class="text-muted d-block">Aucun frais d'inscription</small>
+                            </div>
+                        {% else %}
+                            <div class="paid-price">
+                                <span class="price-amount">{{ program.price }} GNF</span>
+                                <small class="text-muted d-block">Frais d'inscription</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if program.registration_url %}
+    <a href="{{ program.registration_url }}" class="btn btn-primary w-100 mb-3" target="_blank">
+        <i class="fas fa-user-plus me-2"></i>S'inscrire maintenant
+    </a>
+{% endif %}
+
+{% if program.contact_email %}
+    <a href="mailto:{{ program.contact_email }}" class="btn btn-outline-primary w-100">
+        <i class="fas fa-envelope me-2"></i>Nous contacter
+    </a>
+{% endif %}
+                </div>
+                
+                <!-- Formateur -->
+                {% if program.instructor %}
+                <div class="content-card mb-4">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-tie me-2 text-primary"></i>
+                        Formateur
+                    </h3>
+                    
+                    <div class="instructor-info">
+                        <div class="instructor-avatar mb-2">
+                            {% if program.instructor.photo %}
+                                <img src="{{ program.instructor.photo.url }}" alt="{{ program.instructor.get_full_name }}" class="rounded-circle" width="60">
+                            {% else %}
+                                <div class="avatar-placeholder">
+                                    <i class="fas fa-user fa-2x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <h5 class="instructor-name">{{ program.instructor.get_full_name }}</h5>
+                        
+                        {% if program.instructor.title %}
+                            <p class="instructor-title text-muted">{{ program.instructor.title }}</p>
+                        {% endif %}
+                        
+                        {% if program.instructor.bio %}
+                            <p class="instructor-bio">{{ program.instructor.bio|truncatewords:20 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================================
+   SECTION PROGRAMMES SIMILAIRES
+   ============================================================================ -->
+{% if similar_programs %}
+<section class="similar-programs-section py-5 bg-light">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title">Programmes similaires</h2>
+            <p class="section-subtitle">Découvrez d'autres programmes qui pourraient vous intéresser</p>
+        </div>
+        
+        <div class="row">
+            {% for similar_program in similar_programs %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="program-card h-100">
+                    <div class="program-image">
+                        {% if similar_program.featured_image %}
+                            <img src="{{ similar_program.featured_image.url }}" alt="{{ similar_program.title }}" class="img-fluid">
+                        {% else %}
+                            <div class="program-placeholder">
+                                <i class="fas fa-graduation-cap fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="program-overlay">
+                            <a href="{% url 'sfront:program_detail' similar_program.slug %}" class="btn btn-primary btn-sm">
+                                Voir détails
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="program-body">
+                        <div class="program-badges mb-2">
+                            {% if similar_program.level %}
+                                <span class="badge bg-primary me-1">{{ similar_program.get_level_display }}</span>
+                            {% endif %}
+                            {% if similar_program.price == 0 %}
+                                <span class="badge bg-success">Gratuit</span>
+                            {% endif %}
+                        </div>
+                        
+                        <h5 class="program-title">
+                            <a href="{% url 'sfront:program_detail' similar_program.slug %}">{{ similar_program.title }}</a>
+                        </h5>
+                        
+                        {% if similar_program.excerpt %}
+                            <p class="program-excerpt">{{ similar_program.excerpt|truncatewords:15 }}</p>
+                        {% endif %}
+                        
+                        <div class="program-meta">
+                            {% if similar_program.duration %}
+                                <span class="meta-item">
+                                    <i class="fas fa-clock me-1"></i>{{ similar_program.duration }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'sfront:programs' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-th-large me-2"></i>Voir tous les programmes
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================================
+   STYLES POUR LA PAGE DÉTAIL PROGRAMME
+   ============================================================================ */
+
+.program-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.program-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="hexagons" width="50" height="43.4" patternUnits="userSpaceOnUse"><polygon points="25,0 50,14.4 50,28.9 25,43.3 0,28.9 0,14.4" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23hexagons)"/></svg>');
+    opacity: 0.4;
+}
+
+.program-hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,215,0,0.1) 0%, transparent 50%, rgba(255,215,0,0.1) 100%);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+}
+
+.program-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 25px;
+}
+
+.breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--csig-accent);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.breadcrumb-item.active {
+    color: white;
+    font-weight: 700;
+    position: relative;
+    z-index: 2;
+}
+
+.program-badges .badge {
+    font-size: 0.9rem;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.program-badges .badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.program-badges .bg-primary {
+    background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%) !important;
+    color: var(--csig-primary) !important;
+}
+
+.program-badges .bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%) !important;
+    color: white !important;
+}
+
+.program-badges .bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    color: white !important;
+}
+
+.program-badges .bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important;
+    color: white !important;
+}
+
+.program-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 25px;
+    line-height: 1.1;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.program-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-accent), #ffffff);
+    border-radius: 2px;
+}
+
+.program-excerpt {
+    font-size: 1.2rem;
+    opacity: 0.95;
+    margin-bottom: 35px;
+    line-height: 1.8;
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+}
+
+.program-actions .btn {
+    padding: 15px 30px;
+    font-weight: 700;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.program-actions .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s ease;
+    z-index: -1;
+}
+
+.program-actions .btn:hover::before {
+    left: 100%;
+}
+
+.program-actions .btn-primary {
+    background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%);
+    border: none;
+    color: var(--csig-primary);
+}
+
+.program-actions .btn-primary:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
+}
+
+.program-actions .btn-outline-primary {
+    background: transparent;
+    border: 3px solid var(--csig-accent);
+    color: var(--csig-accent);
+}
+
+.program-actions .btn-outline-primary:hover {
+    background: var(--csig-accent);
+    color: var(--csig-primary);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
+}
+
+/* Styles pour les boutons de la sidebar */
+.content-card .btn {
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: 15px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.content-card .btn-primary {
+    background: linear-gradient(135deg, var(--csig-accent) 0%, #ffd700 100%);
+    border: none;
+    color: var(--csig-primary);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.content-card .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+}
+
+.content-card .btn-outline-primary {
+    background: transparent;
+    border: 2px solid var(--csig-primary);
+    color: var(--csig-primary);
+    box-shadow: 0 4px 15px rgba(13, 71, 134, 0.2);
+}
+
+.content-card .btn-outline-primary:hover {
+    background: var(--csig-primary);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(13, 71, 134, 0.3);
+}
+
+.program-hero-image {
+    position: relative;
+    z-index: 2;
+}
+
+.program-hero-image img {
+    border-radius: 25px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.program-hero-image img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.5);
+}
+
+.program-placeholder {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    border: 3px dashed rgba(255,255,255,0.3);
+    border-radius: 25px;
+    padding: 80px 30px;
+    text-align: center;
+    color: rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 2;
+}
+
+/* Section contenu principal */
+.program-content-section {
+    background: white;
+}
+
+.content-card {
+    background: white;
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.content-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-primary), var(--csig-accent));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.content-card:hover::before {
+    opacity: 1;
+}
+
+.content-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.section-title {
+    color: var(--csig-primary);
+    font-weight: 800;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+    border-bottom: 3px solid #e9ecef;
+    padding-bottom: 20px;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+    border-radius: 2px;
+}
+
+.program-description,
+.objectives-list,
+.curriculum-content,
+.prerequisites-content,
+.evaluation-content {
+    line-height: 1.8;
+    color: #495057;
+}
+
+.program-description h3,
+.objectives-list h3,
+.curriculum-content h3,
+.prerequisites-content h3,
+.evaluation-content h3 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.program-description p,
+.objectives-list p,
+.curriculum-content p,
+.prerequisites-content p,
+.evaluation-content p {
+    margin-bottom: 15px;
+}
+
+.program-description ul,
+.objectives-list ul,
+.curriculum-content ul,
+.prerequisites-content ul,
+.evaluation-content ul {
+    padding-left: 20px;
+    margin-bottom: 15px;
+}
+
+.program-description li,
+.objectives-list li,
+.curriculum-content li,
+.prerequisites-content li,
+.evaluation-content li {
+    margin-bottom: 8px;
+}
+
+/* Informations pratiques */
+.card-title {
+    color: var(--csig-primary);
+    font-weight: 700;
+    margin-bottom: 25px;
+    font-size: 1.4rem;
+    position: relative;
+}
+
+.card-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+    border-radius: 2px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f1f3f4;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    background: rgba(13, 71, 134, 0.05);
+    padding-left: 10px;
+    border-radius: 8px;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item strong {
+    min-width: 140px;
+    color: var(--csig-primary);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-item span {
+    color: #495057;
+    font-weight: 500;
+}
+
+/* Prix et inscription */
+.price-display {
+    text-align: center;
+    padding: 30px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    border: 2px solid rgba(13, 71, 134, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.price-display::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="%23dee2e6" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+    opacity: 0.5;
+}
+
+.price-display:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border-color: var(--csig-accent);
+}
+
+.free-price .price-amount {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #28a745;
+    text-shadow: 2px 2px 4px rgba(40, 167, 69, 0.2);
+    position: relative;
+    z-index: 2;
+}
+
+.paid-price .price-amount {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #fd7e14;
+    text-shadow: 2px 2px 4px rgba(253, 126, 20, 0.2);
+    position: relative;
+    z-index: 2;
+}
+
+/* Formateur */
+.instructor-info {
+    text-align: center;
+}
+
+.instructor-avatar img {
+    border: 3px solid #e9ecef;
+}
+
+.avatar-placeholder {
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.instructor-name {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.instructor-title {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.instructor-bio {
+    font-size: 0.9rem;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+/* Programmes similaires */
+.similar-programs-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.similar-programs-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="%23dee2e6" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.section-header {
+    position: relative;
+    z-index: 2;
+}
+
+.section-header .section-title {
+    color: var(--csig-primary);
+    font-weight: 800;
+    font-size: 3rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.section-header .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-accent), var(--csig-primary));
+    border-radius: 2px;
+}
+
+.section-header .section-subtitle {
+    color: #495057;
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.8;
+    font-weight: 500;
+}
+
+.program-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.program-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-primary), var(--csig-accent));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.program-card:hover::before {
+    opacity: 1;
+}
+
+.program-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(13, 71, 134, 0.15);
+    border-color: var(--csig-accent);
+}
+
+.program-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.program-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.program-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.program-card:hover .program-overlay {
+    opacity: 1;
+}
+
+.program-body {
+    padding: 20px;
+}
+
+.program-title a {
+    color: #2c3e50;
+    text-decoration: none;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.program-title a:hover {
+    color: #667eea;
+}
+
+.program-excerpt {
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.program-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.meta-item {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .program-hero {
+        padding: 80px 0;
+    }
+    
+    .program-title {
+        font-size: 2.5rem;
+    }
+    
+    .content-card {
+        padding: 25px;
+    }
+    
+    .program-actions .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .info-item strong {
+        min-width: auto;
+        margin-bottom: 8px;
+    }
+    
+    .section-header .section-title {
+        font-size: 2.5rem;
+    }
+    
+    .price-display {
+        padding: 25px;
+    }
+    
+    .free-price .price-amount,
+    .paid-price .price-amount {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .program-hero {
+        padding: 60px 0;
+    }
+    
+    .program-title {
+        font-size: 2rem;
+    }
+    
+    .program-badges .badge {
+        font-size: 0.8rem;
+        padding: 10px 16px;
+    }
+    
+    .content-card {
+        padding: 20px;
+    }
+    
+    .section-header .section-title {
+        font-size: 2rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .cta-buttons .btn {
+        width: 100%;
+        margin: 0;
+    }
+}
+</style>
+{% endblock %}

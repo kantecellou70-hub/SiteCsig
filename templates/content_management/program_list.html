@@ -1,0 +1,832 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Programmes - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.program-list-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.program-filters {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+}
+
+.program-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.program-table th {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.program-table td {
+    padding: 1rem 0.75rem;
+    border: none;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+.program-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.program-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+}
+
+.program-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.program-title {
+    font-weight: 700;
+    color: #0d4786;
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.program-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.program-title-cell {
+    min-width: 0;
+    width: auto;
+}
+
+.program-description-cell {
+    min-width: 0;
+    width: auto;
+    max-width: 300px;
+}
+
+.program-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.program-detail-cell {
+    text-align: center;
+    width: 80px;
+    min-width: 80px;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.action-btn.view {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+}
+
+.action-btn.edit {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.action-btn.delete {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    color: #d32f2f;
+}
+
+.program-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+}
+
+.stat-card:hover::before {
+    width: 8px;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0d4786;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+}
+
+.stat-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    color: #0d4786;
+    opacity: 0.3;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .filter-row {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 992px) {
+    .program-table {
+        font-size: 0.9rem;
+    }
+    
+    .program-table th,
+    .program-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .program-image {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    .program-filters {
+        padding: 1.5rem;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .program-table {
+        font-size: 0.8rem;
+    }
+    
+    .program-table th,
+    .program-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .program-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    
+    /* Masquer la colonne description sur mobile */
+    .program-table th:nth-child(4),
+    .program-table td:nth-child(4) {
+        display: none;
+    }
+    
+    /* Ajuster les largeurs des colonnes restantes */
+    .checkbox-cell {
+        width: 40px;
+        min-width: 40px;
+    }
+    
+    .image-cell {
+        width: 60px;
+        min-width: 60px;
+    }
+    
+    .program-title-cell {
+        min-width: 0;
+        width: auto;
+    }
+    
+    .program-detail-cell {
+        width: 50px;
+        min-width: 50px;
+    }
+    
+    /* Ajuster les stats sur mobile */
+    .program-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .program-list-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .program-filters {
+        padding: 1rem;
+    }
+    
+    .program-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    /* Masquer la colonne description sur très petit écran */
+    .program-table th:nth-child(4),
+    .program-table td:nth-child(4) {
+        display: none;
+    }
+    
+    /* Ajuster les largeurs finales */
+    .checkbox-cell {
+        width: 35px;
+        min-width: 35px;
+    }
+    
+    .image-cell {
+        width: 50px;
+        min-width: 50px;
+    }
+    
+    .program-title-cell {
+        width: auto;
+        min-width: 0;
+    }
+    
+    .program-detail-cell {
+        width: 45px;
+        min-width: 45px;
+    }
+    
+    /* Réduire encore plus le padding */
+    .program-table th,
+    .program-table td {
+        padding: 0.4rem 0.2rem;
+    }
+    
+    .program-image {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .program-title {
+        font-size: 0.85rem;
+        line-height: 1.2;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .program-description {
+        font-size: 0.7rem;
+        -webkit-line-clamp: 2;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    /* Ajuster les filtres sur très petit écran */
+    .filter-group label {
+        font-size: 0.8rem;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .filter-actions .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajuster la pagination */
+    .pagination .page-link {
+        padding: 0.4rem 0.6rem;
+        margin: 0 0.1rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajuster les actions en masse */
+    .bulk-actions .card-body {
+        padding: 1rem;
+    }
+    
+    .bulk-actions .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .bulk-actions select {
+        width: 100%;
+    }
+    
+    .bulk-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Styles spécifiques pour les très petits écrans */
+@media (max-width: 480px) {
+    .program-table {
+        font-size: 0.75rem;
+    }
+    
+    .program-table th,
+    .program-table td {
+        padding: 0.3rem 0.15rem;
+    }
+    
+    .program-title {
+        font-size: 0.8rem;
+        -webkit-line-clamp: 1;
+    }
+    
+    .program-meta {
+        display: none;
+    }
+    
+    .checkbox-custom {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .action-btn {
+        width: 25px;
+        height: 25px;
+        font-size: 0.65rem;
+    }
+    
+    .stat-card {
+        padding: 0.8rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-project-diagram me-2"></i>Programmes
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Gérez les programmes et initiatives de la CSIG
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'content_management:program_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouveau Programme
+    </a>
+    <button class="btn btn-outline-secondary" id="toggleFilters">
+        <i class="fas fa-filter me-2"></i>Filtres
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="program-list-container">
+    <!-- Statistiques -->
+    <div class="program-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <div class="stat-number">{{ programs.paginator.count|default:0 }}</div>
+            <div class="stat-label">Total programmes</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-number">{{ programs.object_list|length }}</div>
+            <div class="stat-label">Programmes affichés</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-number">{{ programs.object_list|length }}</div>
+            <div class="stat-label">À la une</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number">{{ programs.object_list|length }}</div>
+            <div class="stat-label">Participants</div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="program-filters" id="programFilters" style="display: none;">
+        <form method="get" class="filter-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="status">Statut</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="">Tous les statuts</option>
+                        <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Brouillon</option>
+                        <option value="published" {% if request.GET.status == 'published' %}selected{% endif %}>Publié</option>
+                        <option value="archived" {% if request.GET.status == 'archived' %}selected{% endif %}>Archivé</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="level">Niveau</label>
+                    <select name="level" id="level" class="form-control">
+                        <option value="">Tous les niveaux</option>
+                        <option value="beginner" {% if request.GET.level == 'beginner' %}selected{% endif %}>Débutant</option>
+                        <option value="intermediate" {% if request.GET.status == 'intermediate' %}selected{% endif %}>Intermédiaire</option>
+                        <option value="advanced" {% if request.GET.level == 'advanced' %}selected{% endif %}>Avancé</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="search">Recherche</label>
+                    <input type="text" name="search" id="search" class="form-control" 
+                           placeholder="Rechercher un programme..." value="{{ request.GET.search }}">
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Filtrer
+                </button>
+                <a href="{% url 'content_management:program_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tableau des programmes -->
+    <div class="table-responsive">
+        <table class="program-table">
+            <thead>
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom" id="headerCheckbox">
+                    </th>
+                    <th>Image</th>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Détail</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for program in programs %}
+                <tr>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom program-checkbox" value="{{ program.pk }}">
+                    </td>
+                    
+                    <td class="image-cell">
+                        {% if program.featured_image %}
+                        <img src="{{ program.featured_image.url }}" alt="{{ program.title }}" class="program-image">
+                        {% else %}
+                        <div class="program-image d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-project-diagram text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="program-title-cell">
+                        <div class="program-title">{{ program.title }}</div>
+                    </td>
+                    
+                    <td class="program-description-cell">
+                        <div class="program-description">
+                            {% if program.description %}
+                                {{ program.description|truncatechars:100 }}
+                            {% else %}
+                                <span class="text-muted">Aucune description</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    
+                    <td class="program-detail-cell">
+                        <a href="{% url 'content_management:program_detail' program.pk %}" 
+                           class="action-btn view" title="Voir les détails">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-project-diagram fa-3x mb-3"></i>
+                            <h5>Aucun programme trouvé</h5>
+                            <p>Créez votre premier programme pour commencer.</p>
+                            <a href="{% url 'content_management:program_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Créer un programme
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if programs.has_other_pages %}
+    <div class="d-flex justify-content-center py-4">
+        <nav aria-label="Navigation des programmes">
+            <ul class="pagination">
+                {% if programs.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ programs.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in programs.paginator.page_range %}
+                    {% if programs.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > programs.number|add:'-3' and num < programs.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if programs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ programs.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Actions en masse -->
+<div class="bulk-actions mt-3" id="bulkActions" style="display: none;">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted">
+                    <span id="selectedCount">0</span> programme(s) sélectionné(s)
+                </span>
+                
+                <select class="form-select" id="bulkAction" style="width: auto;">
+                    <option value="">Choisir une action...</option>
+                    <option value="publish">Publier</option>
+                    <option value="draft">Mettre en brouillon</option>
+                    <option value="feature">Mettre en avant</option>
+                    <option value="unfeature">Retirer de la une</option>
+                    <option value="delete">Supprimer</option>
+                </select>
+                
+                <button class="btn btn-primary" onclick="performBulkAction()">
+                    <i class="fas fa-play me-2"></i>Exécuter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des filtres
+    const toggleFiltersBtn = document.getElementById('toggleFilters');
+    const programFilters = document.getElementById('programFilters');
+    
+    if (toggleFiltersBtn && programFilters) {
+        toggleFiltersBtn.addEventListener('click', function() {
+            if (programFilters.style.display === 'none') {
+                programFilters.style.display = 'block';
+                this.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Masquer les filtres';
+            } else {
+                programFilters.style.display = 'none';
+                this.innerHTML = '<i class="fas fa-filter me-2"></i>Filtres';
+            }
+        });
+    }
+    
+    // Gestion de la sélection multiple
+    initializeSelectAll();
+    initializeBulkActions();
+});
+
+// Initialiser la sélection multiple
+function initializeSelectAll() {
+    const headerCheckbox = document.getElementById('headerCheckbox');
+    const programCheckboxes = document.querySelectorAll('.program-checkbox');
+    
+    if (headerCheckbox) {
+        headerCheckbox.addEventListener('change', function() {
+            programCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+    
+    programCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+}
+
+// Initialiser les actions en masse
+function initializeBulkActions() {
+    updateBulkActions();
+}
+
+// Mettre à jour l'affichage des actions en masse
+function updateBulkActions() {
+    const selectedCheckboxes = document.querySelectorAll('.program-checkbox:checked');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (selectedCheckboxes.length > 0) {
+        bulkActions.style.display = 'block';
+        selectedCount.textContent = selectedCheckboxes.length;
+    } else {
+        bulkActions.style.display = 'none';
+    }
+}
+
+// Exécuter une action en masse
+function performBulkAction() {
+    const action = document.getElementById('bulkAction').value;
+    const selectedCheckboxes = document.querySelectorAll('.program-checkbox:checked');
+    
+    if (!action) {
+        alert('Veuillez sélectionner une action.');
+        return;
+    }
+    
+    if (selectedCheckboxes.length === 0) {
+        alert('Aucun programme sélectionné.');
+        return;
+    }
+    
+    if (action === 'delete' && !confirm('Êtes-vous sûr de vouloir supprimer ces programmes ?')) {
+        return;
+    }
+    
+    const programIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+    const formData = new FormData();
+    formData.append('action', action);
+    programIds.forEach(id => formData.append('program_ids[]', id));
+    
+    // Ici vous pouvez implémenter la logique des actions en masse
+    console.log('Action en masse:', action, 'Programmes:', programIds);
+    alert('Fonctionnalité d\'action en masse à implémenter.');
+}
+
+
+</script>
+{% endblock %}

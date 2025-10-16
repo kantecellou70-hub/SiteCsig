@@ -1,0 +1,402 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} un quartier - CSIG{% endblock %}
+{% block page_title %}{{ action }} un quartier{% endblock %}
+{% block page_subtitle %}{% if district %}Modifiez les informations du quartier{% else %}Créez un nouveau quartier pour votre cité{% endif %}{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'content_management:city_district_list' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-{% if district %}edit{% else %}plus{% endif %} me-2"></i>
+                    {{ action }} un quartier
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="districtForm">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    <strong><i class="fas fa-tag me-2 text-primary"></i>Nom du quartier *</strong>
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger mt-1">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.icon.id_for_label }}" class="form-label">
+                                    <strong><i class="fas fa-icons me-2 text-primary"></i>Icône FontAwesome *</strong>
+                                </label>
+                                {{ form.icon }}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Exemples : fas fa-building, fas fa-flask, fas fa-microscope, fas fa-robot
+                                </div>
+                                {% if form.icon.errors %}
+                                    <div class="text-danger mt-1">{{ form.icon.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mt-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <strong><i class="fas fa-align-left me-2 text-primary"></i>Description *</strong>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger mt-1">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row g-3 mt-3">
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.image.id_for_label }}" class="form-label">
+                                    <strong><i class="fas fa-image me-2 text-primary"></i>Image du quartier</strong>
+                                </label>
+                                <div class="file-input-wrapper">
+                                    {{ form.image }}
+                                </div>
+                                {% if form.image.errors %}
+                                    <div class="text-danger mt-1">{{ form.image.errors }}</div>
+                                {% endif %}
+                                {% if district.image %}
+                                    <div class="current-image mt-2">
+                                        <img src="{{ district.image.url }}" alt="Image actuelle" class="img-thumbnail">
+                                        <small class="text-muted d-block mt-1">Image actuelle</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.order.id_for_label }}" class="form-label">
+                                    <strong><i class="fas fa-sort-numeric-up me-2 text-primary"></i>Ordre d'affichage</strong>
+                                </label>
+                                {{ form.order }}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Plus le nombre est petit, plus le quartier apparaîtra en premier
+                                </div>
+                                {% if form.order.errors %}
+                                    <div class="text-danger mt-1">{{ form.order.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mt-4">
+                        <div class="form-check form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                <strong><i class="fas fa-toggle-on me-2 text-success"></i>Quartier actif</strong>
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Seuls les quartiers actifs seront affichés sur la page publique
+                        </div>
+                    </div>
+                    
+                    <!-- Boutons d'action -->
+                    <div class="mt-5 pt-4 border-top">
+                        <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                            <a href="{% url 'content_management:city_district_list' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>{{ action }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Aide pour les icônes -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-question-circle me-2 text-primary"></i>Aide pour les icônes FontAwesome
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="icon-category">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-building me-2"></i>Bâtiments et Infrastructure
+                            </h6>
+                            <div class="icon-list">
+                                <div class="icon-item">
+                                    <i class="fas fa-building me-2"></i>fas fa-building
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-university me-2"></i>fas fa-university
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-hospital me-2"></i>fas fa-hospital
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-industry me-2"></i>fas fa-industry
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="icon-category">
+                            <h6 class="text-success mb-3">
+                                <i class="fas fa-flask me-2"></i>Sciences et Recherche
+                            </h6>
+                            <div class="icon-list">
+                                <div class="icon-item">
+                                    <i class="fas fa-flask me-2"></i>fas fa-flask
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-microscope me-2"></i>fas fa-microscope
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-atom me-2"></i>fas fa-atom
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-dna me-2"></i>fas fa-dna
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="icon-category">
+                            <h6 class="text-info mb-3">
+                                <i class="fas fa-robot me-2"></i>Technologie
+                            </h6>
+                            <div class="icon-list">
+                                <div class="icon-item">
+                                    <i class="fas fa-robot me-2"></i>fas fa-robot
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-microchip me-2"></i>fas fa-microchip
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-laptop me-2"></i>fas fa-laptop
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-mobile-alt me-2"></i>fas fa-mobile-alt
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Consultez <a href="https://fontawesome.com/icons" target="_blank" class="text-decoration-none">FontAwesome</a> pour plus d'icônes disponibles.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles généraux du formulaire */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Wrapper pour l'input file */
+.file-input-wrapper {
+    position: relative;
+}
+
+.file-input-wrapper input[type="file"] {
+    padding: 0.75rem;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.file-input-wrapper input[type="file"]:hover {
+    border-color: #007bff;
+    background: #e3f2fd;
+}
+
+/* Image actuelle */
+.current-image img {
+    max-width: 200px;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+/* Switch personnalisé */
+.form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Boutons */
+.btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* Catégories d'icônes */
+.icon-category {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    height: 100%;
+}
+
+.icon-category h6 {
+    font-weight: 600;
+    border-bottom: 2px solid;
+    padding-bottom: 0.5rem;
+}
+
+.icon-list {
+    margin-top: 1rem;
+}
+
+.icon-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.icon-item:last-child {
+    border-bottom: none;
+}
+
+.icon-item i {
+    width: 20px;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .btn-lg {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .icon-category {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .d-flex.flex-column.flex-md-row {
+        flex-direction: column !important;
+    }
+}
+
+/* Animations */
+.card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Gradients */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+/* Icônes colorées */
+.text-primary { color: #007bff !important; }
+.text-success { color: #28a745 !important; }
+.text-info { color: #17a2b8 !important; }
+</style>
+{% endblock %}

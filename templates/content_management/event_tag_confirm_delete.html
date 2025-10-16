@@ -1,0 +1,320 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Supprimer le tag "{{ tag.name }}"{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .delete-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .delete-body {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .tag-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #0d4786;
+    }
+    
+    .tag-color {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 12px;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        vertical-align: middle;
+    }
+    
+    .warning-section {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .warning-icon {
+        color: #856404;
+        font-size: 1.5rem;
+        margin-right: 0.75rem;
+    }
+    
+    .delete-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    }
+    
+    .impact-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .impact-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+    }
+    
+    .impact-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .impact-icon {
+        margin-right: 0.75rem;
+        width: 20px;
+        text-align: center;
+    }
+    
+    .impact-text {
+        flex: 1;
+    }
+    
+    .impact-count {
+        background: #6c757d;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="delete-container">
+        <form method="post" id="deleteForm">
+            {% csrf_token %}
+            
+            <!-- Header -->
+            <div class="delete-header">
+                <h1 class="mb-2">
+                    <i class="fas fa-exclamation-triangle me-3"></i>Confirmer la suppression
+                </h1>
+                <p class="mb-0 opacity-75">Vous êtes sur le point de supprimer définitivement ce tag d'événement</p>
+            </div>
+
+            <!-- Contenu -->
+            <div class="delete-body">
+                <!-- Informations sur le tag -->
+                <div class="tag-info">
+                    <h3 class="mb-3">
+                        <div class="tag-color" style="background-color: {{ tag.color }};"></div>
+                        {{ tag.name }}
+                    </h3>
+                    {% if tag.description %}
+                        <p class="mb-2">{{ tag.description }}</p>
+                    {% endif %}
+                    <small class="text-muted">Créé le {{ tag.id|default:"récemment" }}</small>
+                </div>
+
+                <!-- Avertissement -->
+                <div class="warning-section">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-exclamation-triangle warning-icon"></i>
+                        <div>
+                            <h5 class="text-warning mb-2">Attention !</h5>
+                            <p class="mb-0">Cette action est irréversible. Toutes les données associées à ce tag seront définitivement supprimées.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Impact de la suppression -->
+                <div class="impact-section">
+                    <h5 class="mb-3">
+                        <i class="fas fa-chart-line me-2"></i>Impact de la suppression
+                    </h5>
+                    <ul class="impact-list">
+                        <li>
+                            <div class="impact-icon">
+                                <i class="fas fa-calendar text-primary"></i>
+                            </div>
+                            <div class="impact-text">Événements utilisant ce tag</div>
+                            <div class="impact-count">{{ tag.event_set.count|default:0 }}</div>
+                        </li>
+                        <li>
+                            <div class="impact-icon">
+                                <i class="fas fa-users text-info"></i>
+                            </div>
+                            <div class="impact-text">Participants affectés</div>
+                            <div class="impact-count">{{ tag.event_set.count|default:0 }}</div>
+                        </li>
+                        <li>
+                            <div class="impact-icon">
+                                <i class="fas fa-chart-bar text-warning"></i>
+                            </div>
+                            <div class="impact-text">Statistiques perdues</div>
+                            <div class="impact-count">Toutes</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Actions -->
+                <div class="delete-actions">
+                    <div>
+                        <a href="{% url 'content_management:event_tag_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">
+                            <i class="fas fa-trash me-2"></i>Supprimer définitivement
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForm = document.getElementById('deleteForm');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+    // Confirmation avant suppression
+    deleteForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Afficher une boîte de dialogue de confirmation personnalisée
+        showConfirmDialog(
+            'Confirmation finale',
+            'Êtes-vous absolument sûr de vouloir supprimer ce tag ? Cette action ne peut pas être annulée.',
+            function() {
+                // Si confirmé, soumettre le formulaire
+                deleteForm.submit();
+            }
+        );
+    });
+
+    // Fonction pour afficher une boîte de dialogue de confirmation personnalisée
+    function showConfirmDialog(title, message, onConfirm) {
+        // Créer le modal de confirmation
+        const confirmModal = document.createElement('div');
+        confirmModal.className = 'modal fade custom-confirm-modal';
+        confirmModal.style.cssText = 'z-index: 9999;';
+        confirmModal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exclamation-triangle me-2"></i>${title}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-4 text-center">
+                            <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                        </div>
+                        <p class="mb-0 text-center">${message}</p>
+                    </div>
+                    <div class="modal-footer justify-content-center gap-3">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </button>
+                        <button type="button" class="btn btn-danger" id="finalConfirmBtn">
+                            <i class="fas fa-trash me-2"></i>Oui, supprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Ajouter au DOM
+        document.body.appendChild(confirmModal);
+        
+        // Créer et afficher le modal Bootstrap
+        const modal = new bootstrap.Modal(confirmModal);
+        modal.show();
+        
+        // Gérer la confirmation finale
+        const finalConfirmBtn = confirmModal.querySelector('#finalConfirmBtn');
+        finalConfirmBtn.addEventListener('click', function() {
+            modal.hide();
+            setTimeout(() => {
+                if (onConfirm && typeof onConfirm === 'function') {
+                    onConfirm();
+                }
+                // Nettoyer le DOM
+                if (confirmModal.parentNode) {
+                    confirmModal.remove();
+                }
+            }, 300);
+        });
+        
+        // Nettoyer le DOM quand le modal est fermé
+        confirmModal.addEventListener('hidden.bs.modal', function() {
+            if (confirmModal.parentNode) {
+                confirmModal.remove();
+            }
+        });
+    }
+
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Échap pour annuler
+        if (e.key === 'Escape') {
+            window.location.href = '{% url "content_management:event_tag_list" %}';
+        }
+        
+        // Entrée pour confirmer (avec confirmation)
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            confirmDeleteBtn.click();
+        }
+    });
+
+    // Focus sur le bouton de confirmation
+    confirmDeleteBtn.focus();
+});
+</script>
+{% endblock %}

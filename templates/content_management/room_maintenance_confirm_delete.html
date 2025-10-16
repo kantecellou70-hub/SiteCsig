@@ -1,0 +1,426 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}Supprimer la maintenance{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:room_maintenance_detail' maintenance.pk %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+    </a>
+    <a href="{% url 'content_management:room_maintenance_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-list me-2"></i>Liste des maintenances
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="delete-maintenance-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>
+                        <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
+                        Confirmer la suppression
+                    </h3>
+                </div>
+                <div class="section-body">
+                    <!-- Avertissement principal -->
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Attention : Suppression de maintenance
+                        </h5>
+                        <p class="mb-0">
+                            Vous êtes sur le point de supprimer définitivement la maintenance 
+                            <strong>"{{ maintenance.title }}"</strong> de la salle 
+                            <strong>{{ maintenance.room.name }}</strong>.
+                        </p>
+                    </div>
+                    
+                    <!-- Résumé de la maintenance -->
+                    <div class="maintenance-summary">
+                        <h5><i class="fas fa-info-circle me-2"></i>Résumé de la maintenance</h5>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <div class="summary-label">Titre</div>
+                                <div class="summary-value">{{ maintenance.title }}</div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="summary-label">Salle</div>
+                                <div class="summary-value">{{ maintenance.room.name }}</div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="summary-label">Type</div>
+                                <div class="summary-value">
+                                    <span class="type-badge {{ maintenance.maintenance_type }}">
+                                        {{ maintenance.get_maintenance_type_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="summary-label">Priorité</div>
+                                <div class="summary-value">
+                                    <span class="priority-badge {{ maintenance.priority }}">
+                                        {{ maintenance.get_priority_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="summary-label">Statut</div>
+                                <div class="summary-value">
+                                    <span class="status-badge {{ maintenance.status }}">
+                                        {{ maintenance.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="summary-label">Période</div>
+                                <div class="summary-value">
+                                    {{ maintenance.start_date|date:"d/m/Y" }} - {{ maintenance.end_date|date:"d/m/Y" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Impact de la suppression -->
+                    <div class="impact-section">
+                        <h5><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Impact de la suppression</h5>
+                        <div class="impact-list">
+                            <div class="impact-item">
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                <div>
+                                    <strong>Suppression définitive</strong>
+                                    <p class="mb-0">Cette action ne peut pas être annulée</p>
+                                </div>
+                            </div>
+                            
+                            <div class="impact-item">
+                                <i class="fas fa-calendar-times text-warning me-2"></i>
+                                <div>
+                                    <strong>Planification perdue</strong>
+                                    <p class="mb-0">Toutes les informations de planification seront supprimées</p>
+                                </div>
+                            </div>
+                            
+                            <div class="impact-item">
+                                <i class="fas fa-history text-info me-2"></i>
+                                <div>
+                                    <strong>Historique supprimé</strong>
+                                    <p class="mb-0">L'historique et les notes de maintenance seront perdus</p>
+                                </div>
+                            </div>
+                            
+                            {% if maintenance.estimated_cost %}
+                            <div class="impact-item">
+                                <i class="fas fa-money-bill text-success me-2"></i>
+                                <div>
+                                    <strong>Coût estimé perdu</strong>
+                                    <p class="mb-0">L'estimation budgétaire sera supprimée</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Alternatives recommandées -->
+                    <div class="alternatives-section">
+                        <h5><i class="fas fa-lightbulb me-2 text-info"></i>Alternatives recommandées</h5>
+                        <div class="alternatives-list">
+                            <div class="alternative-item">
+                                <i class="fas fa-edit text-primary me-2"></i>
+                                <div>
+                                    <strong>Modifier la maintenance</strong>
+                                    <p class="mb-0">Ajuster les dates, la description ou le statut</p>
+                                </div>
+                            </div>
+                            
+                            <div class="alternative-item">
+                                <i class="fas fa-pause text-warning me-2"></i>
+                                <div>
+                                    <strong>Mettre en pause</strong>
+                                    <p class="mb-0">Changer le statut en "Annulée" au lieu de supprimer</p>
+                                </div>
+                            </div>
+                            
+                            <div class="alternative-item">
+                                <i class="fas fa-copy text-success me-2"></i>
+                                <div>
+                                    <strong>Dupliquer</strong>
+                                    <p class="mb-0">Créer une nouvelle maintenance basée sur celle-ci</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Formulaire de confirmation -->
+                    <form method="post" class="delete-form">
+                        {% csrf_token %}
+                        
+                        <div class="confirmation-section">
+                            <h5><i class="fas fa-shield-alt me-2 text-danger"></i>Confirmation finale</h5>
+                            
+                            <div class="alert alert-warning">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="confirm-understand" required>
+                                    <label class="form-check-label" for="confirm-understand">
+                                        Je comprends que cette action est <strong>irréversible</strong> et que toutes les données de cette maintenance seront définitivement supprimées.
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="delete-reason" class="form-label">
+                                    <i class="fas fa-comment me-2"></i>Raison de la suppression (optionnel)
+                                </label>
+                                <textarea class="form-control" id="delete-reason" name="delete_reason" rows="3" 
+                                          placeholder="Expliquez brièvement pourquoi cette maintenance doit être supprimée..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-danger btn-lg" id="confirm-delete-btn" disabled>
+                                <i class="fas fa-trash me-2"></i>Confirmer la suppression
+                            </button>
+                            <a href="{% url 'content_management:room_maintenance_detail' maintenance.pk %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.delete-maintenance-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.alert-heading {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.maintenance-summary {
+    background: var(--gray-50);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+    margin: 2rem 0;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.summary-item {
+    padding: 1rem;
+    background: white;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.summary-label {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.summary-value {
+    color: var(--gray-800);
+    font-weight: 500;
+}
+
+.type-badge, .priority-badge, .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.type-badge.scheduled {
+    background: var(--success-color);
+    color: white;
+}
+
+.type-badge.emergency {
+    background: var(--danger-color);
+    color: white;
+}
+
+.type-badge.preventive {
+    background: var(--warning-color);
+    color: white;
+}
+
+.priority-badge.low {
+    background: var(--success-color);
+    color: white;
+}
+
+.priority-badge.medium {
+    background: var(--warning-color);
+    color: white;
+}
+
+.priority-badge.high {
+    background: var(--danger-color);
+    color: white;
+}
+
+.status-badge.completed {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.in_progress {
+    background: var(--warning-color);
+    color: white;
+}
+
+.status-badge.planned {
+    background: var(--info-color);
+    color: white;
+}
+
+.status-badge.cancelled {
+    background: var(--danger-color);
+    color: white;
+}
+
+.impact-section, .alternatives-section {
+    margin: 2rem 0;
+}
+
+.impact-list, .alternatives-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.impact-item, .alternative-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.impact-item i, .alternative-item i {
+    font-size: 1.25rem;
+    margin-top: 0.25rem;
+}
+
+.impact-item strong, .alternative-item strong {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.impact-item p, .alternative-item p {
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+.confirmation-section {
+    background: var(--gray-50);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+    margin: 2rem 0;
+}
+
+.form-check-label {
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+    
+    .impact-item, .alternative-item {
+        padding: 0.75rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheckbox = document.getElementById('confirm-understand');
+    const confirmButton = document.getElementById('confirm-delete-btn');
+    
+    // Activer/désactiver le bouton de confirmation
+    confirmCheckbox.addEventListener('change', function() {
+        confirmButton.disabled = !this.checked;
+    });
+    
+    // Confirmation supplémentaire lors du clic sur le bouton
+    confirmButton.addEventListener('click', function(e) {
+        if (!confirmCheckbox.checked) {
+            e.preventDefault();
+            return;
+        }
+        
+        const maintenanceTitle = '{{ maintenance.title }}';
+        const roomName = '{{ maintenance.room.name }}';
+        
+        const finalConfirm = confirm(
+            `Êtes-vous ABSOLUMENT sûr de vouloir supprimer la maintenance "${maintenanceTitle}" de la salle "${roomName}" ?\n\n` +
+            'Cette action est IRRÉVERSIBLE et toutes les données seront définitivement perdues.'
+        );
+        
+        if (!finalConfirm) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

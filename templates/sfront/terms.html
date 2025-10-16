@@ -1,0 +1,163 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Conditions d'utilisation - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="terms-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h1 class="hero-title">Conditions d'utilisation</h1>
+                <p class="hero-subtitle">
+                    Lisez attentivement nos conditions d'utilisation avant d'utiliser 
+                    nos services et notre site web.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="terms-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="terms-container">
+                    <div class="terms-section">
+                        <h2>Acceptation des conditions</h2>
+                        <p>
+                            En accédant et en utilisant ce site web, vous acceptez d'être lié 
+                            par ces conditions d'utilisation. Si vous n'acceptez pas ces conditions, 
+                            veuillez ne pas utiliser notre site.
+                        </p>
+                    </div>
+                    
+                    <div class="terms-section">
+                        <h2>Utilisation autorisée</h2>
+                        <p>
+                            Vous pouvez utiliser notre site web à des fins personnelles et non commerciales. 
+                            Vous vous engagez à ne pas utiliser le site de manière illégale ou nuisible.
+                        </p>
+                    </div>
+                    
+                    <div class="terms-section">
+                        <h2>Propriété intellectuelle</h2>
+                        <p>
+                            Tout le contenu de ce site (textes, images, logos, etc.) est protégé 
+                            par les droits d'auteur et appartient à CSIG ou à ses partenaires.
+                        </p>
+                    </div>
+                    
+                    <div class="terms-section">
+                        <h2>Limitation de responsabilité</h2>
+                        <p>
+                            CSIG ne peut être tenu responsable des dommages directs ou indirects 
+                            résultant de l'utilisation de ce site web ou de nos services.
+                        </p>
+                    </div>
+                    
+                    <div class="terms-section">
+                        <h2>Modifications</h2>
+                        <p>
+                            Nous nous réservons le droit de modifier ces conditions à tout moment. 
+                            Les modifications prendront effet dès leur publication sur le site.
+                        </p>
+                    </div>
+                    
+                    <div class="terms-section">
+                        <h2>Droit applicable</h2>
+                        <p>
+                            Ces conditions sont régies par le droit guinéen. Tout litige sera 
+                            soumis à la compétence des tribunaux de Conakry.
+                        </p>
+                    </div>
+                    
+                    <div class="terms-footer">
+                        <p class="text-muted">
+                            <small>Dernière mise à jour : {% now "F Y" %}</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.terms-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.terms-content {
+    padding: 4rem 0;
+}
+
+.terms-container {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.terms-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.terms-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.terms-section h2 {
+    color: var(--csig-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.terms-section p {
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.terms-footer {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .terms-container {
+        padding: 2rem;
+    }
+}
+</style>
+{% endblock %}

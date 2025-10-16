@@ -1,0 +1,474 @@
+{% extends 'content_management/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Calendrier des réservations" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calendar-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .calendar-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+    }
+    
+    .calendar-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+    }
+    
+    .calendar-controls {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .month-navigation {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .month-display {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #495057;
+        min-width: 200px;
+        text-align: center;
+    }
+    
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .room-calendar {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .room-header {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .room-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #495057;
+        margin: 0;
+    }
+    
+    .room-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-active { background-color: #d4edda; color: #155724; }
+    .status-maintenance { background-color: #f8d7da; color: #721c24; }
+    
+    .calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .calendar-table th {
+        background: #e9ecef;
+        padding: 0.75rem 0.5rem;
+        text-align: center;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .calendar-table td {
+        padding: 0.5rem;
+        text-align: center;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: top;
+        min-height: 60px;
+        position: relative;
+    }
+    
+    .calendar-table td.today {
+        background-color: #fff3cd;
+        font-weight: 600;
+    }
+    
+    .calendar-table td.other-month {
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+    
+    .date-number {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .booking-item {
+        background: #007bff;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .booking-item:hover {
+        background: #0056b3;
+        transform: scale(1.02);
+    }
+    
+    .booking-pending {
+        background: #ffc107;
+        color: #212529;
+    }
+    
+    .booking-confirmed {
+        background: #28a745;
+        color: white;
+    }
+    
+    .booking-cancelled {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .booking-completed {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .booking-rejected {
+        background: #dc3545;
+        color: white;
+        opacity: 0.7;
+    }
+    
+    .legend {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .legend-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+    
+    .legend-items {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+    
+    .legend-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .quick-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .calendar-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .month-navigation {
+            justify-content: center;
+        }
+        
+        .calendar-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .calendar-table {
+            font-size: 0.8rem;
+        }
+        
+        .calendar-table th,
+        .calendar-table td {
+            padding: 0.25rem;
+        }
+        
+        .date-number {
+            font-size: 0.8rem;
+        }
+        
+        .booking-item {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+        }
+        
+        .legend-items {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête du calendrier -->
+    <div class="calendar-header">
+        <h1 class="calendar-title">{% trans "Calendrier des réservations" %}</h1>
+        <p class="calendar-subtitle">{% trans "Vue mensuelle de toutes les réservations de salles" %}</p>
+    </div>
+
+    <!-- Contrôles du calendrier -->
+    <div class="calendar-controls">
+        <div class="month-navigation">
+            <a href="?month={{ previous_month|date:'Y-m' }}" class="btn btn-outline-primary">
+                <i class="fas fa-chevron-left me-2"></i>{% trans "Mois précédent" %}
+            </a>
+            <div class="month-display">{{ current_month|date:"F Y" }}</div>
+            <a href="?month={{ next_month|date:'Y-m' }}" class="btn btn-outline-primary">
+                {% trans "Mois suivant" %}<i class="fas fa-chevron-right ms-2"></i>
+            </a>
+        </div>
+        
+        <div class="quick-actions">
+            <a href="{% url 'content_management:room_booking_create' %}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>{% trans "Nouvelle réservation" %}
+            </a>
+            <a href="{% url 'content_management:room_booking_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>{% trans "Liste des réservations" %}
+            </a>
+            <a href="{% url 'content_management:conference_room_list' %}" class="btn btn-outline-info">
+                <i class="fas fa-building me-2"></i>{% trans "Gérer les salles" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Légende -->
+    <div class="legend">
+        <h5 class="legend-title">{% trans "Légende des statuts" %}</h5>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffc107;"></div>
+                <span class="legend-text">{% trans "En attente" %}</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #28a745;"></div>
+                <span class="legend-text">{% trans "Confirmée" %}</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #dc3545;"></div>
+                <span class="legend-text">{% trans "Annulée/Refusée" %}</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #6c757d;"></div>
+                <span class="legend-text">{% trans "Terminée" %}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grille des calendriers par salle -->
+    {% if calendar_data %}
+    <div class="calendar-grid">
+        {% for room_id, room_data in calendar_data.items %}
+        <div class="room-calendar">
+            <div class="room-header">
+                <h5 class="room-name">{{ room_data.room.name }}</h5>
+                <span class="room-status {% if room_data.room.is_active %}status-active{% else %}status-maintenance{% endif %}">
+                    {% if room_data.room.is_active %}{% trans "Active" %}{% else %}{% trans "Maintenance" %}{% endif %}
+                </span>
+            </div>
+            
+            <table class="calendar-table">
+                <thead>
+                    <tr>
+                        <th>{% trans "Lun" %}</th>
+                        <th>{% trans "Mar" %}</th>
+                        <th>{% trans "Mer" %}</th>
+                        <th>{% trans "Jeu" %}</th>
+                        <th>{% trans "Ven" %}</th>
+                        <th>{% trans "Sam" %}</th>
+                        <th>{% trans "Dim" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in room_data.weeks %}
+                    <tr>
+                        {% for day in week %}
+                        <td class="{% if day.is_today %}today{% endif %} {% if day.is_other_month %}other-month{% endif %}">
+                            <div class="date-number">{{ day.date|date:"j" }}</div>
+                            
+                            {% if day.bookings %}
+                                {% for booking in day.bookings %}
+                                <div class="booking-item booking-{{ booking.status }}" 
+                                     title="{{ booking.event_title }} - {{ booking.organization.name }}"
+                                     onclick="showBookingDetails({{ booking.pk }})">
+                                    {{ booking.event_title|truncatechars:15 }}
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- État vide -->
+    <div class="empty-state">
+        <i class="fas fa-calendar-times"></i>
+        <h4>{% trans "Aucune salle trouvée" %}</h4>
+        <p class="mb-3">{% trans "Il n'y a actuellement aucune salle de conférence active pour afficher le calendrier." %}</p>
+        <a href="{% url 'content_management:conference_room_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>{% trans "Créer la première salle" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal pour les détails de réservation -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingModalLabel">{% trans "Détails de la réservation" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="bookingModalBody">
+                <!-- Le contenu sera chargé dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Fermer" %}</button>
+                <a href="#" id="editBookingBtn" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>{% trans "Modifier" %}
+                </a>
+                <a href="#" id="viewBookingBtn" class="btn btn-primary">
+                    <i class="fas fa-eye me-2"></i>{% trans "Voir les détails" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showBookingDetails(bookingId) {
+    // Charger les détails de la réservation via AJAX
+    fetch(`/content-management/reservations/${bookingId}/`)
+        .then(response => response.text())
+        .then(html => {
+            // Extraire le contenu principal de la page
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const content = doc.querySelector('.container-fluid');
+            
+            if (content) {
+                document.getElementById('bookingModalBody').innerHTML = content.innerHTML;
+                
+                // Mettre à jour les liens dans le modal
+                const editBtn = document.getElementById('editBookingBtn');
+                const viewBtn = document.getElementById('viewBookingBtn');
+                
+                editBtn.href = `/content-management/reservations/${bookingId}/modifier/`;
+                viewBtn.href = `/content-management/reservations/${bookingId}/`;
+                
+                // Afficher le modal
+                const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+                modal.show();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('{% trans "Erreur lors du chargement des détails de la réservation" %}');
+        });
+}
+
+// Navigation par mois
+document.addEventListener('DOMContentLoaded', function() {
+    // Ajouter des raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') {
+            // Mois précédent
+            const prevLink = document.querySelector('a[href*="month="]');
+            if (prevLink) window.location.href = prevLink.href;
+        } else if (e.key === 'ArrowRight') {
+            // Mois suivant
+            const nextLink = document.querySelector('a[href*="month="]:last-of-type');
+            if (nextLink) window.location.href = nextLink.href;
+        }
+    });
+});
+</script>
+{% endblock %}

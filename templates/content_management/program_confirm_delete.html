@@ -1,0 +1,748 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Supprimer le Programme "{{ program.title }}" - CSIG{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Êtes-vous sûr de vouloir supprimer ce programme ?
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:program_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:program_detail' program.pk %}" class="btn btn-outline-info">
+        <i class="fas fa-eye me-2"></i>Voir le programme
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.delete-confirmation-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    padding: 2rem;
+}
+
+.content-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.content-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.content-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+}
+
+.content-section:hover::before {
+    width: 8px;
+}
+
+.content-section h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d4786;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.content-section h3 i {
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.8rem;
+}
+
+.section-body {
+    color: #495057;
+    line-height: 1.7;
+}
+
+.program-summary {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+}
+
+.program-placeholder-large {
+    width: 200px;
+    height: 150px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 3rem;
+    border: 2px solid #e9ecef;
+}
+
+.program-meta {
+    margin: 1rem 0;
+}
+
+.program-meta .badge {
+    margin-right: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.program-excerpt {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 12px;
+    border-left: 4px solid #0d4786;
+    margin-top: 1rem;
+}
+
+.program-dates {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.consequences-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.consequence-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.consequence-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+.consequence-item.danger {
+    border-left: 4px solid #dc3545;
+}
+
+.consequence-item.warning {
+    border-left: 4px solid #ffc107;
+}
+
+.consequence-item.info {
+    border-left: 4px solid #17a2b8;
+}
+
+.consequence-item.secondary {
+    border-left: 4px solid #6c757d;
+}
+
+.consequence-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.consequence-item.danger .consequence-icon {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.consequence-item.warning .consequence-icon {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: #212529;
+}
+
+.consequence-item.info .consequence-icon {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+}
+
+.consequence-item.secondary .consequence-icon {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+}
+
+.consequence-content h5 {
+    margin: 0 0 0.5rem 0;
+    color: #0d4786;
+    font-weight: 700;
+}
+
+.consequence-content p {
+    margin: 0;
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+.alternatives-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.alternative-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.alternative-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+.alternative-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.alternative-content h5 {
+    margin: 0 0 0.5rem 0;
+    color: #0d4786;
+    font-weight: 700;
+}
+
+.alternative-content p {
+    margin: 0 0 1rem 0;
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+.form-actions {
+    margin-top: 2rem;
+}
+
+.form-actions .btn {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.form-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.security-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.security-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    font-size: 0.9rem;
+}
+
+.security-item i {
+    color: #0d4786;
+    width: 20px;
+}
+
+.security-item span {
+    color: #495057;
+}
+
+.security-item strong {
+    color: #0d4786;
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .delete-confirmation-container {
+        padding: 1.5rem;
+    }
+    
+    .content-section {
+        padding: 1.5rem;
+    }
+    
+    .content-section h3 {
+        font-size: 1.25rem;
+    }
+    
+    .content-section h3 i {
+        font-size: 1.5rem;
+    }
+    
+    .consequence-item,
+    .alternative-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .consequence-icon,
+    .alternative-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.8rem;
+    }
+    
+    .program-placeholder-large {
+        width: 150px;
+        height: 100px;
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .delete-confirmation-container {
+        padding: 1rem;
+    }
+    
+    .content-section {
+        padding: 1rem;
+    }
+    
+    .content-section h3 {
+        font-size: 1.1rem;
+    }
+    
+    .content-section h3 i {
+        font-size: 1.3rem;
+    }
+    
+    .consequence-item,
+    .alternative-item {
+        padding: 1rem;
+    }
+    
+    .consequence-icon,
+    .alternative-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .program-placeholder-large {
+        width: 120px;
+        height: 80px;
+        font-size: 2rem;
+    }
+    
+    .form-actions .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Règles globales pour empêcher le défilement horizontal */
+@media (max-width: 768px) {
+    body, html {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    
+    .container, .container-fluid {
+        overflow-x: hidden;
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .delete-confirmation-container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .content-section {
+        overflow-x: hidden;
+    }
+    
+    .consequences-list,
+    .alternatives-list {
+        overflow-x: hidden;
+    }
+}
+
+/* Gestion des longs textes */
+.content-section h3,
+.consequence-content h5,
+.consequence-content p,
+.alternative-content h5,
+.alternative-content p,
+.security-item span {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Optimisation des listes */
+.consequences-list,
+.alternatives-list {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Gestion des éléments */
+.consequence-item,
+.alternative-item,
+.security-item {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.content-section {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.consequence-item,
+.alternative-item {
+    animation: fadeInUp 0.5s ease-out;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-confirmation-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Avertissement principal -->
+            <div class="alert alert-danger" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <h4 class="alert-heading">Attention !</h4>
+                        <p class="mb-0">Vous êtes sur le point de supprimer définitivement le programme <strong>"{{ program.title }}"</strong>.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Détails du programme à supprimer -->
+            <div class="content-section mb-4">
+                <h3><i class="fas fa-info-circle me-2"></i>Détails du programme</h3>
+                <div class="section-body">
+                    <div class="program-summary">
+                        <div class="row">
+                            <div class="col-md-4">
+                                {% if program.featured_image %}
+                                <img src="{{ program.featured_image.url }}" alt="{{ program.title }}" class="img-fluid rounded">
+                                {% else %}
+                                <div class="program-placeholder-large">
+                                    <i class="fas fa-project-diagram"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <h4>{{ program.title }}</h4>
+                                {% if program.title_en %}
+                                <p class="text-muted">{{ program.title_en }}</p>
+                                {% endif %}
+                                
+                                <div class="program-meta">
+                                    <span class="badge bg-{{ program.status|yesno:'success,warning,secondary' }} me-2">
+                                        {{ program.get_status_display }}
+                                    </span>
+                                    {% if program.category %}
+                                    <span class="badge bg-info me-2">{{ program.category.name }}</span>
+                                    {% endif %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-user me-1"></i>{{ program.author.get_full_name|default:program.author.username }}
+                                    </span>
+                                </div>
+                                
+                                <div class="program-excerpt mt-3">
+                                    <strong>Description :</strong><br>
+                                    {{ program.description|truncatewords:30|striptags }}
+                                </div>
+                                
+                                <div class="program-dates mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>Créé le {{ program.created_at|date:"d/m/Y à H:i" }}<br>
+                                        <i class="fas fa-edit me-1"></i>Modifié le {{ program.updated_at|date:"d/m/Y à H:i" }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Conséquences de la suppression -->
+            <div class="content-section mb-4">
+                <h3><i class="fas fa-exclamation-circle me-2"></i>Conséquences de la suppression</h3>
+                <div class="section-body">
+                    <div class="consequences-list">
+                        <div class="consequence-item danger">
+                            <div class="consequence-icon">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="consequence-content">
+                                <h5>Suppression définitive</h5>
+                                <p>Ce programme sera supprimé de la base de données et ne pourra plus être récupéré.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="consequence-item warning">
+                            <div class="consequence-icon">
+                                <i class="fas fa-unlink"></i>
+                            </div>
+                            <div class="consequence-content">
+                                <h5>Liens rompus</h5>
+                                <p>Tous les liens vers ce programme deviendront invalides et renverront une erreur 404.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="consequence-item info">
+                            <div class="consequence-icon">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            <div class="consequence-content">
+                                <h5>Fichiers associés</h5>
+                                <p>L'image principale sera également supprimée du serveur.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="consequence-item secondary">
+                            <div class="consequence-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="consequence-content">
+                                <h5>Statistiques perdues</h5>
+                                <p>Toutes les statistiques de vues et d'engagement seront définitivement perdues.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alternatives à la suppression -->
+            <div class="content-section mb-4">
+                <h3><i class="fas fa-lightbulb me-2"></i>Alternatives recommandées</h3>
+                <div class="section-body">
+                    <div class="alternatives-list">
+                        <div class="alternative-item">
+                            <div class="alternative-icon">
+                                <i class="fas fa-eye-slash"></i>
+                            </div>
+                            <div class="alternative-content">
+                                <h5>Mettre en brouillon</h5>
+                                <p>Au lieu de supprimer, vous pouvez mettre le programme en brouillon. Il ne sera plus visible publiquement mais restera accessible pour modification.</p>
+                                <a href="{% url 'content_management:program_edit' program.pk %}" class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit me-1"></i>Modifier le statut
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="alternative-item">
+                            <div class="alternative-icon">
+                                <i class="fas fa-archive"></i>
+                            </div>
+                            <div class="alternative-content">
+                                <h5>Archiver</h5>
+                                <p>Vous pouvez archiver le programme pour le conserver dans l'historique tout en le retirant de la liste principale.</p>
+                                <a href="{% url 'content_management:program_edit' program.pk %}" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-archive me-1"></i>Archiver
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Formulaire de confirmation -->
+            <div class="content-section mb-4">
+                <h3><i class="fas fa-shield-alt me-2"></i>Confirmation finale</h3>
+                <div class="section-body">
+                    <form method="post" id="deleteForm">
+                        {% csrf_token %}
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Rappel :</strong> Cette action est irréversible et ne peut pas être annulée.
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="confirmationText" class="form-label">
+                                Tapez "SUPPRIMER" pour confirmer
+                            </label>
+                            <input type="text" id="confirmationText" class="form-control" 
+                                   placeholder="SUPPRIMER" required>
+                            <div class="form-text">Cette étape de sécurité empêche les suppressions accidentelles.</div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="reason" class="form-label">Raison de la suppression (optionnel)</label>
+                            <textarea id="reason" name="reason" class="form-control" rows="3" 
+                                      placeholder="Expliquez pourquoi vous supprimez ce programme..."></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-danger w-100 mb-2" id="deleteBtn" disabled>
+                                <i class="fas fa-trash me-2"></i>Supprimer définitivement
+                            </button>
+                            <a href="{% url 'content_management:program_list' %}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Informations de sécurité -->
+            <div class="content-section">
+                <h3><i class="fas fa-user-shield me-2"></i>Informations de sécurité</h3>
+                <div class="section-body">
+                    <div class="security-info">
+                        <div class="security-item">
+                            <i class="fas fa-user me-2"></i>
+                            <span>Action effectuée par : <strong>{{ request.user.get_full_name|default:request.user.username }}</strong></span>
+                        </div>
+                        <div class="security-item">
+                            <i class="fas fa-clock me-2"></i>
+                            <span>Date : <strong>{{ now|date:"d/m/Y à H:i" }}</strong></span>
+                        </div>
+                        <div class="security-item">
+                            <i class="fas fa-ip-address me-2"></i>
+                            <span>IP : <strong>{{ request.META.REMOTE_ADDR }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmationText = document.getElementById('confirmationText');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const deleteForm = document.getElementById('deleteForm');
+    
+    // Vérification du texte de confirmation
+    confirmationText.addEventListener('input', function() {
+        if (this.value.trim() === 'SUPPRIMER') {
+            deleteBtn.disabled = false;
+            deleteBtn.classList.remove('btn-secondary');
+            deleteBtn.classList.add('btn-danger');
+        } else {
+            deleteBtn.disabled = true;
+            deleteBtn.classList.remove('btn-danger');
+            deleteBtn.classList.add('btn-secondary');
+        }
+    });
+    
+    // Confirmation supplémentaire avant soumission
+    deleteForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const reason = document.getElementById('reason').value.trim();
+        const confirmation = confirmationText.value.trim();
+        
+        if (confirmation !== 'SUPPRIMER') {
+            alert('Veuillez taper "SUPPRIMER" pour confirmer la suppression.');
+            return;
+        }
+        
+        // Dernière confirmation
+        const finalConfirmation = confirm(
+            '⚠️ ATTENTION - DERNIÈRE CHANCE ⚠️\n\n' +
+            'Vous êtes sur le point de supprimer définitivement le programme "' + '{{ program.title }}' + '".\n\n' +
+            'Cette action est IRREVERSIBLE et ne peut PAS être annulée.\n\n' +
+            'Êtes-vous ABSOLUMENT sûr de vouloir continuer ?'
+        );
+        
+        if (finalConfirmation) {
+            // Afficher un indicateur de chargement
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Suppression en cours...';
+            deleteBtn.disabled = true;
+            
+            // Soumettre le formulaire
+            this.submit();
+        }
+    });
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            window.location.href = '{% url "content_management:program_list" %}';
+        }
+    });
+    
+    // Focus automatique sur le champ de confirmation
+    confirmationText.focus();
+});
+</script>
+{% endblock %}

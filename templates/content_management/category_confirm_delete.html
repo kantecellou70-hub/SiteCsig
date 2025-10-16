@@ -1,0 +1,162 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Supprimer la catégorie - Gestion de contenu CSIG{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+{% endblock %}
+
+{% block page_subtitle %}
+    <p class="text-muted mb-0">Êtes-vous sûr de vouloir supprimer cette catégorie ?</p>
+{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'content_management:category_detail' category.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+        </a>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-exclamation-triangle me-2"></i>Confirmation de suppression</h3>
+                </div>
+                <div class="section-body">
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Attention !
+                        </h5>
+                        <p class="mb-0">
+                            Vous êtes sur le point de supprimer définitivement la catégorie 
+                            <strong>"{{ category.name }}"</strong>.
+                        </p>
+                    </div>
+
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations sur la catégorie
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6>Nom :</h6>
+                                    <p>{{ category.name }}</p>
+                                    
+                                    {% if category.name_en %}
+                                        <h6>Nom en anglais :</h6>
+                                        <p>{{ category.name_en }}</p>
+                                    {% endif %}
+                                    
+                                    {% if category.description %}
+                                        <h6>Description :</h6>
+                                        <p>{{ category.description|truncatewords:30 }}</p>
+                                    {% endif %}
+                                    
+                                    <h6>Statut :</h6>
+                                    <p>
+                                        <span class="badge status-{{ category.status }}">
+                                            {% if category.status == 'active' %}
+                                                <i class="fas fa-check-circle me-1"></i>Active
+                                            {% else %}
+                                                <i class="fas fa-times-circle me-1"></i>Inactive
+                                            {% endif %}
+                                        </span>
+                                    </p>
+                                    
+                                    <h6>Ordre :</h6>
+                                    <p>{{ category.order|default:"Non défini" }}</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <div class="category-icon-large" style="background-color: {{ category.color|default:'#0d4786' }}">
+                                            <i class="{{ category.icon|default:'fas fa-tag' }}"></i>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted">Couleur: {{ category.color|default:"Non définie" }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vérification des dépendances -->
+                    {% if category.articles.exists or category.event_set.exists %}
+                    <div class="alert alert-warning mt-4">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Dépendances détectées
+                        </h6>
+                        <p class="mb-2">Cette catégorie est utilisée par :</p>
+                        <ul class="mb-0">
+                            {% if category.articles.exists %}
+                                <li><strong>{{ category.articles.count }}</strong> article(s)</li>
+                            {% endif %}
+                            {% if category.event_set.exists %}
+                                <li><strong>{{ category.event_set.count }}</strong> événement(s)</li>
+                            {% endif %}
+                        </ul>
+                        <p class="mb-0 mt-2">
+                            <strong>Attention :</strong> La suppression de cette catégorie affectera tous ces éléments.
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <div class="alert alert-warning mt-4">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Conséquences de la suppression
+                        </h6>
+                        <ul class="mb-0">
+                            <li>La catégorie sera définitivement supprimée de la base de données</li>
+                            <li>Tous les articles et événements associés perdront leur catégorie</li>
+                            <li>Cette action ne peut pas être annulée</li>
+                            <li>Les liens vers cette catégorie ne fonctionneront plus</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="form-actions">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <a href="{% url 'content_management:category_detail' category.pk %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Annuler
+                                    </a>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-trash me-2"></i>Confirmer la suppression
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation supplémentaire avant soumission
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const confirmed = confirm('Êtes-vous ABSOLUMENT sûr de vouloir supprimer cette catégorie ? Cette action est irréversible.');
+        if (!confirmed) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

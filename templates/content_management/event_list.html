@@ -1,0 +1,966 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Gestion des événements - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.event-list-container {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.event-filters {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+}
+
+.event-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.event-table th {
+    background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+    color: white;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.event-table td {
+    padding: 1rem 0.75rem;
+    border: none;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+.event-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.event-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+}
+
+.event-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.event-title {
+    font-weight: 700;
+    color: #0d4786;
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.event-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.event-date {
+    text-align: center;
+    font-weight: 600;
+}
+
+.event-date .date {
+    color: #0d4786;
+    font-size: 1.1rem;
+}
+
+.event-date .time {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.event-location {
+    max-width: 200px;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.event-type {
+    text-align: center;
+}
+
+.event-type .badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.event-status {
+    text-align: center;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.status-draft {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.status-published {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+.status-archived {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.event-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.action-btn.view {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1976d2;
+}
+
+.action-btn.edit {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.action-btn.agenda {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+.action-btn.intervenants {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.action-btn.faq {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    color: #2e7d32;
+}
+
+.action-btn.organizers {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    color: #7b1fa2;
+}
+
+.action-btn.delete {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    color: #d32f2f;
+}
+
+.event-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #0d4786, #1a6bb8);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-color: #0d4786;
+}
+
+.stat-card:hover::before {
+    width: 8px;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0d4786;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+}
+
+.stat-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    color: #0d4786;
+    opacity: 0.3;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .filter-row {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 992px) {
+    .event-table {
+        font-size: 0.9rem;
+    }
+    
+    .event-table th,
+    .event-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .event-image {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    .event-filters {
+        padding: 1.5rem;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .event-table {
+        font-size: 0.8rem;
+    }
+    
+    .event-table th,
+    .event-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .event-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    
+    /* Masquer certaines colonnes sur mobile */
+    .event-table th:nth-child(4),
+    .event-table td:nth-child(4),
+    .event-table th:nth-child(6),
+    .event-table td:nth-child(6) {
+        display: none;
+    }
+    
+    /* Ajuster les largeurs des colonnes restantes */
+    .checkbox-cell {
+        width: 40px;
+        min-width: 40px;
+    }
+    
+    .image-cell {
+        width: 60px;
+        min-width: 60px;
+    }
+    
+    .event-info-cell {
+        min-width: 0;
+        width: auto;
+    }
+    
+    .event-type {
+        width: 80px;
+        min-width: 80px;
+    }
+    
+    .event-status {
+        width: 80px;
+        min-width: 80px;
+    }
+    
+    .event-actions {
+        width: 50px;
+        min-width: 50px;
+    }
+    
+    /* Ajuster les stats sur mobile */
+    .event-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .event-list-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .event-filters {
+        padding: 1rem;
+    }
+    
+    .event-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    /* Masquer encore plus de colonnes sur très petit écran */
+    .event-table th:nth-child(5),
+    .event-table td:nth-child(5) {
+        display: none;
+    }
+    
+    /* Ajuster les largeurs finales */
+    .checkbox-cell {
+        width: 35px;
+        min-width: 35px;
+    }
+    
+    .image-cell {
+        width: 50px;
+        min-width: 50px;
+    }
+    
+    .event-info-cell {
+        width: auto;
+        min-width: 0;
+    }
+    
+    .event-actions {
+        width: 45px;
+        min-width: 45px;
+    }
+    
+    /* Réduire encore plus le padding */
+    .event-table th,
+    .event-table td {
+        padding: 0.4rem 0.2rem;
+    }
+    
+    .event-image {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .event-title {
+        font-size: 0.85rem;
+        line-height: 1.2;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .event-meta {
+        font-size: 0.7rem;
+    }
+    
+    .event-meta span {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.65rem;
+    }
+    
+    .status-badge {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.6rem;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    /* Ajuster les filtres sur très petit écran */
+    .filter-group label {
+        font-size: 0.8rem;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .filter-actions .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajuster la pagination */
+    .pagination .page-link {
+        padding: 0.4rem 0.6rem;
+        margin: 0 0.1rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajuster les actions en masse */
+    .bulk-actions .card-body {
+        padding: 1rem;
+    }
+    
+    .bulk-actions .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .bulk-actions select {
+        width: 100%;
+    }
+    
+    .bulk-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Styles spécifiques pour les très petits écrans */
+@media (max-width: 480px) {
+    .event-table {
+        font-size: 0.75rem;
+    }
+    
+    .event-table th,
+    .event-table td {
+        padding: 0.3rem 0.15rem;
+    }
+    
+    .event-title {
+        font-size: 0.8rem;
+        -webkit-line-clamp: 1;
+    }
+    
+    .event-meta {
+        display: none;
+    }
+    
+    .checkbox-custom {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .action-btn {
+        width: 25px;
+        height: 25px;
+        font-size: 0.65rem;
+    }
+    
+    .stat-card {
+        padding: 0.8rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-calendar-alt me-2"></i>Gestion des événements
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Gérez tous les événements scientifiques, leurs agendas, intervenants, FAQ et organisateurs
+</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'content_management:event_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouvel événement
+    </a>
+    <a href="{% url 'content_management:event_tag_list' %}" class="btn btn-outline-info">
+        <i class="fas fa-tags me-2"></i>Gérer les tags
+    </a>
+    <button class="btn btn-outline-secondary" id="toggleFilters">
+        <i class="fas fa-filter me-2"></i>Filtres
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="event-list-container">
+    <!-- Statistiques -->
+    <div class="event-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-number">{{ page_obj.paginator.count|default:0 }}</div>
+            <div class="stat-label">Total événements</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-number">{{ page_obj.object_list|length }}</div>
+            <div class="stat-label">Événements affichés</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-number">{{ page_obj.object_list|length }}</div>
+            <div class="stat-label">À la une</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number">{{ page_obj.object_list|length }}</div>
+            <div class="stat-label">Intervenants</div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="event-filters" id="eventFilters" style="display: none;">
+        <form method="get" class="filter-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="event_type">Type d'événement</label>
+                    <select name="event_type" id="event_type" class="form-control">
+                        <option value="">Tous les types</option>
+                        {% for value, label in event_types %}
+                        <option value="{{ value }}" {% if request.GET.event_type == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="status">Statut</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="">Tous les statuts</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="date_from">Date de début</label>
+                    <input type="date" name="date_from" id="date_from" class="form-control" 
+                           value="{{ request.GET.date_from }}">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="date_to">Date de fin</label>
+                    <input type="date" name="date_to" id="date_to" class="form-control" 
+                           value="{{ request.GET.date_to }}">
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Filtrer
+                </button>
+                <a href="{% url 'content_management:event_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tableau des événements -->
+    <div class="table-responsive">
+        <table class="event-table">
+            <thead>
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom" id="headerCheckbox">
+                    </th>
+                    <th>Image</th>
+                    <th>Événement</th>
+                    <th>Date & Heure</th>
+                    <th>Lieu</th>
+                    <th>Type</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in page_obj %}
+                <tr>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="checkbox-custom event-checkbox" value="{{ event.pk }}">
+                    </td>
+                    
+                    <td class="image-cell">
+                        {% if event.featured_image %}
+                        <img src="{{ event.featured_image.url }}" alt="{{ event.title }}" class="event-image">
+                        {% else %}
+                        <div class="event-image d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-calendar-alt text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="event-info-cell">
+                        <div class="event-info">
+                            <div class="event-title">{{ event.title }}</div>
+                            <div class="event-meta">
+                                <span><i class="fas fa-user me-1"></i>{{ event.organizer }}</span>
+                                {% if event.is_featured %}
+                                <span class="badge bg-warning ms-2">
+                                    <i class="fas fa-star me-1"></i>À la une
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td class="event-date">
+                        <div class="date">{{ event.start_date|date:"d/m/Y" }}</div>
+                        <div class="time">{{ event.start_time|time:"H:i" }} - {{ event.end_time|time:"H:i" }}</div>
+                        {% if event.is_multi_day %}
+                        <small class="text-muted">+{{ event.duration_days }} jour(s)</small>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="event-location">
+                        {{ event.location }}
+                        {% if event.city %}<br><small class="text-muted">{{ event.city }}</small>{% endif %}
+                    </td>
+                    
+                    <td class="event-type">
+                        <span class="badge" style="background-color: #0d4786; color: white;">
+                            {{ event.get_event_type_display }}
+                        </span>
+                    </td>
+                    
+                    <td class="event-status">
+                        <span class="status-badge status-{{ event.status }}">
+                            {{ event.get_status_display }}
+                        </span>
+                    </td>
+                    
+                    <td class="event-actions">
+                        <a href="{% url 'content_management:event_detail' event.pk %}" 
+                           class="action-btn view" title="Voir les détails">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <h5>Aucun événement trouvé</h5>
+                            <p>Créez votre premier événement pour commencer.</p>
+                            <a href="{% url 'content_management:event_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Créer un événement
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="d-flex justify-content-center py-4">
+        <nav aria-label="Navigation des événements">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Actions en masse -->
+<div class="bulk-actions mt-3" id="bulkActions" style="display: none;">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted">
+                    <span id="selectedCount">0</span> événement(s) sélectionné(s)
+                </span>
+                
+                <select class="form-select" id="bulkAction" style="width: auto;">
+                    <option value="">Choisir une action...</option>
+                    <option value="publish">Publier</option>
+                    <option value="draft">Mettre en brouillon</option>
+                    <option value="feature">Mettre en avant</option>
+                    <option value="unfeature">Retirer de la une</option>
+                    <option value="delete">Supprimer</option>
+                </select>
+                
+                <button class="btn btn-primary" onclick="performBulkAction()">
+                    <i class="fas fa-play me-2"></i>Exécuter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des filtres
+    const toggleFiltersBtn = document.getElementById('toggleFilters');
+    const eventFilters = document.getElementById('eventFilters');
+    
+    if (toggleFiltersBtn && eventFilters) {
+        toggleFiltersBtn.addEventListener('click', function() {
+            if (eventFilters.style.display === 'none') {
+                eventFilters.style.display = 'block';
+                this.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Masquer les filtres';
+            } else {
+                eventFilters.style.display = 'none';
+                this.innerHTML = '<i class="fas fa-filter me-2"></i>Filtres';
+            }
+        });
+    }
+    
+    // Gestion de la sélection multiple
+    initializeSelectAll();
+    initializeBulkActions();
+});
+
+
+
+// Initialiser la sélection multiple
+function initializeSelectAll() {
+    const headerCheckbox = document.getElementById('headerCheckbox');
+    const eventCheckboxes = document.querySelectorAll('.event-checkbox');
+    
+    if (headerCheckbox) {
+        headerCheckbox.addEventListener('change', function() {
+            eventCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+    
+    eventCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+}
+
+// Initialiser les actions en masse
+function initializeBulkActions() {
+    updateBulkActions();
+}
+
+// Mettre à jour l'affichage des actions en masse
+function updateBulkActions() {
+    const selectedCheckboxes = document.querySelectorAll('.event-checkbox:checked');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (selectedCheckboxes.length > 0) {
+        bulkActions.style.display = 'block';
+        selectedCount.textContent = selectedCheckboxes.length;
+    } else {
+        bulkActions.style.display = 'none';
+    }
+}
+
+// Exécuter une action en masse
+function performBulkAction() {
+    const action = document.getElementById('bulkAction').value;
+    const selectedCheckboxes = document.querySelectorAll('.event-checkbox:checked');
+    
+    if (!action) {
+        alert('Veuillez sélectionner une action.');
+        return;
+    }
+    
+    if (selectedCheckboxes.length === 0) {
+        alert('Aucun événement sélectionné.');
+        return;
+    }
+    
+    if (action === 'delete' && !confirm('Êtes-vous sûr de vouloir supprimer ces événements ?')) {
+        return;
+    }
+    
+    const eventIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+    const formData = new FormData();
+    formData.append('action', action);
+    eventIds.forEach(id => formData.append('event_ids[]', id));
+    
+    fetch('{% url "content_management:bulk_event_action" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erreur lors de l\'action en masse : ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'action en masse. Veuillez réessayer.');
+    });
+}
+</script>
+{% endblock %}

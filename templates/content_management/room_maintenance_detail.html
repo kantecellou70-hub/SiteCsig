@@ -1,0 +1,572 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}{{ maintenance.title }}{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:room_maintenance_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la maintenance
+    </a>
+    <a href="{% url 'content_management:room_maintenance_edit' maintenance.pk %}" class="btn btn-warning">
+        <i class="fas fa-edit me-2"></i>Modifier
+    </a>
+    <a href="{% url 'content_management:room_maintenance_confirm_delete' maintenance.pk %}" class="btn btn-danger">
+        <i class="fas fa-trash me-2"></i>Supprimer
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="room-maintenance-detail-container">
+    <!-- En-tête de la maintenance -->
+    <div class="maintenance-header">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="maintenance-title">
+                    <h1>
+                        <i class="fas fa-tools me-3"></i>
+                        {{ maintenance.title }}
+                    </h1>
+                    <p class="maintenance-subtitle">
+                        Maintenance de la salle <strong>{{ maintenance.room.name }}</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="maintenance-status">
+                    <div class="status-badge {{ maintenance.status }}">
+                        <i class="fas fa-{% if maintenance.status == 'completed' %}check-circle{% elif maintenance.status == 'in_progress' %}spinner{% elif maintenance.status == 'planned' %}calendar{% else %}clock{% endif %} me-2"></i>
+                        {{ maintenance.get_status_display }}
+                    </div>
+                    <div class="priority-badge {{ maintenance.priority }}">
+                        <i class="fas fa-flag me-2"></i>
+                        {{ maintenance.get_priority_display }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Informations principales -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Informations générales</h3>
+                </div>
+                <div class="section-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-door-open me-2"></i>Salle
+                            </div>
+                            <div class="info-value">
+                                <a href="{% url 'content_management:conference_room_detail' maintenance.room.slug %}" class="text-decoration-none">
+                                    {{ maintenance.room.name }}
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-tag me-2"></i>Type
+                            </div>
+                            <div class="info-value">
+                                <span class="type-badge {{ maintenance.maintenance_type }}">
+                                    {{ maintenance.get_maintenance_type_display }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-calendar me-2"></i>Période
+                            </div>
+                            <div class="info-value">
+                                <div class="date-range">
+                                    <div class="start-date">
+                                        <strong>Début :</strong> {{ maintenance.start_date|date:"d/m/Y à H:i" }}
+                                    </div>
+                                    <div class="end-date">
+                                        <strong>Fin :</strong> {{ maintenance.end_date|date:"d/m/Y à H:i" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-clock me-2"></i>Durée
+                            </div>
+                            <div class="info-value">
+                                {% if maintenance.duration_days > 0 %}
+                                    {{ maintenance.duration_days }} jour(s)
+                                {% else %}
+                                    {{ maintenance.duration_hours }} heure(s)
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if maintenance.estimated_cost %}
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-money-bill me-2"></i>Coût estimé
+                            </div>
+                            <div class="info-value">
+                                <span class="cost-badge">{{ maintenance.estimated_cost|floatformat:0 }} GNF</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-calendar-plus me-2"></i>Créée le
+                            </div>
+                            <div class="info-value">
+                                {{ maintenance.created_at|date:"d/m/Y à H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Description -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-align-left me-2"></i>Description</h3>
+                </div>
+                <div class="section-body">
+                    <div class="description-content">
+                        {{ maintenance.description|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notes -->
+            {% if maintenance.notes %}
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-sticky-note me-2"></i>Notes additionnelles</h3>
+                </div>
+                <div class="section-body">
+                    <div class="notes-content">
+                        {{ maintenance.notes|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Timeline -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-history me-2"></i>Historique</h3>
+                </div>
+                <div class="section-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker created"></div>
+                            <div class="timeline-content">
+                                <h6>Maintenance créée</h6>
+                                <p class="text-muted mb-0">{{ maintenance.created_at|date:"d/m/Y à H:i" }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if maintenance.updated_at != maintenance.created_at %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker updated"></div>
+                            <div class="timeline-content">
+                                <h6>Dernière modification</h6>
+                                <p class="text-muted mb-0">{{ maintenance.updated_at|date:"d/m/Y à H:i" }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker scheduled"></div>
+                            <div class="timeline-content">
+                                <h6>Maintenance planifiée</h6>
+                                <p class="text-muted mb-0">Du {{ maintenance.start_date|date:"d/m/Y" }} au {{ maintenance.end_date|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Actions rapides -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-bolt me-2"></i>Actions rapides</h3>
+                </div>
+                <div class="section-body">
+                    <div class="quick-actions">
+                        <a href="{% url 'content_management:room_maintenance_edit' maintenance.pk %}" class="btn btn-warning btn-lg w-100 mb-2">
+                            <i class="fas fa-edit me-2"></i>Modifier
+                        </a>
+                        <a href="{% url 'content_management:room_maintenance_confirm_delete' maintenance.pk %}" class="btn btn-danger btn-lg w-100 mb-2">
+                            <i class="fas fa-trash me-2"></i>Supprimer
+                        </a>
+                        <a href="{% url 'content_management:room_maintenance_list' %}" class="btn btn-outline-secondary btn-lg w-100">
+                            <i class="fas fa-list me-2"></i>Liste des maintenances
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informations sur la salle -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-door-open me-2"></i>Informations sur la salle</h3>
+                </div>
+                <div class="section-body">
+                    <div class="room-info">
+                        <div class="room-item">
+                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                            <div>
+                                <strong>Emplacement</strong>
+                                <p class="mb-0">{{ maintenance.room.location|default:"Non spécifié" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="room-item">
+                            <i class="fas fa-users me-2 text-success"></i>
+                            <div>
+                                <strong>Capacité</strong>
+                                <p class="mb-0">{{ maintenance.room.capacity }} personnes</p>
+                            </div>
+                        </div>
+                        
+                        <div class="room-item">
+                            <i class="fas fa-ruler-combined me-2 text-info"></i>
+                            <div>
+                                <strong>Superficie</strong>
+                                <p class="mb-0">{{ maintenance.room.area }} m²</p>
+                            </div>
+                        </div>
+                        
+                        <div class="room-item">
+                            <i class="fas fa-money-bill me-2 text-warning"></i>
+                            <div>
+                                <strong>Tarif horaire</strong>
+                                <p class="mb-0">{{ maintenance.room.hourly_rate|floatformat:0 }} GNF/h</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Impact sur les réservations -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-exclamation-triangle me-2"></i>Impact sur les réservations</h3>
+                </div>
+                <div class="section-body">
+                    <div class="impact-info">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Attention :</strong> Cette maintenance peut affecter les réservations existantes.
+                        </div>
+                        
+                        <div class="impact-details">
+                            <p><strong>Période :</strong> {{ maintenance.start_date|date:"d/m/Y" }} - {{ maintenance.end_date|date:"d/m/Y" }}</p>
+                            <p><strong>Durée :</strong> 
+                                {% if maintenance.duration_days > 0 %}
+                                    {{ maintenance.duration_days }} jour(s)
+                                {% else %}
+                                    {{ maintenance.duration_hours }} heure(s)
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="impact-actions">
+                            <a href="{% url 'content_management:room_booking_list' %}?room={{ maintenance.room.id }}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-calendar me-2"></i>Voir les réservations
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.room-maintenance-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.maintenance-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 2rem;
+}
+
+.maintenance-title h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.maintenance-subtitle {
+    margin: 0.5rem 0 0 0;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.maintenance-status {
+    text-align: right;
+}
+
+.status-badge, .priority-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.status-badge.completed {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.in_progress {
+    background: var(--warning-color);
+    color: white;
+}
+
+.status-badge.planned {
+    background: var(--info-color);
+    color: white;
+}
+
+.status-badge.cancelled {
+    background: var(--danger-color);
+    color: white;
+}
+
+.priority-badge.low {
+    background: var(--success-color);
+    color: white;
+}
+
+.priority-badge.medium {
+    background: var(--warning-color);
+    color: white;
+}
+
+.priority-badge.high {
+    background: var(--danger-color);
+    color: white;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.info-label {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.info-value {
+    color: var(--gray-800);
+    font-size: 1rem;
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.type-badge.scheduled {
+    background: var(--success-color);
+    color: white;
+}
+
+.type-badge.emergency {
+    background: var(--danger-color);
+    color: white;
+}
+
+.type-badge.preventive {
+    background: var(--warning-color);
+    color: white;
+}
+
+.date-range {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cost-badge {
+    background: var(--success-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.description-content, .notes-content {
+    line-height: 1.6;
+    color: var(--gray-700);
+}
+
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--gray-300);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -1.5rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px var(--gray-300);
+}
+
+.timeline-marker.created {
+    background: var(--success-color);
+}
+
+.timeline-marker.updated {
+    background: var(--info-color);
+}
+
+.timeline-marker.scheduled {
+    background: var(--warning-color);
+}
+
+.timeline-content h6 {
+    margin: 0 0 0.25rem 0;
+    color: var(--gray-800);
+    font-weight: 600;
+}
+
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.room-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.room-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.room-item i {
+    font-size: 1.25rem;
+    margin-top: 0.25rem;
+}
+
+.room-item strong {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.room-item p {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.impact-info {
+    text-align: center;
+}
+
+.impact-details {
+    margin: 1rem 0;
+    text-align: left;
+}
+
+.impact-details p {
+    margin: 0.5rem 0;
+    color: var(--gray-600);
+}
+
+.impact-actions {
+    margin-top: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .maintenance-header {
+        padding: 1.5rem;
+    }
+    
+    .maintenance-title h1 {
+        font-size: 2rem;
+    }
+    
+    .maintenance-status {
+        text-align: left;
+        margin-top: 1rem;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .timeline {
+        padding-left: 1.5rem;
+    }
+    
+    .timeline-marker {
+        left: -1.25rem;
+    }
+}
+</style>
+{% endblock %}

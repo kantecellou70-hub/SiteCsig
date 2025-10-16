@@ -1,0 +1,518 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Gérer l'agenda - {{ event.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .agenda-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .agenda-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .agenda-body {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .days-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .day-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .day-card:hover {
+        border-color: #0d4786;
+        box-shadow: 0 8px 25px rgba(13, 71, 134, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .day-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #0d4786, #1a6bb8);
+    }
+    
+    .day-number {
+        background: linear-gradient(135deg, #0d4786, #1a6bb8);
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin: 0 auto 1rem;
+    }
+    
+    .day-date {
+        color: #0d4786;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .day-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+        text-align: center;
+    }
+    
+    .day-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-align: center;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+    
+    .day-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+    
+    .add-day-section {
+        text-align: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        border: 2px dashed #dee2e6;
+        transition: all 0.3s ease;
+    }
+    
+    .add-day-section:hover {
+        border-color: #0d4786;
+        background: linear-gradient(135deg, #e3f2fd 0%, #d1ecf1 100%);
+    }
+    
+    .add-day-btn {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .add-day-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+    
+    .agenda-items {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .agenda-item {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .agenda-time {
+        color: #0d4786;
+        font-weight: 600;
+    }
+    
+    @media (max-width: 768px) {
+        .days-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .agenda-header {
+            padding: 1.5rem;
+        }
+        
+        .agenda-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="agenda-container">
+        <!-- Header -->
+        <div class="agenda-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fas fa-calendar-day me-3"></i>Gérer l'agenda
+                    </h1>
+                    <h3 class="mb-0 opacity-75">{{ event.title }}</h3>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{% url 'content_management:event_detail' event.pk %}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à l'événement
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="agenda-body">
+            <!-- Section d'ajout -->
+            <div class="add-day-section">
+                <h4 class="mb-3">
+                    <i class="fas fa-plus-circle me-2"></i>Ajouter un nouveau jour
+                </h4>
+                <p class="text-muted mb-3">Cliquez sur le bouton ci-dessous pour ajouter un nouveau jour à l'agenda de cet événement</p>
+                <button type="button" class="add-day-btn" data-bs-toggle="modal" data-bs-target="#addDayModal">
+                    <i class="fas fa-plus"></i>Ajouter un jour
+                </button>
+            </div>
+
+            <!-- Grille des jours existants -->
+            <div class="days-section">
+                <h4 class="mb-3">
+                    <i class="fas fa-calendar-alt me-2"></i>Jours de l'événement
+                </h4>
+                
+                {% if event.days.all %}
+                    <div class="days-grid">
+                        {% for day in event.days.all %}
+                        <div class="day-card">
+                            <div class="day-number">{{ day.day_number }}</div>
+                            <div class="day-date">{{ day.date|date:"d/m/Y" }}</div>
+                            <div class="day-title">{{ day.title|default:"Jour "|add:day.day_number|add:" - "|add:day.date|date:"d/m" }}</div>
+                            {% if day.description %}
+                                <div class="day-description">{{ day.description }}</div>
+                            {% endif %}
+                            
+                            <!-- Afficher les éléments d'agenda s'il y en a -->
+                            {% if day.activities.all %}
+                                <div class="agenda-items">
+                                    <small class="text-muted">Éléments d'agenda :</small>
+                                    {% for item in day.activities.all|slice:":3" %}
+                                        <div class="agenda-item">
+                                            <span class="agenda-time">{{ item.start_time|time:"H:i" }} - {{ item.end_time|time:"H:i" }}</span>
+                                            <span class="agenda-activity">{{ item.activity }}</span>
+                                        </div>
+                                    {% endfor %}
+                                    {% if day.activities.count > 3 %}
+                                        <div class="agenda-item text-muted">
+                                            <small>+{{ day.activities.count|add:"-3" }} autres éléments</small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="day-actions">
+                                <a href="{% url 'content_management:event_day_activities' event.pk day.pk %}" class="btn btn-outline-info btn-sm" title="Gérer les activités">
+                                    <i class="fas fa-clock"></i>
+                                </a>
+                                <button class="btn btn-outline-primary btn-sm" onclick="editDay({{ day.pk }})" title="Modifier le jour">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteDay({{ day.pk }})" title="Supprimer le jour">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-day"></i>
+                        <h5>Aucun jour programmé pour le moment</h5>
+                        <p class="text-muted">Commencez par ajouter le premier jour de l'événement</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'ajout de jour -->
+<div class="modal fade" id="addDayModal" tabindex="-1" aria-labelledby="addDayModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDayModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Ajouter un jour
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data" id="addDayForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="day_date" class="form-label">Date *</label>
+                                <input type="date" class="form-control" id="day_date" name="date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="day_number" class="form-label">Numéro du jour *</label>
+                                <input type="number" class="form-control" id="day_number" name="day_number" min="1" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="day_title" class="form-label">Titre du jour</label>
+                        <input type="text" class="form-control" id="day_title" name="title" placeholder="Ex: Jour 1 - Conférences plénières">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="day_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="day_description" name="description" rows="3" placeholder="Description optionnelle de ce jour"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Ajouter le jour
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce jour ?</p>
+                <p class="text-muted small mb-0">Cette action est irréversible et supprimera définitivement le jour et tous ses éléments d'agenda.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM chargé, initialisation en cours...');
+    
+    // Soumission du formulaire d'ajout
+    const addDayForm = document.getElementById('addDayForm');
+    addDayForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('{% url "content_management:event_manage_agenda" event.pk %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Jour ajouté avec succès !', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showNotification('Erreur lors de l\'ajout: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur lors de l\'ajout: ' + error.message, 'error');
+        });
+    });
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + N pour ajouter un jour
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+            e.preventDefault();
+            document.getElementById('addDayModal').click();
+        }
+        
+        // Échap pour fermer le modal
+        if (e.key === 'Escape') {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addDayModal'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+    });
+    
+    console.log('JavaScript de base chargé');
+});
+
+// Fonction de notification globale
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+            <span class="flex-grow-1">${message}</span>
+            <button type="button" class="btn-close" onclick="this.closest('.alert').remove()"></button>
+        </div>
+    `;
+    document.body.appendChild(notification);
+
+    // Auto-remove après 5 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+console.log('Fonctions globales définies');
+
+// Fonctions globales pour éditer et supprimer
+function editDay(dayId) {
+    console.log('editDay appelé avec ID:', dayId);
+    // Rediriger vers la page d'édition
+    window.location.href = `{% url "content_management:event_day_edit" event.pk 0 %}`.replace('0', dayId);
+}
+
+function deleteDay(dayId) {
+    console.log('deleteDay appelé avec ID:', dayId);
+    
+    // Vérification simple
+    if (!dayId) {
+        console.error('ID jour manquant');
+        return;
+    }
+    
+    // Stocker l'ID du jour à supprimer
+    window.dayToDelete = dayId;
+    
+    // Afficher le modal Bootstrap de confirmation
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    deleteModal.show();
+}
+
+// Gérer la confirmation de suppression
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            const dayId = window.dayToDelete;
+            if (dayId) {
+                console.log('Confirmation de suppression pour ID:', dayId);
+                performDelete(dayId);
+                
+                // Fermer le modal
+                const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+                if (deleteModal) {
+                    deleteModal.hide();
+                }
+            }
+        });
+    }
+});
+
+function performDelete(dayId) {
+    console.log('Exécution de la suppression pour ID:', dayId);
+    
+    // Afficher un indicateur de chargement
+    showNotification('Suppression en cours...', 'info');
+    
+    fetch(`{% url "content_management:event_day_delete" event.pk 0 %}`.replace('0', dayId), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            showNotification('Jour supprimé avec succès !', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showNotification('Erreur lors de la suppression', 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur lors de la suppression: ' + error.message, 'error');
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,354 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} une valeur - CSIG{% endblock %}
+{% block page_title %}{{ action }} une valeur{% endblock %}
+{% block page_subtitle %}{% if value %}Modifiez les informations de la valeur{% else %}Créez une nouvelle valeur fondamentale{% endif %}{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'content_management:core_value_list' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-{% if value %}edit{% else %}plus{% endif %} me-2"></i>
+                    {{ action }} une valeur fondamentale
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="valueForm">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.icon.id_for_label }}" class="form-label">
+                                    <strong><i class="fas fa-icons me-2 text-success"></i>Icône FontAwesome *</strong>
+                                </label>
+                                {{ form.icon }}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Exemples : fas fa-lightbulb, fas fa-heart, fas fa-star, fas fa-handshake
+                                </div>
+                                {% if form.icon.errors %}
+                                    <div class="text-danger mt-1">{{ form.icon.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.order.id_for_label }}" class="form-label">
+                                    <strong><i class="fas fa-sort-numeric-up me-2 text-success"></i>Ordre d'affichage</strong>
+                                </label>
+                                {{ form.order }}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Plus le nombre est petit, plus la valeur apparaîtra en premier
+                                </div>
+                                {% if form.order.errors %}
+                                    <div class="text-danger mt-1">{{ form.order.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mt-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">
+                            <strong><i class="fas fa-tag me-2 text-success"></i>Nom de la valeur *</strong>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger mt-1">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mt-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <strong><i class="fas fa-align-left me-2 text-success"></i>Description *</strong>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger mt-1">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mt-4">
+                        <div class="form-check form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                <strong><i class="fas fa-toggle-on me-2 text-success"></i>Valeur active</strong>
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Seules les valeurs actives seront affichées sur la page publique
+                        </div>
+                    </div>
+                    
+                    <!-- Boutons d'action -->
+                    <div class="mt-5 pt-4 border-top">
+                        <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                            <a href="{% url 'content_management:core_value_list' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>{{ action }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Aide pour les icônes -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-question-circle me-2 text-success"></i>Aide pour les icônes FontAwesome
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="icon-category">
+                            <h6 class="text-success mb-3">
+                                <i class="fas fa-heart me-2"></i>Valeurs Humaines
+                            </h6>
+                            <div class="icon-list">
+                                <div class="icon-item">
+                                    <i class="fas fa-heart me-2"></i>fas fa-heart
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-handshake me-2"></i>fas fa-handshake
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-users me-2"></i>fas fa-users
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-user-friends me-2"></i>fas fa-user-friends
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="icon-category">
+                            <h6 class="text-warning mb-3">
+                                <i class="fas fa-lightbulb me-2"></i>Excellence et Innovation
+                            </h6>
+                            <div class="icon-list">
+                                <div class="icon-item">
+                                    <i class="fas fa-lightbulb me-2"></i>fas fa-lightbulb
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-star me-2"></i>fas fa-star
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-trophy me-2"></i>fas fa-trophy
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-medal me-2"></i>fas fa-medal
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="icon-category">
+                            <h6 class="text-info mb-3">
+                                <i class="fas fa-seedling me-2"></i>Développement
+                            </h6>
+                            <div class="icon-list">
+                                <div class="icon-item">
+                                    <i class="fas fa-seedling me-2"></i>fas fa-seedling
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-rocket me-2"></i>fas fa-rocket
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-chart-line me-2"></i>fas fa-chart-line
+                                </div>
+                                <div class="icon-item">
+                                    <i class="fas fa-globe-africa me-2"></i>fas fa-globe-africa
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Consultez <a href="https://fontawesome.com/icons" target="_blank" class="text-decoration-none">FontAwesome</a> pour plus d'icônes disponibles.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles généraux du formulaire */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Switch personnalisé */
+.form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Boutons */
+.btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* Catégories d'icônes */
+.icon-category {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    height: 100%;
+}
+
+.icon-category h6 {
+    font-weight: 600;
+    border-bottom: 2px solid;
+    padding-bottom: 0.5rem;
+}
+
+.icon-list {
+    margin-top: 1rem;
+}
+
+.icon-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.icon-item:last-child {
+    border-bottom: none;
+}
+
+.icon-item i {
+    width: 20px;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .btn-lg {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .icon-category {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .d-flex.flex-column.flex-md-row {
+        flex-direction: column !important;
+    }
+}
+
+/* Animations */
+.card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Gradients */
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+}
+
+/* Icônes colorées */
+.text-success { color: #28a745 !important; }
+.text-warning { color: #ffc107 !important; }
+.text-info { color: #17a2b8 !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,929 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}
+    {% if form.instance.pk %}Modifier la réservation{% else %}Nouvelle réservation{% endif %}
+{% endblock %}
+
+{% block page_actions %}
+<div class="header-actions">
+    <a href="{% url 'content_management:room_booking_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux réservations
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="room-booking-form-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>
+                        <i class="fas fa-calendar-plus me-2"></i>
+                        {% if form.instance.pk %}Modifier la réservation{% else %}Nouvelle réservation{% endif %}
+                    </h3>
+                </div>
+                <div class="section-body">
+                    <!-- Messages Django -->
+                    {% if messages %}
+                        <div class="messages-container mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Détails des conflits -->
+                    {% if conflicts_summary and conflicts_summary.has_conflicts %}
+                        <div class="conflicts-section mb-4">
+                            <div class="alert alert-warning">
+                                <h5 class="alert-heading">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Conflits détectés
+                                </h5>
+                                <p class="mb-3">{{ conflicts_summary.message }}</p>
+                                
+                                {% if conflicts_summary.details %}
+                                    <div class="conflicts-details">
+                                        <h6>Détails des conflits :</h6>
+                                        <ul class="list-unstyled mb-3">
+                                            {% for detail in conflicts_summary.details %}
+                                                <li class="mb-2">
+                                                    <i class="fas fa-times-circle text-danger me-2"></i>
+                                                    {{ detail }}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="conflicts-summary">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="conflict-stat">
+                                                <strong>Nombre de conflits :</strong>
+                                                <span class="badge bg-warning">{{ conflicts_summary.conflicts_count }}</span>
+                                            </div>
+                                        </div>
+                                        {% if conflicts_summary.total_overlap_hours > 0 %}
+                                        <div class="col-md-4">
+                                            <div class="conflict-stat">
+                                                <strong>Chevauchement total :</strong>
+                                                <span class="badge bg-danger">{{ conflicts_summary.total_overlap_hours|floatformat:1 }}h</span>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% if conflicts_summary.total_overlap_days > 0 %}
+                                        <div class="col-md-4">
+                                            <div class="conflict-stat">
+                                                <strong>Jours de conflit :</strong>
+                                                <span class="badge bg-danger">{{ conflicts_summary.total_overlap_days|floatformat:1 }}j</span>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                <div class="conflicts-recommendations">
+                                    <h6><i class="fas fa-lightbulb me-2"></i>Recommandations :</h6>
+                                    <ul class="mb-0">
+                                        <li>Modifiez les dates et heures de votre réservation</li>
+                                        <li>Choisissez une autre salle disponible</li>
+                                        <li>Contactez l'administrateur pour plus d'informations</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" class="room-booking-form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Salle -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.room.id_for_label }}" class="form-label">
+                                        <i class="fas fa-door-open me-2"></i>Salle *
+                                    </label>
+                                    {{ form.room }}
+                                    {% if form.room.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.room.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Sélectionnez la salle à réserver
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Organisation -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.organization.id_for_label }}" class="form-label">
+                                        <i class="fas fa-building me-2"></i>Organisation *
+                                    </label>
+                                    {{ form.organization }}
+                                    {% if form.organization.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.organization.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Organisation qui réserve la salle
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Titre de l'événement -->
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="{{ form.event_title.id_for_label }}" class="form-label">
+                                        <i class="fas fa-heading me-2"></i>Titre de l'événement *
+                                    </label>
+                                    {{ form.event_title }}
+                                    {% if form.event_title.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.event_title.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Date et heure de début -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.start_time.id_for_label }}" class="form-label">
+                                        <i class="fas fa-play me-2"></i>Début *
+                                    </label>
+                                    {{ form.start_time }}
+                                    {% if form.start_time.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.start_time.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Date et heure de fin -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.end_time.id_for_label }}" class="form-label">
+                                        <i class="fas fa-stop me-2"></i>Fin *
+                                    </label>
+                                    {{ form.end_time }}
+                                    {% if form.end_time.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.end_time.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Nombre de participants -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.attendees_count.id_for_label }}" class="form-label">
+                                        <i class="fas fa-users me-2"></i>Nombre de participants *
+                                    </label>
+                                    {{ form.attendees_count }}
+                                    {% if form.attendees_count.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.attendees_count.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Statut -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label">
+                                        <i class="fas fa-info-circle me-2"></i>Statut
+                                    </label>
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.status.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Description de l'événement -->
+                        <div class="form-group">
+                            <label for="{{ form.event_description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Description de l'événement
+                            </label>
+                            {{ form.event_description }}
+                            {% if form.event_description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.event_description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Exigences spéciales -->
+                        <div class="form-group">
+                            <label for="{{ form.special_requirements.id_for_label }}" class="form-label">
+                                <i class="fas fa-clipboard-list me-2"></i>Exigences spéciales
+                            </label>
+                            {{ form.special_requirements }}
+                            {% if form.special_requirements.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.special_requirements.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Besoins particuliers (équipements, configuration, etc.)
+                            </div>
+                        </div>
+                        
+                        <!-- Notes administrateur -->
+                        <div class="form-group">
+                            <label for="{{ form.admin_notes.id_for_label }}" class="form-label">
+                                <i class="fas fa-sticky-note me-2"></i>Notes administrateur
+                            </label>
+                            {{ form.admin_notes }}
+                            {% if form.admin_notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.admin_notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Notes internes pour l'équipe administrative
+                            </div>
+                        </div>
+                        
+                        <!-- Informations de paiement -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.deposit_paid.id_for_label }}" class="form-label">
+                                        <i class="fas fa-credit-card me-2"></i>Acompte versé
+                                    </label>
+                                    {{ form.deposit_paid }}
+                                    {% if form.deposit_paid.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.deposit_paid.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.full_payment_paid.id_for_label }}" class="form-label">
+                                        <i class="fas fa-check-circle me-2"></i>Paiement complet
+                                    </label>
+                                    {{ form.full_payment_paid }}
+                                    {% if form.full_payment_paid.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.full_payment_paid.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <div class="form-actions">
+                            <button type="button" id="check-conflicts-btn" class="btn btn-warning btn-lg me-2">
+                                <i class="fas fa-search me-2"></i>Vérifier les conflits
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>
+                                {% if form.instance.pk %}Mettre à jour{% else %}Créer la réservation{% endif %}
+                            </button>
+                            <a href="{% url 'content_management:room_booking_list' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Informations utiles -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-info-circle me-2"></i>Informations utiles</h3>
+                </div>
+                <div class="section-body">
+                    <div class="info-list">
+                        <div class="info-item">
+                            <i class="fas fa-clock me-2 text-primary"></i>
+                            <div>
+                                <strong>Horaires de réservation</strong>
+                                <p class="mb-0">8h00 - 22h00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-calendar me-2 text-success"></i>
+                            <div>
+                                <strong>Réservation minimale</strong>
+                                <p class="mb-0">1 heure</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                            <div>
+                                <strong>Important</strong>
+                                <p class="mb-0">Vérifiez la disponibilité avant de confirmer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Aide à la réservation -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-question-circle me-2"></i>Comment réserver ?</h3>
+                </div>
+                <div class="section-body">
+                    <div class="help-steps">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h6>Sélectionnez la salle</h6>
+                                <p>Choisissez la salle qui correspond à vos besoins</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h6>Définissez l'horaire</h6>
+                                <p>Précisez la date et l'heure de début et de fin</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h6>Remplissez les détails</h6>
+                                <p>Ajoutez les informations sur votre événement</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h6>Confirmez</h6>
+                                <p>Validez votre réservation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.room-booking-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.room-booking-form {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--box-shadow);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control, .form-select {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-text {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.invalid-feedback {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.info-item i {
+    font-size: 1.25rem;
+    margin-top: 0.25rem;
+}
+
+.info-item strong {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.info-item p {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.help-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.step-number {
+    width: 30px;
+    height: 30px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.step-content h6 {
+    color: var(--gray-800);
+    font-size: 0.875rem;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+}
+
+.step-content p {
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .room-booking-form {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+    
+    .info-item, .step-item {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .room-booking-form {
+        padding: 0.75rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.5rem;
+    }
+    
+    /* Styles pour la section des conflits */
+    .conflicts-section {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .conflicts-section .alert {
+        border: none;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .conflicts-section .alert-heading {
+        color: #856404;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .conflicts-details h6 {
+        color: #856404;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+    
+    .conflicts-details ul li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+    }
+    
+    .conflicts-details ul li:last-child {
+        border-bottom: none;
+    }
+    
+    .conflicts-summary {
+        background: rgba(255, 193, 7, 0.1);
+        padding: 1rem;
+        border-radius: 6px;
+        margin: 1rem 0;
+    }
+    
+    .conflict-stat {
+        text-align: center;
+        padding: 0.5rem;
+    }
+    
+    .conflict-stat strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #856404;
+        font-size: 0.9rem;
+    }
+    
+    .conflicts-recommendations {
+        background: rgba(255, 193, 7, 0.05);
+        padding: 1rem;
+        border-radius: 6px;
+    }
+    
+    .conflicts-recommendations h6 {
+        color: #856404;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+    
+    .conflicts-recommendations ul {
+        padding-left: 1.5rem;
+    }
+    
+    .conflicts-recommendations li {
+        margin-bottom: 0.5rem;
+        color: #856404;
+    }
+    
+    /* Amélioration des messages d'erreur */
+    .messages-container .alert {
+        border: none;
+        border-left: 4px solid;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    
+    .messages-container .alert-danger {
+        border-left-color: #dc3545;
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    }
+    
+    .messages-container .alert-warning {
+        border-left-color: #ffc107;
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    }
+    
+    .messages-container .alert-success {
+        border-left-color: #28a745;
+        background: linear-gradient(135deg, #d4edda 0%, #b8f2e6 100%);
+    }
+    
+    .messages-container .alert-info {
+        border-left-color: #17a2b8;
+        background: linear-gradient(135deg, #d1ecf1 0%, #a8e6cf 100%);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .conflicts-summary .row {
+            flex-direction: column;
+        }
+        
+        .conflict-stat {
+            margin-bottom: 1rem;
+        }
+        
+        .conflicts-recommendations ul {
+            padding-left: 1rem;
+        }
+    }
+}
+</style>
+
+<!-- Modal de validation des conflits -->
+<div class="modal fade" id="conflictsModal" tabindex="-1" aria-labelledby="conflictsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="conflictsModalLabel">
+                    <i class="fas fa-calendar-check me-2"></i>Vérification des conflits
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="conflictsModalBody">
+                <!-- Le contenu sera chargé dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-success" id="confirm-booking-btn" style="display: none;">
+                    <i class="fas fa-check me-2"></i>Confirmer la réservation
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkConflictsBtn = document.getElementById('check-conflicts-btn');
+    const conflictsModal = new bootstrap.Modal(document.getElementById('conflictsModal'));
+    const conflictsModalBody = document.getElementById('conflictsModalBody');
+    const confirmBookingBtn = document.getElementById('confirm-booking-btn');
+    
+    // Fonction pour vérifier les conflits
+    function checkConflicts() {
+        const room = document.getElementById('id_room').value;
+        const startTime = document.getElementById('id_start_time').value;
+        const endTime = document.getElementById('id_end_time').value;
+        const bookingId = '{{ form.instance.pk|default:"" }}';
+        
+        if (!room || !startTime || !endTime) {
+            alert('Veuillez remplir tous les champs obligatoires avant de vérifier les conflits.');
+            return;
+        }
+        
+        // Afficher un indicateur de chargement
+        conflictsModalBody.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Vérification en cours...</span>
+                </div>
+                <p class="mt-3">Vérification des conflits en cours...</p>
+            </div>
+        `;
+        
+        conflictsModal.show();
+        
+        // Appel AJAX pour vérifier les conflits
+        fetch('{% url "content_management:check_booking_conflicts" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: new URLSearchParams({
+                'room': room,
+                'start_time': startTime,
+                'end_time': endTime,
+                'booking_id': bookingId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayConflictsReport(data.conflicts_summary, data.duration_info);
+            } else {
+                displayError(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            displayError('Erreur lors de la vérification des conflits');
+        });
+    }
+    
+    // Fonction pour afficher le rapport des conflits
+    function displayConflictsReport(conflictsSummary, durationInfo) {
+        if (conflictsSummary.has_conflicts) {
+            // Conflits détectés
+            let conflictsHtml = `
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Conflits détectés</h6>
+                    <p class="mb-2">${conflictsSummary.message}</p>
+                    <p><strong>Durée de votre réservation:</strong> ${durationInfo}</p>
+                    <p><strong>Conflits totaux:</strong> ${conflictsSummary.total_overlap_hours} heures (${conflictsSummary.total_overlap_days} jours)</p>
+                </div>
+                
+                <div class="conflicts-details">
+                    <h6>Détails des conflits:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Événement</th>
+                                    <th>Organisation</th>
+                                    <th>Période de conflit</th>
+                                    <th>Durée du conflit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            conflictsSummary.conflicts.forEach(conflict => {
+                const conflictStart = new Date(conflict.overlap_start).toLocaleString('fr-FR');
+                const conflictEnd = new Date(conflict.overlap_end).toLocaleString('fr-FR');
+                
+                conflictsHtml += `
+                    <tr>
+                        <td><strong>${conflict.booking.event_title}</strong></td>
+                        <td>${conflict.booking.organization.name}</td>
+                        <td>${conflictStart} - ${conflictEnd}</td>
+                        <td><span class="badge bg-warning">${conflict.overlap_hours}h (${conflict.overlap_days}j)</span></td>
+                    </tr>
+                `;
+            });
+            
+            conflictsHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Recommandations:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Choisissez une autre salle disponible</li>
+                            <li>Modifiez les dates de votre réservation</li>
+                            <li>Contactez l'organisation concernée pour coordonner</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            conflictsModalBody.innerHTML = conflictsHtml;
+            confirmBookingBtn.style.display = 'none';
+            
+        } else {
+            // Aucun conflit - réservation possible
+            conflictsModalBody.innerHTML = `
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle me-2"></i>Aucun conflit détecté</h6>
+                    <p class="mb-2">${conflictsSummary.message}</p>
+                    <p><strong>Durée de votre réservation:</strong> ${durationInfo}</p>
+                </div>
+                
+                <div class="booking-summary">
+                    <h6>Résumé de la réservation:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Salle:</strong> ${document.getElementById('id_room').options[document.getElementById('id_room').selectedIndex].text}</p>
+                            <p><strong>Organisation:</strong> ${document.getElementById('id_organization').options[document.getElementById('id_organization').selectedIndex].text}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Début:</strong> ${new Date(document.getElementById('id_start_time').value).toLocaleString('fr-FR')}</p>
+                            <p><strong>Fin:</strong> ${new Date(document.getElementById('id_end_time').value).toLocaleString('fr-FR')}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Vous pouvez maintenant soumettre votre réservation en toute sécurité !
+                    </div>
+                </div>
+            `;
+            
+            confirmBookingBtn.style.display = 'inline-block';
+        }
+    }
+    
+    // Fonction pour afficher les erreurs
+    function displayError(errorMessage) {
+        conflictsModalBody.innerHTML = `
+            <div class="alert alert-danger">
+                <h6><i class="fas fa-exclamation-triangle me-2"></i>Erreur</h6>
+                <p class="mb-0">${errorMessage}</p>
+            </div>
+        `;
+        confirmBookingBtn.style.display = 'none';
+    }
+    
+    // Événements
+    checkConflictsBtn.addEventListener('click', checkConflicts);
+    
+    confirmBookingBtn.addEventListener('click', function() {
+        conflictsModal.hide();
+        // Focus sur le bouton de soumission
+        document.querySelector('button[type="submit"]').focus();
+    });
+    
+    // Vérification automatique lors du changement des dates
+    const dateInputs = ['id_start_time', 'id_end_time'];
+    dateInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('change', function() {
+                // Réinitialiser le bouton de confirmation
+                confirmBookingBtn.style.display = 'none';
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

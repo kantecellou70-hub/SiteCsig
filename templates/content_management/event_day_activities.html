@@ -1,0 +1,2081 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Gestion des activités" %} - {{ day.event.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Prévention du débordement horizontal */
+    body {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    
+    .container {
+        max-width: 100%;
+        overflow-x: hidden;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+        max-width: 100%;
+    }
+    
+    .col-md-8, .col-md-4, .col-md-6 {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    /* Correction globale pour éviter le débordement */
+    * {
+        box-sizing: border-box;
+    }
+    
+    .timeline-item, .intervenants-section, .add-activity-section, .activities-timeline {
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    /* Forcer l'affichage en colonne sur mobile pour éviter les problèmes de layout */
+    @media (max-width: 768px) {
+        .row {
+            flex-direction: column !important;
+        }
+        
+        .col-md-8, .col-md-4, .col-md-6 {
+            width: 100% !important;
+            flex: none !important;
+        }
+        
+        .text-md-end {
+            text-align: center !important;
+        }
+        
+        /* Forcer l'affichage en colonne pour tous les éléments des activités */
+        .timeline-item {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        
+        .timeline-time,
+        .timeline-title,
+        .timeline-location,
+        .timeline-description,
+        .timeline-type {
+            width: 100% !important;
+            margin-bottom: 0.5rem !important;
+            text-align: left !important;
+        }
+        
+        .timeline-actions {
+            width: 100% !important;
+            margin-top: 1rem !important;
+        }
+    }
+    .activities-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    /* Forcer l'affichage en colonne sur mobile pour l'en-tête */
+    @media (max-width: 768px) {
+        .activities-header .row {
+            flex-direction: column !important;
+        }
+        
+        .activities-header .col-md-8,
+        .activities-header .col-md-4 {
+            width: 100% !important;
+            margin-bottom: 1rem !important;
+        }
+        
+        .activities-header .text-md-end {
+            text-align: center !important;
+        }
+    }
+    
+    .activities-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .activities-header h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .day-info {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1.5rem;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        max-width: 100%;
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+    
+    .add-activity-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    /* Forcer l'affichage en colonne sur mobile pour la section d'ajout */
+    @media (max-width: 768px) {
+        .add-activity-section .row {
+            flex-direction: column !important;
+        }
+        
+        .add-activity-section .col-md-8,
+        .add-activity-section .col-md-4 {
+            width: 100% !important;
+            margin-bottom: 1rem !important;
+        }
+        
+        .add-activity-section .text-md-end {
+            text-align: center !important;
+        }
+    }
+    
+    .add-activity-section h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .activities-timeline {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .activities-timeline h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #667eea;
+        background: #f8f9fa;
+        border-radius: 0 10px 10px 0;
+        transition: all 0.3s ease;
+        max-width: 100%;
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+    
+    /* Forcer l'affichage en colonne sur mobile pour tous les éléments des activités */
+    @media (max-width: 768px) {
+        .timeline-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .timeline-time,
+        .timeline-title,
+        .timeline-location,
+        .timeline-description,
+        .timeline-type {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            text-align: left;
+        }
+        
+        .timeline-actions {
+            width: 100%;
+            margin-top: 1rem;
+        }
+    }
+    
+    .timeline-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .timeline-time {
+        font-weight: bold;
+        color: #667eea;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        max-width: 100%;
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+    
+    .timeline-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+        max-width: 100%;
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+    
+    .timeline-location {
+        color: #666;
+        font-style: italic;
+        margin-bottom: 0.5rem;
+    }
+    
+    .timeline-description {
+        color: #555;
+        margin-bottom: 1rem;
+    }
+    
+    .timeline-type {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+    
+    .timeline-type.keynote { background: #ff6b6b; color: white; }
+    .timeline-type.session { background: #4ecdc4; color: white; }
+    .timeline-type.workshop { background: #45b7d1; color: white; }
+    .timeline-type.break { background: #96ceb4; color: white; }
+    .timeline-type.lunch { background: #feca57; color: white; }
+    .timeline-type.networking { background: #ff9ff3; color: white; }
+    .timeline-type.poster { background: #54a0ff; color: white; }
+    .timeline-type.other { background: #5f27cd; color: white; }
+    
+    .timeline-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    /* Forcer l'affichage en colonne sur mobile pour les actions */
+    @media (max-width: 768px) {
+        .timeline-actions {
+            flex-direction: column !important;
+            width: 100%;
+        }
+        
+        .timeline-actions .btn {
+            width: 100% !important;
+            margin-bottom: 0.5rem !important;
+            display: block !important;
+        }
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #666;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-add-activity {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    
+    .btn-add-activity:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        border: none;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .modal-body {
+        padding: 2rem;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        max-width: 100%;
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-close {
+        filter: invert(1);
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    
+    .btn-cancel:hover {
+        background: #5a6268;
+        color: white;
+    }
+    
+    .btn-edit {
+        background: #17a2b8;
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    
+    .btn-edit:hover {
+        background: #138496;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .btn-delete {
+        background: #dc3545;
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    
+    .btn-delete:hover {
+        background: #c82333;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .back-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+        /* Réduction de la hauteur du header sur mobile */
+        .activities-header {
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        .activities-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .activities-header h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .day-info {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .day-info, .add-activity-section, .activities-timeline {
+            padding: 1rem;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        /* Forcer l'affichage en colonne pour les actions */
+        .timeline-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 100%;
+            width: 100%;
+        }
+        
+        .timeline-actions .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            max-width: 100%;
+            display: block;
+        }
+        
+        .timeline-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .timeline-time, .timeline-title {
+            font-size: 1rem;
+            word-wrap: break-word;
+        }
+        
+        .timeline-type {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+        }
+        
+        /* Forcer l'affichage en colonne pour les sections d'ajout */
+        .add-activity-section .row {
+            flex-direction: column;
+        }
+        
+        .add-activity-section .col-md-8,
+        .add-activity-section .col-md-4 {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .add-activity-section .text-md-end {
+            text-align: center !important;
+        }
+        
+        .modal-dialog {
+            margin: 1rem;
+            max-width: calc(100% - 2rem);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        /* Responsive pour les intervenants */
+        .intervenants-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .intervenants-grid {
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+            max-width: 100%;
+        }
+        
+        .intervenant-card {
+            padding: 0.8rem;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .intervenant-photo {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 0.8rem;
+        }
+        
+        .intervenant-name {
+            font-size: 0.9rem;
+            word-wrap: break-word;
+        }
+        
+        .intervenant-profession {
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+            word-wrap: break-word;
+        }
+        
+        .btn-view-details {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        
+        /* Correction du débordement horizontal */
+        .activities-header .row {
+            margin: 0;
+            max-width: 100%;
+        }
+        
+        .activities-header .col-md-8,
+        .activities-header .col-md-4 {
+            padding: 0 0.25rem;
+            max-width: 100%;
+        }
+        
+        .add-activity-section .row,
+        .activities-timeline .row {
+            margin: 0;
+            max-width: 100%;
+        }
+        
+        .add-activity-section .col-md-8,
+        .add-activity-section .col-md-4 {
+            padding: 0 0.25rem;
+            max-width: 100%;
+        }
+        
+        /* Correction des modales */
+        .modal-content {
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .modal-body {
+            max-width: 100%;
+            overflow: hidden;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        /* Réduction drastique de la hauteur du header sur très petits écrans */
+        .activities-header {
+            padding: 0.6rem 0;
+            margin-bottom: 0.8rem;
+        }
+        
+        .day-info, .add-activity-section, .activities-timeline {
+            padding: 0.6rem;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .timeline-item {
+            padding: 0.6rem;
+            margin-bottom: 0.6rem;
+            max-width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        /* Forcer l'affichage en colonne pour tous les éléments des activités */
+        .timeline-time,
+        .timeline-title,
+        .timeline-location,
+        .timeline-description,
+        .timeline-type {
+            width: 100%;
+            margin-bottom: 0.4rem;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        .timeline-time {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        
+        .timeline-title {
+            font-size: 1rem;
+        }
+        
+        .timeline-location {
+            font-size: 0.85rem;
+        }
+        
+        .timeline-description {
+            font-size: 0.8rem;
+        }
+        
+        .timeline-type {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+        }
+        
+        /* Forcer l'affichage en colonne pour tous les éléments */
+        .timeline-actions {
+            flex-direction: column;
+            gap: 0.4rem;
+            width: 100%;
+            margin-top: 0.8rem;
+        }
+        
+        .timeline-actions .btn {
+            width: 100%;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.8rem;
+            max-width: 100%;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+        
+        /* Forcer l'affichage en colonne pour la section d'ajout */
+        .add-activity-section .row {
+            flex-direction: column;
+        }
+        
+        .add-activity-section .col-md-8,
+        .add-activity-section .col-md-4 {
+            width: 100%;
+            margin-bottom: 0.8rem;
+            padding: 0;
+        }
+        
+        .add-activity-section .text-md-end {
+            text-align: center !important;
+        }
+        
+        .modal-body {
+            padding: 0.8rem;
+        }
+        
+        .form-group {
+            margin-bottom: 0.8rem;
+        }
+        
+        .btn-add-activity, .btn-save, .btn-cancel {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+        
+        /* Responsive pour les intervenants sur très petits écrans */
+        .intervenants-section {
+            margin-top: 0.6rem;
+            padding: 0.6rem;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .intervenants-grid {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+            max-width: 100%;
+        }
+        
+        .intervenant-card {
+            padding: 0.5rem;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .intervenant-photo {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .intervenant-name {
+            font-size: 0.8rem;
+            word-wrap: break-word;
+        }
+        
+        .intervenant-profession {
+            font-size: 0.7rem;
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+        }
+        
+        .btn-view-details {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            width: 100%;
+        }
+        
+        .intervenants-title {
+            font-size: 0.8rem;
+        }
+        
+        .intervenants-count {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+        }
+        
+        /* Responsive pour les titres */
+        .activities-header h1 {
+            font-size: 1.3rem;
+            margin-bottom: 0.6rem;
+            word-wrap: break-word;
+        }
+        
+        .activities-header h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+        }
+        
+        .add-activity-section h3,
+        .activities-timeline h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.6rem;
+            word-wrap: break-word;
+        }
+        
+        /* Responsive pour les modales */
+        .modal-dialog {
+            margin: 0.3rem;
+            max-width: calc(100% - 0.6rem);
+        }
+        
+        .modal-body {
+            padding: 0.6rem;
+        }
+        
+        .form-group {
+            margin-bottom: 0.6rem;
+        }
+        
+        /* Responsive pour les modales */
+        .modal-header h5 {
+            font-size: 1rem;
+        }
+        
+        .modal-footer .btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            width: 100%;
+            margin-bottom: 0.3rem;
+        }
+        
+        /* Correction du débordement horizontal sur très petits écrans */
+        .activities-header .row,
+        .add-activity-section .row,
+        .activities-timeline .row {
+            margin: 0;
+            max-width: 100%;
+        }
+        
+        .activities-header .col-md-8,
+        .activities-header .col-md-4,
+        .add-activity-section .col-md-8,
+        .add-activity-section .col-md-4 {
+            padding: 0;
+            max-width: 100%;
+        }
+        
+        .timeline-item {
+            margin-left: 0;
+            margin-right: 0;
+            max-width: 100%;
+        }
+        
+        .intervenants-section {
+            margin-left: 0;
+            margin-right: 0;
+            max-width: 100%;
+        }
+        
+        /* Correction des modales sur mobile */
+        .modal-footer {
+            padding: 0.6rem;
+        }
+        
+        /* Correction des formulaires sur mobile */
+        .form-control {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .row .col-md-6 {
+            padding: 0;
+            max-width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Correction des grilles sur mobile */
+        .intervenants-grid {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+            max-width: 100%;
+        }
+        
+        .intervenant-card {
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        /* Correction supplémentaire pour éviter le débordement */
+        .container {
+            padding-left: 0.2rem;
+            padding-right: 0.2rem;
+        }
+        
+        .col-md-8, .col-md-4, .col-md-6 {
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+    
+    /* Styles pour les intervenants */
+    .intervenants-section {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .intervenants-header {
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .intervenants-title {
+        color: #495057;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .intervenants-count {
+        background: #667eea;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .intervenants-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: start;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .intervenant-card {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 15px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        max-width: 100%;
+        word-wrap: break-word;
+    }
+    
+    .intervenant-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .intervenant-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-color: #667eea;
+    }
+    
+    .intervenant-photo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #667eea;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .intervenant-card:hover .intervenant-photo {
+        transform: scale(1.05);
+        border-color: #764ba2;
+        box-shadow: 0 8px 20px rgba(118, 75, 162, 0.4);
+    }
+    
+    .intervenant-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .intervenant-card:hover .intervenant-photo img {
+        transform: scale(1.1);
+    }
+    
+    .no-photo {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-size: 2.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .intervenant-card:hover .no-photo {
+        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        color: #667eea;
+    }
+    
+    .intervenant-info {
+        text-align: center;
+    }
+    
+    .intervenant-name {
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+    
+    .intervenant-profession {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        font-style: italic;
+        line-height: 1.4;
+    }
+    
+    .btn-view-details {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    
+    .btn-view-details:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    /* Responsive design pour les intervenants */
+    @media (max-width: 768px) {
+        .intervenants-section {
+            margin-top: 1rem;
+            padding: 1rem;
+        }
+        
+        .intervenants-header {
+            margin-bottom: 1rem;
+        }
+        
+        .intervenants-title {
+            font-size: 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .intervenants-count {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+        }
+        
+        .intervenants-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .intervenant-card {
+            padding: 1.2rem;
+        }
+        
+        .intervenant-photo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+        
+        .intervenant-name {
+            font-size: 1rem;
+        }
+        
+        .intervenant-profession {
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+        }
+        
+        .btn-view-details {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .intervenants-section {
+            padding: 0.8rem;
+        }
+        
+        .intervenants-grid {
+            gap: 0.8rem;
+        }
+        
+        .intervenant-card {
+            padding: 1rem;
+        }
+        
+        .intervenant-photo {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 0.8rem;
+        }
+        
+        .intervenant-name {
+            font-size: 0.95rem;
+        }
+        
+        .intervenant-profession {
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-view-details {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="activities-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-3">
+                    <i class="fas fa-clock me-3"></i>
+                    {% trans "Gestion des activités" %}
+                </h1>
+                <div class="day-info">
+                    <h3 class="mb-2">{{ day.event.title }}</h3>
+                    <p class="mb-1">
+                        <strong>{% trans "Jour" %} {{ day.day_number }}:</strong> 
+                        {{ day.date|date:"l j F Y" }}
+                    </p>
+                    {% if day.title %}
+                        <p class="mb-1"><strong>{% trans "Titre du jour" %}:</strong> {{ day.title }}</p>
+                    {% endif %}
+                    {% if day.description %}
+                        <p class="mb-0"><strong>{% trans "Description" %}:</strong> {{ day.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'content_management:event_manage_agenda' event.pk %}" class="back-link">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    {% trans "Retour à l'agenda" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Section d'ajout d'activité -->
+    <div class="add-activity-section">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="mb-2">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    {% trans "Ajouter une activité" %}
+                </h3>
+                <p class="text-muted mb-0">
+                    {% trans "Créez de nouvelles activités pour organiser la journée" %}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button type="button" class="btn btn-add-activity" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                    <i class="fas fa-plus me-2"></i>
+                    {% trans "Nouvelle activité" %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline des activités -->
+    <div class="activities-timeline">
+        <h3 class="mb-4">
+            <i class="fas fa-list me-2"></i>
+            {% trans "Activités programmées" %}
+        </h3>
+        
+        {% if activities %}
+            <div class="timeline-container">
+                {% for activity in activities %}
+                <div class="timeline-item" data-activity-id="{{ activity.pk }}">
+                    <div class="timeline-time">
+                        <i class="fas fa-clock me-2"></i>
+                        {{ activity.start_time|time:"H:i" }} - {{ activity.end_time|time:"H:i" }}
+                    </div>
+                    
+                    <div class="timeline-title">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        {{ activity.activity }}
+                    </div>
+                    
+                    {% if activity.location %}
+                    <div class="timeline-location">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        {{ activity.location }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if activity.description %}
+                    <div class="timeline-description">
+                        {{ activity.description }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="timeline-type {{ activity.activity_type }}">
+                        {% if activity.activity_type == 'keynote' %}
+                            <i class="fas fa-microphone me-1"></i>
+                        {% elif activity.activity_type == 'session' %}
+                            <i class="fas fa-users me-1"></i>
+                        {% elif activity.activity_type == 'workshop' %}
+                            <i class="fas fa-tools me-1"></i>
+                        {% elif activity.activity_type == 'break' %}
+                            <i class="fas fa-coffee me-1"></i>
+                        {% elif activity.activity_type == 'lunch' %}
+                            <i class="fas fa-utensils me-1"></i>
+                        {% elif activity.activity_type == 'networking' %}
+                            <i class="fas fa-handshake me-1"></i>
+                        {% elif activity.activity_type == 'poster' %}
+                            <i class="fas fa-image me-1"></i>
+                        {% else %}
+                            <i class="fas fa-star me-1"></i>
+                        {% endif %}
+                        {{ activity.get_activity_type_display }}
+                    </div>
+                    
+                    <div class="timeline-actions">
+                        <button class="btn btn-edit" onclick="editActivity({{ activity.pk }})" title="{% trans 'Modifier' %}">
+                            <i class="fas fa-edit me-1"></i>
+                            {% trans "Modifier" %}
+                        </button>
+                        <button class="btn btn-info" onclick="manageIntervenants({{ activity.pk }})" title="{% trans 'Gérer les intervenants' %}">
+                            <i class="fas fa-users me-1"></i>
+                            {% trans "Intervenants" %}
+                        </button>
+                        <button class="btn btn-delete" onclick="deleteActivity({{ activity.pk }})" title="{% trans 'Supprimer' %}">
+                            <i class="fas fa-trash me-1"></i>
+                            {% trans "Supprimer" %}
+                        </button>
+                    </div>
+                    
+                </div>
+                
+                <!-- Section des intervenants -->
+                {% if activity.intervenants.all %}
+                <div class="intervenants-section">
+                    <div class="intervenants-header">
+                        <h6 class="intervenants-title">
+                            <i class="fas fa-microphone me-2"></i>
+                            {% trans "Intervenants" %}
+                            <span class="intervenants-count">({{ activity.intervenants.count }})</span>
+                        </h6>
+                    </div>
+                    <div class="intervenants-grid">
+                        {% for intervenant in activity.intervenants.all %}
+                        <div class="intervenant-card" data-intervenant-id="{{ intervenant.pk }}">
+                            <div class="intervenant-photo">
+                                {% if intervenant.photo %}
+                                    <img src="{{ intervenant.photo.url }}" alt="{{ intervenant.nom }}" class="img-fluid">
+                                {% else %}
+                                    <div class="no-photo">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="intervenant-info">
+                                <h6 class="intervenant-name">{{ intervenant.nom }}</h6>
+                                <p class="intervenant-profession">{{ intervenant.profession }}</p>
+                                <button class="btn btn-sm btn-outline-info btn-view-details" onclick="viewIntervenantDetails({{ intervenant.pk }})">
+                                    <i class="fas fa-eye me-1"></i>
+                                    {% trans "Voir" %}
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h4>{% trans "Aucune activité programmée" %}</h4>
+                <p>{% trans "Commencez par ajouter la première activité de la journée" %}</p>
+                <button type="button" class="btn btn-add-activity" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                    <i class="fas fa-plus me-2"></i>
+                    {% trans "Ajouter une activité" %}
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal d'ajout d'activité -->
+<div class="modal fade" id="addActivityModal" tabindex="-1" aria-labelledby="addActivityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addActivityModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    {% trans "Nouvelle activité" %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addActivityForm" action="javascript:void(0)" method="POST">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="start_time" class="form-label">{% trans "Heure de début" %} *</label>
+                                <input type="time" class="form-control" id="start_time" name="start_time" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="end_time" class="form-label">{% trans "Heure de fin" %} *</label>
+                                <input type="time" class="form-control" id="end_time" name="end_time" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="activity" class="form-label">{% trans "Activité" %} *</label>
+                        <input type="text" class="form-control" id="activity" name="activity" required 
+                               placeholder="{% trans 'Ex: Conférence douverture, Pause café, etc.' %}">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="location" class="form-label">{% trans "Lieu" %}</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       placeholder="{% trans 'Ex: Salle A, Amphithéâtre, etc.' %}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="activity_type" class="form-label">{% trans "Type d'activité" %}</label>
+                                <select class="form-control" id="activity_type" name="activity_type">
+                                    <option value="keynote">{% trans "Conférence plénière" %}</option>
+                                    <option value="session" selected>{% trans "Session" %}</option>
+                                    <option value="workshop">{% trans "Atelier" %}</option>
+                                    <option value="break">{% trans "Pause" %}</option>
+                                    <option value="lunch">{% trans "Déjeuner" %}</option>
+                                    <option value="networking">{% trans "Networking" %}</option>
+                                    <option value="poster">{% trans "Session poster" %}</option>
+                                    <option value="other">{% trans "Autre" %}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description" class="form-label">{% trans "Description" %}</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                   placeholder="{% trans 'Description détaillée de lactivité...' %}"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="order" class="form-label">{% trans "Ordre" %}</label>
+                        <input type="number" class="form-control" id="order" name="order" value="0" min="0">
+                        <small class="form-text text-muted">{% trans "Ordre d'affichage dans la timeline" %}</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>
+                        {% trans "Annuler" %}
+                    </button>
+                    <button type="submit" class="btn btn-save">
+                        <i class="fas fa-save me-2"></i>
+                        {% trans "Créer l'activité" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de modification d'activité -->
+<div class="modal fade" id="editActivityModal" tabindex="-1" aria-labelledby="editActivityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editActivityModalLabel">
+                    <i class="fas fa-edit me-2"></i>
+                    {% trans "Modifier l'activité" %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editActivityForm" action="javascript:void(0)" method="POST">
+                <input type="hidden" id="edit_activity_id" name="activity_id">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="edit_start_time" class="form-label">{% trans "Heure de début" %} *</label>
+                                <input type="time" class="form-control" id="edit_start_time" name="start_time" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="edit_end_time" class="form-label">{% trans "Heure de fin" %} *</label>
+                                <input type="time" class="form-control" id="edit_end_time" name="end_time" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_activity" class="form-label">{% trans "Activité" %} *</label>
+                        <input type="text" class="form-control" id="edit_activity" name="activity" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="edit_location" class="form-label">{% trans "Lieu" %}</label>
+                                <input type="text" class="form-control" id="edit_location" name="location">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="edit_activity_type" class="form-label">{% trans "Type d'activité" %}</label>
+                                <select class="form-control" id="edit_activity_type" name="activity_type">
+                                    <option value="keynote">{% trans "Conférence plénière" %}</option>
+                                    <option value="session">{% trans "Session" %}</option>
+                                    <option value="workshop">{% trans "Atelier" %}</option>
+                                    <option value="break">{% trans "Pause" %}</option>
+                                    <option value="lunch">{% trans "Déjeuner" %}</option>
+                                    <option value="networking">{% trans "Networking" %}</option>
+                                    <option value="poster">{% trans "Session poster" %}</option>
+                                    <option value="other">{% trans "Autre" %}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_description" class="form-label">{% trans "Description" %}</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_order" class="form-label">{% trans "Ordre" %}</label>
+                        <input type="number" class="form-control" id="edit_order" name="order" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>
+                        {% trans "Annuler" %}
+                    </button>
+                    <button type="submit" class="btn btn-save">
+                        <i class="fas fa-save me-2"></i>
+                        {% trans "Enregistrer" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {% trans "Confirmer la suppression" %}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Êtes-vous sûr de vouloir supprimer cette activité ?" %}</p>
+                <p class="text-muted mb-0">{% trans "Cette action est irréversible." %}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    {% trans "Annuler" %}
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>
+                    {% trans "Supprimer définitivement" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de gestion des intervenants -->
+<div class="modal fade" id="manageIntervenantsModal" tabindex="-1" aria-labelledby="manageIntervenantsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manageIntervenantsModalLabel">
+                    <i class="fas fa-users me-2"></i>
+                    {% trans "Gérer les intervenants" %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>{% trans "Intervenants actuels" %}</h6>
+                        <div id="currentIntervenants" class="mb-3">
+                            <!-- Les intervenants actuels seront chargés ici -->
+                        </div>
+                        <button type="button" class="btn btn-success btn-sm" onclick="addNewIntervenant()">
+                            <i class="fas fa-plus me-1"></i>
+                            {% trans "Nouvel intervenant" %}
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>{% trans "Ajouter des intervenants existants" %}</h6>
+                        <div class="mb-3">
+                            <select id="existingIntervenants" class="form-control" multiple>
+                                <!-- Les intervenants existants seront chargés ici -->
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="addExistingIntervenants()">
+                            <i class="fas fa-plus me-1"></i>
+                            {% trans "Ajouter à l'activité" %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    {% trans "Fermer" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de détails d'intervenant -->
+<div class="modal fade" id="intervenantDetailsModal" tabindex="-1" aria-labelledby="intervenantDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="intervenantDetailsModalLabel">
+                    <i class="fas fa-user me-2"></i>
+                    {% trans "Détails de l'intervenant" %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="intervenantDetailsContent">
+                <!-- Le contenu sera chargé dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    {% trans "Fermer" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let currentActivityId = null;
+let currentIntervenants = [];
+
+// Gestion de l'ajout d'activité
+document.getElementById('addActivityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch(`{% url 'content_management:event_activity_create' event.pk day.pk %}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('success', data.message);
+            $('#addActivityModal').modal('hide');
+            this.reset();
+            // Recharger la page pour afficher la nouvelle activité
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification('error', data.error || '{% trans "Erreur lors de la création" %}');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('error', '{% trans "Erreur de connexion" %}');
+    });
+});
+
+// Gestion de la modification d'activité
+function editActivity(activityId) {
+    currentActivityId = activityId;
+    
+    // Récupérer les données de l'activité
+    fetch(`{% url 'content_management:event_activity_edit' event.pk day.pk 0 %}`.replace('0', activityId), {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const activity = data.activity;
+            
+            // Remplir le formulaire
+            document.getElementById('edit_activity_id').value = activity.id;
+            document.getElementById('edit_start_time').value = activity.start_time;
+            document.getElementById('edit_end_time').value = activity.end_time;
+            document.getElementById('edit_activity').value = activity.activity;
+            document.getElementById('edit_location').value = activity.location || '';
+            document.getElementById('edit_activity_type').value = activity.activity_type;
+            document.getElementById('edit_description').value = activity.description || '';
+            document.getElementById('edit_order').value = activity.order;
+            
+            // Afficher le modal
+            $('#editActivityModal').modal('show');
+        } else {
+            showNotification('error', data.error || '{% trans "Erreur lors du chargement" %}');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('error', '{% trans "Erreur de connexion" %}');
+    });
+}
+
+// Gestion de la soumission du formulaire de modification
+document.getElementById('editActivityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    fetch(`{% url 'content_management:event_activity_edit' event.pk day.pk 0 %}`.replace('0', currentActivityId), {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('success', data.message);
+            $('#editActivityModal').modal('hide');
+            // Recharger la page pour afficher les modifications
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification('error', data.error || '{% trans "Erreur lors de la modification" %}');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('error', '{% trans "Erreur de connexion" %}');
+    });
+});
+
+// Gestion de la suppression d'activité
+function deleteActivity(activityId) {
+    currentActivityId = activityId;
+    $('#deleteConfirmModal').modal('show');
+}
+
+// Confirmation de suppression
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (currentActivityId) {
+        fetch(`{% url 'content_management:event_activity_delete' event.pk day.pk 0 %}`.replace('0', currentActivityId), {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('success', data.message);
+                $('#deleteConfirmModal').modal('hide');
+                // Recharger la page pour afficher les modifications
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification('error', data.error || '{% trans "Erreur lors de la suppression" %}');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('error', '{% trans "Erreur de connexion" %}');
+        });
+    }
+});
+
+// Validation des heures
+document.getElementById('start_time').addEventListener('change', function() {
+    const startTime = this.value;
+    const endTimeInput = document.getElementById('end_time');
+    
+    if (startTime && endTimeInput.value && startTime >= endTimeInput.value) {
+        endTimeInput.setCustomValidity('{% trans "Lheure de fin doit être après lheure de début" %}');
+    } else {
+        endTimeInput.setCustomValidity('');
+    }
+});
+
+document.getElementById('end_time').addEventListener('change', function() {
+    const endTime = this.value;
+    const startTimeInput = document.getElementById('start_time');
+    
+    if (endTime && startTimeInput.value && endTime <= startTimeInput.value) {
+                 this.setCustomValidity('{% trans "Lheure de fin doit être après lheure de début" %}');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Auto-complétion de l'ordre
+document.getElementById('addActivityForm').addEventListener('reset', function() {
+    // Calculer le prochain ordre disponible
+    const activities = document.querySelectorAll('.timeline-item');
+    const nextOrder = activities.length + 1;
+    document.getElementById('order').value = nextOrder;
+});
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    // Calculer le prochain ordre disponible
+    const activities = document.querySelectorAll('.timeline-item');
+    const nextOrder = activities.length + 1;
+    document.getElementById('order').value = nextOrder;
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 'n':
+                    e.preventDefault();
+                    $('#addActivityModal').modal('show');
+                    break;
+                case 's':
+                    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                        e.preventDefault();
+                        document.activeElement.closest('form').dispatchEvent(new Event('submit'));
+                    }
+                    break;
+            }
+        }
+        
+        if (e.key === 'Escape') {
+            const modals = document.querySelectorAll('.modal.show');
+            modals.forEach(modal => {
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            });
+        }
+    });
+});
+
+// Fonction de notification
+function showNotification(type, message) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    const notification = document.createElement('div');
+    notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        <i class="fas ${icon} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-fermeture après 5 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Gestion des intervenants
+
+// Gestion des intervenants
+function manageIntervenants(activityId) {
+    currentActivityId = activityId;
+    
+    // Charger les intervenants actuels de l'activité
+    loadActivityIntervenants(activityId);
+    
+    // Charger tous les intervenants disponibles
+    loadAllIntervenants();
+    
+    // Afficher le modal
+    $('#manageIntervenantsModal').modal('show');
+}
+
+// Charger les intervenants d'une activité
+function loadActivityIntervenants(activityId) {
+    fetch(`/content-management/api/activity-intervenants/${activityId}/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentIntervenants = data.intervenants;
+            displayCurrentIntervenants();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('error', 'Erreur lors du chargement des intervenants');
+    });
+}
+
+// Charger tous les intervenants disponibles
+function loadAllIntervenants() {
+    fetch('/content-management/api/all-intervenants/', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            populateIntervenantsSelect(data.intervenants);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('error', 'Erreur lors du chargement des intervenants');
+    });
+}
+
+// Afficher les intervenants actuels
+function displayCurrentIntervenants() {
+    const container = document.getElementById('currentIntervenants');
+    container.innerHTML = '';
+    
+    if (currentIntervenants.length === 0) {
+        container.innerHTML = '<p class="text-muted">Aucun intervenant assigné</p>';
+        return;
+    }
+    
+    currentIntervenants.forEach(intervenant => {
+        const card = createIntervenantCard(intervenant, true);
+        container.appendChild(card);
+    });
+}
+
+// Créer une carte d'intervenant
+function createIntervenantCard(intervenant, removable = false) {
+    const card = document.createElement('div');
+    card.className = 'intervenant-card mb-2';
+    card.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="intervenant-photo me-3" style="width: 50px; height: 50px;">
+                ${intervenant.photo ? 
+                    `<img src="${intervenant.photo}" alt="${intervenant.nom}" class="img-fluid">` :
+                    `<div class="no-photo"><i class="fas fa-user"></i></div>`
+                }
+            </div>
+            <div class="flex-grow-1">
+                <h6 class="mb-1">${intervenant.nom}</h6>
+                <p class="mb-1 text-muted">${intervenant.profession}</p>
+            </div>
+            ${removable ? 
+                `<button class="btn btn-sm btn-outline-danger" onclick="removeIntervenant(${intervenant.id})">
+                    <i class="fas fa-times"></i>
+                </button>` : ''
+            }
+        </div>
+    `;
+    return card;
+}
+
+// Peupler le select des intervenants
+function populateIntervenantsSelect(intervenants) {
+    const select = document.getElementById('existingIntervenants');
+    select.innerHTML = '';
+    
+    intervenants.forEach(intervenant => {
+        const option = document.createElement('option');
+        option.value = intervenant.id;
+        option.textContent = `${intervenant.nom} - ${intervenant.profession}`;
+        select.appendChild(option);
+    });
+}
+
+// Ajouter des intervenants existants à l'activité
+function addExistingIntervenants() {
+    const select = document.getElementById('existingIntervenants');
+    const selectedIds = Array.from(select.selectedOptions).map(option => option.value);
+    
+    if (selectedIds.length === 0) {
+        showNotification('error', 'Veuillez sélectionner au moins un intervenant');
+        return;
+    }
+    
+    fetch(`/content-management/api/activity-add-intervenants/${currentActivityId}/`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ intervenant_ids: selectedIds })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('success', 'Intervenants ajoutés avec succès');
+            loadActivityIntervenants(currentActivityId);
+            // Recharger la page pour afficher les changements
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification('error', data.error || 'Erreur lors de l\'ajout des intervenants');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('error', 'Erreur de connexion');
+    });
+}
+
+// Supprimer un intervenant d'une activité
+function removeIntervenant(intervenantId) {
+    if (confirm('Êtes-vous sûr de vouloir retirer cet intervenant de l\'activité ?')) {
+        fetch(`/content-management/api/activity-remove-intervenant/${currentActivityId}/${intervenantId}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('success', 'Intervenant retiré avec succès');
+                loadActivityIntervenants(currentActivityId);
+                // Recharger la page pour afficher les changements
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification('error', data.error || 'Erreur lors du retrait de l\'intervenant');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('error', 'Erreur de connexion');
+        });
+    }
+}
+
+// Voir les détails d'un intervenant
+function viewIntervenantDetails(intervenantId) {
+    fetch(`/content-management/api/intervenant-details/${intervenantId}/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const intervenant = data.intervenant;
+            const content = document.getElementById('intervenantDetailsContent');
+            
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="intervenant-photo mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
+                            ${intervenant.photo ? 
+                                `<img src="${intervenant.photo}" alt="${intervenant.nom}" class="img-fluid rounded-circle">` :
+                                `<div class="no-photo rounded-circle"><i class="fas fa-user fa-3x"></i></div>`
+                            }
+                        </div>
+                        <h4>${intervenant.nom}</h4>
+                        <p class="text-muted">${intervenant.profession}</p>
+                    </div>
+                    <div class="col-md-8">
+                        <h6>Biographie</h6>
+                        <p>${intervenant.biographie}</p>
+                        
+                        <h6>Contact</h6>
+                        <ul class="list-unstyled">
+                            ${intervenant.email ? `<li><i class="fas fa-envelope me-2"></i>${intervenant.email}</li>` : ''}
+                            ${intervenant.telephone ? `<li><i class="fas fa-phone me-2"></i>${intervenant.telephone}</li>` : ''}
+                            ${intervenant.website ? `<li><i class="fas fa-globe me-2"></i><a href="${intervenant.website}" target="_blank">${intervenant.website}</a></li>` : ''}
+                            ${intervenant.linkedin ? `<li><i class="fab fa-linkedin me-2"></i><a href="${intervenant.linkedin}" target="_blank">LinkedIn</a></li>` : ''}
+                            ${intervenant.twitter ? `<li><i class="fab fa-twitter me-2"></i><a href="${intervenant.twitter}" target="_blank">Twitter</a></li>` : ''}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            $('#intervenantDetailsModal').modal('show');
+        } else {
+            showNotification('error', data.error || 'Erreur lors du chargement des détails');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('error', 'Erreur de connexion');
+    });
+}
+
+// Ajouter un nouvel intervenant
+function addNewIntervenant() {
+    // Rediriger vers la page de création d'intervenant
+    window.open('/content-management/intervenants/create/', '_blank');
+}
+
+</script>
+{% endblock %}

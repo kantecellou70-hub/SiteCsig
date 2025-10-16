@@ -1,0 +1,704 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}À propos de nous - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section about-hero" {% if about_page.hero_background %}style="background-image: url('{{ about_page.hero_background.url }}');"{% endif %}>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center" data-aos="fade-up">
+                <h1 class="hero-title">{{ about_page.hero_title|default:"À propos de la CSIG" }}</h1>
+                <p class="hero-subtitle">
+                    {{ about_page.hero_subtitle|default:"La Cité des Sciences et de l'Innovation de Guinée est un centre d'excellence dédié au développement scientifique, technologique et innovant de notre nation." }}
+                </p>
+                
+                <!-- Statistiques Hero -->
+                {% if hero_statistics %}
+                <div class="hero-stats">
+                    {% for stat in hero_statistics %}
+                    <div class="stat-item" data-aos="fade-up" data-aos-delay="{{ forloop.counter|multiply:100 }}">
+                        <div class="stat-number">{{ stat.number }}</div>
+                        <div class="stat-label">{{ stat.label }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Notre Histoire et Réalisations -->
+{% if about_page.show_achievements or about_page.show_districts %}
+<section class="section-padding">
+    <div class="container">
+        <div class="row">
+            <!-- Section Histoire -->
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="section-content">
+                    <h2 class="section-title">{{ about_page.history_title|default:"Notre Histoire" }}</h2>
+                    <div class="section-text">
+                        {{ about_page.history_content|linebreaks|default:"Fondée en 2020, la CSIG est née de la vision ambitieuse de créer un écosystème d'innovation au cœur de l'Afrique de l'Ouest. Notre mission est de transformer la Guinée en un hub technologique reconnu internationalement." }}
+                    </div>
+                    
+                    <!-- Réalisations -->
+                    {% if about_page.show_achievements and achievements %}
+                    <div class="achievement-list">
+                        <h4 class="achievement-title">
+                            <i class="fas fa-trophy text-warning me-2"></i>Nos Réalisations
+                        </h4>
+                        {% for achievement in achievements %}
+                        <div class="achievement-item" data-aos="fade-up" data-aos-delay="{{ forloop.counter|multiply:50 }}">
+                            <i class="{{ achievement.icon }} text-warning"></i>
+                            <span>{{ achievement.text }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Section Quartiers -->
+            {% if about_page.show_districts and city_districts %}
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="districts-section">
+                    <h3 class="districts-title">
+                        <i class="fas fa-building me-2"></i>{{ about_page.districts_title|default:"Quartiers de la Cité" }}
+                    </h3>
+                    <p class="districts-subtitle">{{ about_page.districts_subtitle|default:"Découvrez les différents espaces qui composent notre écosystème d'innovation" }}</p>
+                    
+                    <div class="districts-grid">
+                        {% for district in city_districts %}
+                        <div class="district-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter|multiply:100 }}">
+                            <div class="district-icon">
+                                <i class="{{ district.icon }}"></i>
+                            </div>
+                            <h4>{{ district.name }}</h4>
+                            <p>{{ district.description }}</p>
+                            {% if district.image %}
+                            <div class="district-image">
+                                <img src="{{ district.image.url }}" alt="{{ district.name }}" class="img-fluid">
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Nos Valeurs Fondamentales -->
+{% if core_values %}
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">
+                <i class="fas fa-star text-warning me-3"></i>Nos Valeurs Fondamentales
+            </h2>
+            <p class="section-subtitle">Les principes qui guident nos actions au quotidien</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for value in core_values %}
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter|multiply:100 }}">
+                <div class="value-card text-center">
+                    <div class="value-icon">
+                        <i class="{{ value.icon }}"></i>
+                    </div>
+                    <h4>{{ value.name }}</h4>
+                    <p>{{ value.description }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center" data-aos="fade-up">
+                <h2>{{ about_page.cta_title|default:"Rejoignez la Révolution Scientifique" }}</h2>
+                <p class="cta-text">
+                    {{ about_page.cta_content|default:"Découvrez nos programmes, participez à nos événements ou devenez partenaire de la CSIG pour contribuer au développement scientifique de la Guinée." }}
+                </p>
+                <div class="cta-buttons">
+                    <a href="{% url 'sfront:programs' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-graduation-cap me-2"></i>Nos Programmes
+                    </a>
+                    <a href="{% url 'sfront:contact' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-envelope me-2"></i>Nous Contacter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Variables CSS */
+:root {
+    --csig-primary: #0d4786;
+    --csig-primary-dark: #0a2d5a;
+    --csig-accent: #ffc107;
+    --csig-success: #28a745;
+    --csig-danger: #dc3545;
+    --csig-warning: #ffc107;
+    --csig-info: #17a2b8;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --radius-sm: 0.375rem;
+    --radius: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    --transition: all 0.3s ease;
+}
+
+/* Hero Section */
+.about-hero {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 8rem 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+}
+
+.about-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(13, 71, 134, 0.75);
+    z-index: 1;
+}
+
+.about-hero .container {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    line-height: 1.1;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    max-width: 100%;
+}
+
+.hero-subtitle {
+    font-size: 1.4rem;
+    margin-bottom: 3rem;
+    opacity: 0.95;
+    line-height: 1.6;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-stats {
+    display: flex;
+    gap: 3rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 100%;
+}
+
+.stat-item {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: var(--transition);
+}
+
+.stat-item:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--csig-accent);
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.stat-label {
+    font-size: 1rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.hero-image img {
+    width: 100%;
+    height: 450px;
+    object-fit: cover;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
+}
+
+.hero-image img:hover {
+    transform: scale(1.02);
+}
+
+/* Sections générales */
+.section-padding {
+    padding: 6rem 0;
+}
+
+.section-title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--csig-primary);
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: var(--csig-accent);
+    border-radius: 2px;
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: var(--gray-600);
+    margin-bottom: 3rem;
+    line-height: 1.6;
+}
+
+.section-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    color: var(--gray-700);
+}
+
+/* Réalisations */
+.achievement-list {
+    margin-top: 2.5rem;
+    background: var(--gray-100);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    border-left: 5px solid var(--csig-warning);
+}
+
+.achievement-title {
+    color: var(--csig-primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.achievement-item:hover {
+    transform: translateX(5px);
+    box-shadow: var(--shadow);
+}
+
+.achievement-item i {
+    margin-right: 1rem;
+    font-size: 1.5rem;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+/* Quartiers */
+.districts-section {
+    background: var(--gray-100);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    height: 100%;
+}
+
+.districts-title {
+    color: var(--csig-primary);
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.districts-subtitle {
+    color: var(--gray-600);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.districts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.district-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    transition: var(--transition);
+    border: 1px solid var(--gray-200);
+}
+
+.district-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+    border-color: var(--csig-primary);
+}
+
+.district-icon {
+    width: 70px;
+    height: 70px;
+    background: var(--csig-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.8rem;
+    transition: var(--transition);
+}
+
+.district-card:hover .district-icon {
+    background: var(--csig-accent);
+    color: var(--csig-primary);
+    transform: scale(1.1);
+}
+
+.district-card h4 {
+    color: var(--csig-primary);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.district-card p {
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.district-image {
+    margin-top: 1rem;
+}
+
+.district-image img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.district-image img:hover {
+    transform: scale(1.05);
+}
+
+/* Valeurs */
+.value-card {
+    background: white;
+    padding: 2.5rem 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    height: 100%;
+    border: 1px solid var(--gray-200);
+    position: relative;
+    overflow: hidden;
+}
+
+.value-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--csig-primary), var(--csig-accent));
+    transform: scaleX(0);
+    transition: var(--transition);
+}
+
+.value-card:hover::before {
+    transform: scaleX(1);
+}
+
+.value-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--csig-primary);
+}
+
+.value-icon {
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(135deg, var(--csig-primary), var(--csig-accent));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2.5rem;
+    transition: var(--transition);
+}
+
+.value-card:hover .value-icon {
+    transform: rotate(360deg) scale(1.1);
+}
+
+.value-card h4 {
+    color: var(--csig-primary);
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.value-card p {
+    color: var(--gray-600);
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* CTA Section */
+.cta-section {
+    background: linear-gradient(135deg, var(--csig-primary) 0%, var(--csig-primary-dark) 100%);
+    color: white;
+    padding: 5rem 0;
+    text-align: center;
+    position: relative;
+}
+
+.cta-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.cta-section .container {
+    position: relative;
+    z-index: 2;
+}
+
+.cta-section h2 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.cta-text {
+    font-size: 1.3rem;
+    margin-bottom: 2.5rem;
+    opacity: 0.95;
+    line-height: 1.6;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta-buttons {
+    margin-top: 2rem;
+}
+
+.cta-buttons .btn {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: var(--transition);
+    margin: 0 0.5rem;
+}
+
+.cta-buttons .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .hero-title {
+        font-size: 3.2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+        max-width: 600px;
+    }
+    
+    .hero-stats {
+        flex-direction: row;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        padding: 1.2rem;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+    }
+    
+    .section-title {
+        font-size: 2.2rem;
+    }
+    
+    .districts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cta-section h2 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-hero {
+        padding: 5rem 0;
+        min-height: 80vh;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+        max-width: 100%;
+    }
+    
+    .hero-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2.2rem;
+    }
+    
+    .section-padding {
+        padding: 4rem 0;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .districts-section {
+        margin-top: 2rem;
+    }
+    
+    .cta-section {
+        padding: 4rem 0;
+    }
+    
+    .cta-section h2 {
+        font-size: 2rem;
+    }
+    
+    .cta-text {
+        font-size: 1.1rem;
+    }
+    
+    .cta-buttons .btn {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .districts-grid {
+        gap: 1rem;
+    }
+    
+    .district-card {
+        padding: 1rem;
+    }
+    
+    .value-card {
+        padding: 1.5rem 1rem;
+    }
+}
+</style>
+{% endblock %}

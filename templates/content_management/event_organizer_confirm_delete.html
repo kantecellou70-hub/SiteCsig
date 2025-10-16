@@ -1,0 +1,252 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Supprimer l'organisateur - {{ event.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .delete-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .delete-body {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .organizer-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        border-left: 4px solid #0d4786;
+    }
+    
+    .organizer-logo {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.5rem;
+        background: white;
+        margin: 0 auto 1rem;
+    }
+    
+    .organizer-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .organizer-role {
+        background: linear-gradient(135deg, #0d4786, #1a6bb8);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    
+    .warning-message {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border: 1px solid #ffeaa7;
+        color: #856404;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        text-align: left;
+    }
+    
+    .warning-message i {
+        color: #f39c12;
+        margin-right: 0.5rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 140px;
+        justify-content: center;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+    }
+    
+    .event-info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: 1px solid #bbdefb;
+        color: #0d47a1;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .delete-header {
+            padding: 1.5rem;
+        }
+        
+        .delete-body {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="delete-container">
+        <!-- Header -->
+        <div class="delete-header">
+            <h1 class="mb-2">
+                <i class="fas fa-exclamation-triangle me-3"></i>Confirmer la suppression
+            </h1>
+            <h3 class="mb-0 opacity-75">Supprimer un organisateur de l'événement</h3>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="delete-body">
+            <!-- Informations sur l'événement -->
+            <div class="event-info">
+                <h5 class="mb-2">
+                    <i class="fas fa-calendar me-2"></i>{{ event.title }}
+                </h5>
+                <p class="mb-0">Vous êtes sur le point de supprimer un organisateur de cet événement.</p>
+            </div>
+            
+            <!-- Informations sur l'organisateur -->
+            <div class="organizer-info">
+                <div class="text-center">
+                    {% if organizer.logo %}
+                        <img src="{{ organizer.logo.url }}" alt="Logo {{ organizer.name }}" class="organizer-logo">
+                    {% else %}
+                        <div class="organizer-logo d-flex align-items-center justify-content-center">
+                            <i class="fas fa-building fa-2x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="organizer-name">{{ organizer.name }}</div>
+                    <div class="organizer-role">{{ organizer.get_role_display }}</div>
+                    
+                    {% if organizer.organization_type %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-tag me-1"></i>
+                            {{ organizer.get_organization_type_display }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Message d'avertissement -->
+            <div class="warning-message">
+                <h6 class="mb-2">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Attention !
+                </h6>
+                <p class="mb-1">Cette action est irréversible et supprimera définitivement :</p>
+                <ul class="mb-0 ps-3">
+                    <li>Les informations de l'organisateur</li>
+                    <li>Son logo (s'il en a un)</li>
+                    <li>Sa participation à cet événement</li>
+                </ul>
+            </div>
+            
+            <!-- Formulaire de confirmation -->
+            <form method="post" id="deleteForm">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <a href="{% url 'content_management:event_manage_organizers' event.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Confirmer la suppression
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Échap pour annuler
+        if (e.key === 'Escape') {
+            window.location.href = '{% url "content_management:event_manage_organizers" event.pk %}';
+        }
+    });
+    
+    // Confirmation supplémentaire avant soumission
+    const deleteForm = document.getElementById('deleteForm');
+    deleteForm.addEventListener('submit', function(e) {
+        const confirmed = confirm('Êtes-vous absolument sûr de vouloir supprimer cet organisateur ? Cette action ne peut pas être annulée.');
+        if (!confirmed) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

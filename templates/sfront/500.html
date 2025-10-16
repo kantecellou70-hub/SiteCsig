@@ -1,0 +1,249 @@
+{% extends 'sfront/base.html' %}
+{% load static %}
+
+{% block title %}Erreur serveur - CSIG{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="error-hero">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="error-content">
+                    <div class="error-number">500</div>
+                    <h1 class="error-title">Erreur serveur</h1>
+                    <p class="error-subtitle">
+                        Désolé, une erreur s'est produite sur notre serveur. 
+                        Notre équipe technique a été notifiée et travaille à résoudre le problème.
+                    </p>
+                    <div class="error-actions">
+                        <a href="{% url 'sfront:home' %}" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-home me-2"></i>Retour à l'accueil
+                        </a>
+                        <a href="{% url 'sfront:contact' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-envelope me-2"></i>Nous contacter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Help Section -->
+<section class="help-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <div class="help-container">
+                    <h2>Que pouvez-vous faire ?</h2>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="help-card">
+                                <div class="help-icon">
+                                    <i class="fas fa-sync-alt"></i>
+                                </div>
+                                <h5>Actualiser la page</h5>
+                                <p>Essayez de recharger la page en appuyant sur F5 ou en cliquant sur le bouton d'actualisation de votre navigateur.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="help-card">
+                                <div class="help-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <h5>Attendre un moment</h5>
+                                <p>Parfois, le problème se résout de lui-même. Attendez quelques minutes et réessayez.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="help-card">
+                                <div class="help-icon">
+                                    <i class="fas fa-arrow-left"></i>
+                                </div>
+                                <h5>Retourner en arrière</h5>
+                                <p>Utilisez le bouton "Retour" de votre navigateur pour revenir à la page précédente.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="help-card">
+                                <div class="help-icon">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <h5>Nous contacter</h5>
+                                <p>Si le problème persiste, contactez notre équipe technique pour obtenir de l'aide.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="technical-info">
+                        <h6>Informations techniques</h6>
+                        <p class="text-muted">
+                            <small>
+                                Code d'erreur : 500<br>
+                                Heure : {% now "H:i" %}<br>
+                                Date : {% now "d/m/Y" %}
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.error-hero {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    padding: 6rem 0;
+    text-align: center;
+}
+
+.error-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.error-number {
+    font-size: 8rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.error-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.error-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2.5rem;
+    opacity: 0.9;
+}
+
+.error-actions {
+    margin-top: 2rem;
+}
+
+.error-actions .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+    transition: all 0.3s ease;
+}
+
+.error-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.help-section {
+    padding: 4rem 0;
+    background: var(--gray-50);
+}
+
+.help-container {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.help-container h2 {
+    color: var(--csig-primary);
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.help-card {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    height: 100%;
+    transition: all 0.3s ease;
+    border: 1px solid var(--gray-200);
+}
+
+.help-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+    border-color: var(--csig-primary);
+}
+
+.help-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--csig-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.help-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.help-card h5 {
+    color: var(--csig-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.help-card p {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.technical-info {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
+    text-align: center;
+}
+
+.technical-info h6 {
+    color: var(--csig-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .error-number {
+        font-size: 6rem;
+    }
+    
+    .error-title {
+        font-size: 2rem;
+    }
+    
+    .error-actions .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .help-container {
+        padding: 2rem;
+    }
+    
+    .help-card {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}

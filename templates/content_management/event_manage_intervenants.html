@@ -1,0 +1,677 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Gérer les intervenants - {{ event.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .intervenants-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .intervenants-header {
+        background: linear-gradient(135deg, #0d4786 0%, #1a6bb8 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .intervenants-body {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .intervenant-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #0d4786;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .section-title {
+        color: #0d4786;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .section-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .formset-form {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .formset-form:hover {
+        border-color: #0d4786;
+        box-shadow: 0 2px 8px rgba(13, 71, 134, 0.1);
+    }
+    
+    .formset-form.deleted {
+        opacity: 0.6;
+        background: #f8f9fa;
+        border-color: #dc3545;
+    }
+    
+    .photo-preview {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        margin-bottom: 1rem;
+    }
+    
+    .photo-upload {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .photo-upload input[type="file"] {
+        display: none;
+    }
+    
+    .photo-upload label {
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .photo-upload label:hover {
+        border-color: #0d4786;
+        color: #0d4786;
+        background: #e3f2fd;
+    }
+    
+    .social-links {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .social-links h6 {
+        color: #495057;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .delete-checkbox {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .add-form-btn {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .add-form-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .domain-badge {
+        background: #0d4786;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="intervenants-container">
+        <form method="post" enctype="multipart/form-data" id="intervenantsForm">
+            {% csrf_token %}
+            
+            <!-- Header -->
+            <div class="intervenants-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2">
+                            <i class="fas fa-users me-3"></i>Gérer les intervenants
+                        </h1>
+                        <h3 class="mb-0 opacity-75">{{ event.title }}</h3>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a href="{% url 'content_management:event_detail' event.pk %}" class="btn btn-light">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à l'événement
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire des intervenants -->
+            <div class="intervenants-body">
+                <!-- Gestion des intervenants -->
+                <div class="intervenant-section">
+                    <div class="section-header">
+                        <h4 class="section-title">
+                            <i class="fas fa-user-tie me-2"></i>Intervenants de l'événement
+                        </h4>
+                        <div class="section-actions">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="addIntervenantBtn">
+                                <i class="fas fa-plus me-2"></i>Ajouter un intervenant
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Formset des intervenants -->
+                    {{ formset.management_form }}
+                    <div id="intervenantsFormsContainer">
+                        {% for intervenant_form in formset %}
+                        <div class="formset-form intervenant-form" data-form-index="{{ forloop.counter0 }}">
+                            <div class="row">
+                                <!-- Photo -->
+                                <div class="col-md-2">
+                                    <div class="photo-upload">
+                                        {% if intervenant_form.instance.photo %}
+                                            <img src="{{ intervenant_form.instance.photo.url }}" alt="Photo" class="photo-preview" id="photo-{{ forloop.counter0 }}">
+                                        {% else %}
+                                            <img src="{% static 'images/default-avatar.png' %}" alt="Photo par défaut" class="photo-preview" id="photo-{{ forloop.counter0 }}">
+                                        {% endif %}
+                                        <input type="file" name="form-{{ forloop.counter0 }}-photo" id="photo-input-{{ forloop.counter0 }}" accept="image/*">
+                                        <label for="photo-input-{{ forloop.counter0 }}">
+                                            <i class="fas fa-camera me-2"></i>Changer
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Informations principales -->
+                                <div class="col-md-10">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Prénom</label>
+                                            {{ intervenant_form.first_name }}
+                                            {% if intervenant_form.first_name.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in intervenant_form.first_name.errors %}
+                                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Nom</label>
+                                            {{ intervenant_form.last_name }}
+                                            {% if intervenant_form.last_name.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in intervenant_form.last_name.errors %}
+                                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Titre/Fonction</label>
+                                            {{ intervenant_form.title }}
+                                            {% if intervenant_form.title.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in intervenant_form.title.errors %}
+                                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Organisation</label>
+                                            {{ intervenant_form.organization }}
+                                            {% if intervenant_form.organization.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in intervenant_form.organization.errors %}
+                                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Domaine d'expertise</label>
+                                            {{ intervenant_form.domain }}
+                                            {% if intervenant_form.domain.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in intervenant_form.domain.errors %}
+                                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Ordre d'affichage</label>
+                                            {{ intervenant_form.order }}
+                                            {% if intervenant_form.order.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in intervenant_form.order.errors %}
+                                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Texte de présentation</label>
+                                            {{ intervenant_form.presentation }}
+                                            {% if intervenant_form.presentation.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in intervenant_form.presentation.errors %}
+                                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Biographie complète</label>
+                                            {{ intervenant_form.bio }}
+                                            {% if intervenant_form.bio.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in intervenant_form.bio.errors %}
+                                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Liens sociaux -->
+                                    <div class="social-links">
+                                        <h6>Liens sociaux et professionnels</h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Site web personnel</label>
+                                                {{ intervenant_form.website }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Profil LinkedIn</label>
+                                                {{ intervenant_form.linkedin }}
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Profil Twitter</label>
+                                                {{ intervenant_form.twitter }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Email professionnel</label>
+                                                {{ intervenant_form.email }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Actions -->
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div class="delete-checkbox">
+                                            <div class="form-check">
+                                                {{ intervenant_form.DELETE }}
+                                                <label class="form-check-label" for="{{ intervenant_form.DELETE.id_for_label }}">
+                                                    Supprimer cet intervenant
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button type="button" class="btn btn-outline-danger btn-sm remove-intervenant-btn">
+                                                <i class="fas fa-trash me-1"></i>Supprimer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ID caché -->
+                            {{ intervenant_form.id }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <div>
+                        <a href="{% url 'content_management:event_detail' event.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Enregistrer les intervenants
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addIntervenantBtn = document.getElementById('addIntervenantBtn');
+    const intervenantsFormsContainer = document.getElementById('intervenantsFormsContainer');
+    const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
+    let formIndex = {{ formset.forms|length }};
+
+    // Ajouter un nouvel intervenant
+    addIntervenantBtn.addEventListener('click', function() {
+        const newForm = createIntervenantForm(formIndex);
+        intervenantsFormsContainer.appendChild(newForm);
+        formIndex++;
+        updateTotalForms();
+    });
+
+    // Créer un nouveau formulaire d'intervenant
+    function createIntervenantForm(index) {
+        const formDiv = document.createElement('div');
+        formDiv.className = 'formset-form intervenant-form';
+        formDiv.dataset.formIndex = index;
+        
+        formDiv.innerHTML = `
+            <div class="row">
+                <!-- Photo -->
+                <div class="col-md-2">
+                    <div class="photo-upload">
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Photo par défaut" class="photo-preview" id="photo-${index}">
+                        <input type="file" name="form-${index}-photo" id="photo-input-${index}" accept="image/*">
+                        <label for="photo-input-${index}">
+                            <i class="fas fa-camera me-2"></i>Changer
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Informations principales -->
+                <div class="col-md-10">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" name="form-${index}-first_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nom</label>
+                            <input type="text" name="form-${index}-last_name" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Titre/Fonction</label>
+                            <input type="text" name="form-${index}-title" class="form-control" placeholder="Ex: Professeur, Directeur de recherche">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Organisation</label>
+                            <input type="text" name="form-${index}-organization" class="form-control" placeholder="Ex: Université de Conakry">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Domaine d'expertise</label>
+                            <input type="text" name="form-${index}-domain" class="form-control" required placeholder="Ex: Physique quantique, Biologie moléculaire">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ordre d'affichage</label>
+                            <input type="number" name="form-${index}-order" class="form-control" value="${index + 1}" min="1">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label class="form-label">Texte de présentation</label>
+                            <textarea name="form-${index}-presentation" class="form-control" rows="3" required placeholder="Présentation courte de l'intervenant"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label class="form-label">Biographie complète</label>
+                            <textarea name="form-${index}-bio" class="form-control" rows="4" placeholder="Biographie détaillée de l'intervenant"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Liens sociaux -->
+                    <div class="social-links">
+                        <h6>Liens sociaux et professionnels</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Site web personnel</label>
+                                <input type="url" name="form-${index}-website" class="form-control" placeholder="https://...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Profil LinkedIn</label>
+                                <input type="url" name="form-${index}-linkedin" class="form-control" placeholder="https://linkedin.com/in/...">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Profil Twitter</label>
+                                <input type="url" name="form-${index}-twitter" class="form-control" placeholder="https://twitter.com/...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email professionnel</label>
+                                <input type="email" name="form-${index}-email" class="form-control" placeholder="email@exemple.com">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="delete-checkbox">
+                            <div class="form-check">
+                                <input type="checkbox" name="form-${index}-DELETE" class="form-check-input" id="form-${index}-DELETE">
+                                <label class="form-check-label" for="form-${index}-DELETE">
+                                    Supprimer cet intervenant
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-outline-danger btn-sm remove-intervenant-btn">
+                                <i class="fas fa-trash me-1"></i>Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="form-${index}-id" value="">
+        `;
+        
+        return formDiv;
+    }
+
+    // Mettre à jour le nombre total de formulaires
+    function updateTotalForms() {
+        totalFormsInput.value = formIndex;
+    }
+
+    // Gérer les photos
+    intervenantsFormsContainer.addEventListener('change', function(e) {
+        if (e.target.type === 'file' && e.target.name.includes('-photo')) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                const photoPreview = e.target.parentNode.querySelector('.photo-preview');
+                
+                reader.onload = function(e) {
+                    photoPreview.src = e.target.result;
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+    });
+
+    // Supprimer un intervenant
+    intervenantsFormsContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-intervenant-btn')) {
+            const form = e.target.closest('.intervenant-form');
+            const deleteCheckbox = form.querySelector('input[type="checkbox"]');
+            if (deleteCheckbox) {
+                deleteCheckbox.checked = true;
+                form.classList.add('deleted');
+            } else {
+                form.remove();
+                updateTotalForms();
+            }
+        }
+    });
+
+    // Gérer les checkboxes de suppression
+    intervenantsFormsContainer.addEventListener('change', function(e) {
+        if (e.target.type === 'checkbox' && e.target.name.includes('-DELETE')) {
+            const form = e.target.closest('.intervenant-form');
+            if (e.target.checked) {
+                form.classList.add('deleted');
+            } else {
+                form.classList.remove('deleted');
+            }
+        }
+    });
+
+    // Validation du formulaire
+    const intervenantsForm = document.getElementById('intervenantsForm');
+    intervenantsForm.addEventListener('submit', function(e) {
+        const visibleForms = document.querySelectorAll('.intervenant-form:not(.deleted)');
+        let isValid = true;
+        let errorMessage = '';
+
+        // Vérifier que chaque intervenant a les champs obligatoires
+        visibleForms.forEach((form, index) => {
+            const firstNameInput = form.querySelector('input[name*="-first_name"]');
+            const lastNameInput = form.querySelector('input[name*="-last_name"]');
+            const domainInput = form.querySelector('input[name*="-domain"]');
+            const presentationInput = form.querySelector('textarea[name*="-presentation"]');
+            
+            if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || 
+                !domainInput.value.trim() || !presentationInput.value.trim()) {
+                isValid = false;
+                errorMessage = `L'intervenant ${index + 1} doit avoir tous les champs obligatoires remplis.`;
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            showNotification(errorMessage, 'error');
+            return false;
+        }
+
+        return true;
+    });
+
+    // Fonction de notification
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                <span class="flex-grow-1">${message}</span>
+                <button type="button" class="btn-close" onclick="this.closest('.alert').remove()"></button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+
+        // Auto-remove après 5 secondes
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + S pour sauvegarder
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            intervenantsForm.submit();
+        }
+        
+        // Échap pour annuler
+        if (e.key === 'Escape') {
+            window.location.href = '{% url "content_management:event_detail" event.pk %}';
+        }
+    });
+});
+</script>
+{% endblock %}

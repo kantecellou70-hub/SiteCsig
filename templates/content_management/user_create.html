@@ -1,0 +1,350 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Créer un utilisateur - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.user-create-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.user-create-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.user-create-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.user-create-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.user-create-body {
+    padding: 2rem;
+}
+
+.form-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-section h3 {
+    color: #495057;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+}
+
+.info-alert {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-alert i {
+    color: #1976d2;
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .user-create-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .user-create-header {
+        padding: 1.5rem;
+    }
+    
+    .user-create-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .user-create-body {
+        padding: 1rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-user-plus me-2"></i>Créer un utilisateur
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Ajouter un nouvel utilisateur au système</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:user_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+    </a>
+    <a href="{% url 'content_management:dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-home me-2"></i>Tableau de bord
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="user-create-container">
+    <!-- En-tête -->
+    <div class="user-create-header">
+        <h1>
+            <i class="fas fa-user-plus me-3"></i>Créer un nouvel utilisateur
+        </h1>
+        <p>Remplissez le formulaire ci-dessous pour créer un compte utilisateur</p>
+    </div>
+
+    <!-- Corps -->
+    <div class="user-create-body">
+        <!-- Informations sur le mot de passe -->
+        <div class="info-alert">
+            <i class="fas fa-info-circle"></i>
+            <strong>Mot de passe :</strong> Un mot de passe sécurisé sera généré automatiquement et envoyé par email à l'utilisateur.
+        </div>
+
+        <form method="post" id="createUserForm">
+            {% csrf_token %}
+            
+            <!-- Informations personnelles -->
+            <div class="form-section">
+                <h3><i class="fas fa-user me-2"></i>Informations personnelles</h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="first_name" class="form-label">Prénom *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="last_name" class="form-label">Nom *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="username" class="form-label">Nom d'utilisateur *</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                            <div class="form-text">Sera utilisé pour la connexion</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations professionnelles -->
+            <div class="form-section">
+                <h3><i class="fas fa-briefcase me-2"></i>Informations professionnelles</h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="job_title" class="form-label">Poste</label>
+                            <input type="text" class="form-control" id="job_title" name="job_title">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="department" class="form-label">Département</label>
+                            <input type="text" class="form-control" id="department" name="department">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   placeholder="+1234567890">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="language" class="form-label">Langue préférée</label>
+                            <select class="form-select" id="language" name="language">
+                                <option value="fr">Français</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rôles et permissions -->
+            <div class="form-section">
+                <h3><i class="fas fa-user-shield me-2"></i>Rôles et permissions</h3>
+                
+                <div class="form-group">
+                    <label for="roles" class="form-label">Rôles *</label>
+                    <select class="form-select" id="roles" name="roles" multiple required>
+                        {% for role in available_roles %}
+                            <option value="{{ role.id }}">{{ role.get_name_display }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Sélectionnez au moins un rôle</div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is_superuser" name="is_superuser">
+                        <label class="form-check-label" for="is_superuser">
+                            Accès administrateur complet
+                        </label>
+                        <div class="form-text">Donne tous les droits sur le système</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-section">
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="{% url 'content_management:user_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="createUserSubmitBtn">
+                        <i class="fas fa-user-plus me-2"></i>Créer l'utilisateur
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('createUserForm');
+    if (form) {
+        form.addEventListener('submit', handleCreateUser);
+    }
+});
+
+function handleCreateUser(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('createUserSubmitBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Désactiver le bouton et afficher le chargement
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création en cours...';
+    
+    // Récupérer les données du formulaire
+    const formData = new FormData(e.target);
+    formData.append('action', 'create_user');
+    
+    // Envoyer la requête
+    fetch('{% url "content_management:user_list" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomNotification(data.message, 'success');
+            // Rediriger vers la liste des utilisateurs après un délai
+            setTimeout(() => {
+                window.location.href = '{% url "content_management:user_list" %}';
+            }, 1500);
+        } else {
+            showCustomNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showCustomNotification('Erreur lors de la création de l\'utilisateur', 'error');
+    })
+    .finally(() => {
+        // Réactiver le bouton
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+</script>
+{% endblock %}

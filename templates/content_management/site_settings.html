@@ -1,0 +1,666 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Paramètres du site - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+.settings-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.settings-header {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.settings-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.settings-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.settings-body {
+    padding: 2rem;
+}
+
+.settings-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #ffc107;
+}
+
+.settings-section h3 {
+    color: #495057;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.settings-section h3 i {
+    color: #ffc107;
+    font-size: 1.1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-label i {
+    color: #ffc107;
+    width: 20px;
+}
+
+.form-control, .form-select, .form-textarea {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.form-control:focus, .form-select:focus, .form-textarea:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    outline: none;
+}
+
+.form-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.settings-actions {
+    background: #f8f9fa;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-primary:hover {
+    background: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+}
+
+.btn-success {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .settings-container {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .settings-header {
+        padding: 1.5rem;
+    }
+    
+    .settings-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .settings-body {
+        padding: 1rem;
+    }
+    
+    .settings-section {
+        padding: 1rem;
+    }
+    
+    .settings-actions {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-cog me-2"></i>Paramètres du site
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">Configurez les informations générales et les paramètres du site</p>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'content_management:dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+    </a>
+    <button class="btn btn-primary" onclick="saveAllSettings()">
+        <i class="fas fa-save me-2"></i>Sauvegarder tout
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <!-- En-tête -->
+    <div class="settings-header">
+        <h1>
+            <i class="fas fa-cog me-3"></i>Paramètres du site
+        </h1>
+        <p>Configurez les informations générales de votre site</p>
+    </div>
+
+    <!-- Corps des paramètres -->
+    <div class="settings-body">
+        <!-- Informations générales -->
+        <div class="settings-section">
+            <h3>
+                <i class="fas fa-info-circle"></i>
+                Informations générales
+            </h3>
+            
+            <form method="post" id="generalSettingsForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_general_settings">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="siteName" class="form-label">
+                                <i class="fas fa-building"></i>Nom du site
+                            </label>
+                            <input type="text" class="form-control" id="siteName" name="site_name" 
+                                   value="{{ site_settings.site_name }}" placeholder="CSIG - Cité des Sciences et de l'Innovation de Guinée" required>
+                            <div class="form-text">Nom officiel de votre organisation</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="siteTagline" class="form-label">
+                                <i class="fas fa-quote-left"></i>Slogan/Tagline
+                            </label>
+                            <input type="text" class="form-control" id="siteTagline" name="site_tagline" 
+                                   value="{{ site_settings.site_tagline }}" placeholder="Innovation et Excellence">
+                            <div class="form-text">Slogan ou devise de votre organisation</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="siteDescription" class="form-label">
+                        <i class="fas fa-align-left"></i>Description du site
+                    </label>
+                    <textarea class="form-control form-textarea" id="siteDescription" name="site_description" 
+                              placeholder="Description détaillée de votre organisation et de ses missions">{{ site_settings.site_description }}</textarea>
+                    <div class="form-text">Description complète de votre organisation</div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Mettre à jour les informations générales
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Informations de contact -->
+        <div class="settings-section">
+            <h3>
+                <i class="fas fa-address-book"></i>
+                Informations de contact
+            </h3>
+            
+            <form method="post" id="contactSettingsForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_contact_settings">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="contactEmail" class="form-label">
+                                <i class="fas fa-envelope"></i>Email de contact
+                            </label>
+                            <input type="email" class="form-control" id="contactEmail" name="contact_email" 
+                                   value="{{ site_settings.contact_email }}" placeholder="contact@csig.gn" required>
+                            <div class="form-text">Email principal de contact</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="contactPhone" class="form-label">
+                                <i class="fas fa-phone"></i>Téléphone
+                            </label>
+                            <input type="tel" class="form-control" id="contactPhone" name="contact_phone" 
+                                   value="{{ site_settings.contact_phone }}" placeholder="+224 XXX XXX XXX">
+                            <div class="form-text">Numéro de téléphone principal</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="contactFax" class="form-label">
+                                <i class="fas fa-fax"></i>Fax
+                            </label>
+                            <input type="tel" class="form-control" id="contactFax" name="contact_fax" 
+                                   value="{{ site_settings.contact_fax }}" placeholder="+224 XXX XXX XXX">
+                            <div class="form-text">Numéro de fax (optionnel)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="contactWebsite" class="form-label">
+                                <i class="fas fa-globe"></i>Site web
+                            </label>
+                            <input type="url" class="form-control" id="contactWebsite" name="contact_website" 
+                                   value="{{ site_settings.contact_website }}" placeholder="https://www.csig.gn">
+                            <div class="form-text">URL de votre site web principal</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Mettre à jour les informations de contact
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Adresse -->
+        <div class="settings-section">
+            <h3>
+                <i class="fas fa-map-marker-alt"></i>
+                Adresse
+            </h3>
+            
+            <form method="post" id="addressSettingsForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_address_settings">
+                
+                <div class="form-group">
+                    <label for="addressStreet" class="form-label">
+                        <i class="fas fa-road"></i>Rue et numéro
+                    </label>
+                    <input type="text" class="form-control" id="addressStreet" name="address_street" 
+                           value="{{ site_settings.address_street }}" placeholder="123 Avenue de la Science" required>
+                    <div class="form-text">Adresse complète de votre organisation</div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="addressCity" class="form-label">
+                                <i class="fas fa-city"></i>Ville
+                            </label>
+                            <input type="text" class="form-control" id="addressCity" name="address_city" 
+                                   value="{{ site_settings.address_city }}" placeholder="Conakry" required>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="addressState" class="form-label">
+                                <i class="fas fa-map"></i>Région/État
+                            </label>
+                            <input type="text" class="form-control" id="addressState" name="address_state" 
+                                   value="{{ site_settings.address_state }}" placeholder="Conakry">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="addressPostalCode" class="form-label">
+                                <i class="fas fa-mail-bulk"></i>Code postal
+                            </label>
+                            <input type="text" class="form-control" id="addressPostalCode" name="address_postal_code" 
+                                   value="{{ site_settings.address_postal_code }}" placeholder="00000">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="addressCountry" class="form-label">
+                        <i class="fas fa-flag"></i>Pays
+                    </label>
+                    <input type="text" class="form-control" id="addressCountry" name="address_country" 
+                           value="{{ site_settings.address_country }}" placeholder="Guinée" required>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Mettre à jour l'adresse
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Réseaux sociaux -->
+        <div class="settings-section">
+            <h3>
+                <i class="fas fa-share-alt"></i>
+                Réseaux sociaux
+            </h3>
+            
+            <form method="post" id="socialSettingsForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_social_settings">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="socialFacebook" class="form-label">
+                                <i class="fab fa-facebook"></i>Facebook
+                            </label>
+                            <input type="url" class="form-control" id="socialFacebook" name="social_facebook" 
+                                   value="{{ site_settings.social_facebook }}" placeholder="https://facebook.com/csig">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="socialTwitter" class="form-label">
+                                <i class="fab fa-twitter"></i>Twitter
+                            </label>
+                            <input type="url" class="form-control" id="socialTwitter" name="social_twitter" 
+                                   value="{{ site_settings.social_twitter }}" placeholder="https://twitter.com/csig">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="socialLinkedin" class="form-label">
+                                <i class="fab fa-linkedin"></i>LinkedIn
+                            </label>
+                            <input type="url" class="form-control" id="socialLinkedin" name="social_linkedin" 
+                                   value="{{ site_settings.social_linkedin }}" placeholder="https://linkedin.com/company/csig">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="socialInstagram" class="form-label">
+                                <i class="fab fa-instagram"></i>Instagram
+                            </label>
+                            <input type="url" class="form-control" id="socialInstagram" name="social_instagram" 
+                                   value="{{ site_settings.social_instagram }}" placeholder="https://instagram.com/csig">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Mettre à jour les réseaux sociaux
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Paramètres techniques -->
+        <div class="settings-section">
+            <h3>
+                <i class="fas fa-cogs"></i>
+                Paramètres techniques
+            </h3>
+            
+            <form method="post" id="technicalSettingsForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_technical_settings">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="timezone" class="form-label">
+                                <i class="fas fa-clock"></i>Fuseau horaire
+                            </label>
+                            <select class="form-select" id="timezone" name="timezone" required>
+                                <option value="Africa/Conakry" {% if site_settings.timezone == 'Africa/Conakry' %}selected{% endif %}>Afrique/Conakry (UTC+0)</option>
+                                <option value="UTC" {% if site_settings.timezone == 'UTC' %}selected{% endif %}>UTC (UTC+0)</option>
+                                <option value="Europe/Paris" {% if site_settings.timezone == 'Europe/Paris' %}selected{% endif %}>Europe/Paris (UTC+1/+2)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="language" class="form-label">
+                                <i class="fas fa-language"></i>Langue par défaut
+                            </label>
+                            <select class="form-select" id="language" name="language" required>
+                                <option value="fr" {% if site_settings.language == 'fr' %}selected{% endif %}>Français</option>
+                                <option value="en" {% if site_settings.language == 'en' %}selected{% endif %}>English</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Mettre à jour les paramètres techniques
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="settings-actions">
+        <div>
+            <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                <i class="fas fa-undo me-2"></i>Réinitialiser
+            </button>
+        </div>
+        
+        <div>
+            <button type="button" class="btn btn-primary" onclick="saveAllSettings()">
+                <i class="fas fa-save me-2"></i>Sauvegarder tout
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sauvegarder tous les paramètres
+function saveAllSettings() {
+    // Collecter toutes les données de tous les formulaires
+    const allData = new FormData();
+    
+    // Ajouter l'action
+    allData.append('action', 'save_all_settings');
+    allData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    // Collecter les données de tous les formulaires
+    const forms = ['generalSettingsForm', 'contactSettingsForm', 'addressSettingsForm', 'socialSettingsForm', 'technicalSettingsForm'];
+    
+    forms.forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) {
+            const formData = new FormData(form);
+            // Ajouter toutes les données du formulaire
+            for (let [key, value] of formData.entries()) {
+                if (key !== 'action' && key !== 'csrfmiddlewaretoken') {
+                    allData.append(key, value);
+                }
+            }
+        }
+    });
+    
+    // Envoyer toutes les données en une seule requête
+    fetch(window.location.href, {
+        method: 'POST',
+        body: allData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomNotification(data.message, 'success');
+            // Optionnel : recharger la page pour afficher les nouvelles valeurs
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showCustomNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showCustomNotification('Erreur lors de la sauvegarde.', 'error');
+        console.error('Error:', error);
+    });
+}
+
+// Réinitialiser le formulaire
+function resetForm() {
+    showCustomConfirm('Voulez-vous réinitialiser tous les formulaires aux valeurs par défaut ?', function() {
+        // Appeler la vue pour réinitialiser
+        const formData = new FormData();
+        formData.append('action', 'reset_settings');
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showCustomNotification(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                showCustomNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showCustomNotification('Erreur lors de la réinitialisation.', 'error');
+            console.error('Error:', error);
+        });
+    });
+}
+
+// Validation des formulaires
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Empêcher la soumission par défaut
+            
+            // Validation basique
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                showCustomNotification('Veuillez remplir tous les champs obligatoires.', 'warning');
+                return;
+            }
+            
+            // Traiter la soumission
+            const formData = new FormData(form);
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showCustomNotification(data.message, 'success');
+                } else {
+                    showCustomNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showCustomNotification('Erreur lors de la sauvegarde.', 'error');
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

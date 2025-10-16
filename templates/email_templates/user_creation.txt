@@ -1,0 +1,32 @@
+Bienvenue sur CSIG - Centre de Services et d'Information Gouvernementale
+=====================================================================
+
+🎉 Votre compte a été créé avec succès !
+
+🔐 Vos informations de connexion :
+   Nom d'utilisateur : {{ username }}
+   Mot de passe temporaire : {{ password }}
+
+🚀 Pour vous connecter, visitez : {{ login_url }}
+
+⚠️ IMPORTANT : Ce mot de passe est temporaire. 
+   Nous vous recommandons fortement de le changer lors de votre première connexion.
+
+ℹ️ Informations importantes :
+   - Votre compte est actuellement désactivé pour des raisons de sécurité
+   - Vous recevrez un email de confirmation une fois votre compte activé
+   - En cas de problème, contactez l'équipe d'administration
+
+👤 Détails de votre compte :
+   Nom complet : {{ user.get_full_name }}
+   Email : {{ user.email }}
+   {% if user.job_title %}Poste : {{ user.job_title }}{% endif %}
+   {% if user.department %}Département : {{ user.department }}{% endif %}
+   Date de création : {{ current_date|date:"d/m/Y à H:i" }}
+
+---
+Cet email a été envoyé automatiquement par le système CSIG.
+Si vous n'avez pas demandé la création de ce compte, veuillez contacter immédiatement l'équipe d'administration.
+
+CSIG - Centre de Services et d'Information Gouvernementale
+{{ current_date|date:"Y" }} - Tous droits réservés

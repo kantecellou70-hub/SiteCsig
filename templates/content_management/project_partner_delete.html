@@ -1,0 +1,73 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Supprimer le partenaire - {{ partner.name }} - CSIG{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-trash me-2"></i>Supprimer le partenaire
+{% endblock %}
+
+{% block page_subtitle %}
+<p class="text-muted mb-0">
+    Êtes-vous sûr de vouloir supprimer le partenaire "{{ partner.name }}" du projet "{{ project.title }}" ?
+</p>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirmation de suppression
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Attention !</h5>
+                        <p class="mb-0">
+                            Cette action est irréversible. Le partenaire "{{ partner.name }}" sera définitivement supprimé du projet.
+                        </p>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6>Informations du partenaire :</h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><strong>Nom :</strong> {{ partner.name }}</li>
+                                <li><strong>Rôle :</strong> {{ partner.role }}</li>
+                                {% if partner.description %}
+                                    <li><strong>Description :</strong> {{ partner.description }}</li>
+                                {% endif %}
+                                {% if partner.website %}
+                                    <li><strong>Site web :</strong> <a href="{{ partner.website }}" target="_blank">{{ partner.website }}</a></li>
+                                {% endif %}
+                                {% if partner.contact_email %}
+                                    <li><strong>Email :</strong> {{ partner.contact_email }}</li>
+                                {% endif %}
+                                {% if partner.contact_phone %}
+                                    <li><strong>Téléphone :</strong> {{ partner.contact_phone }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'content_management:project_detail' project.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Confirmer la suppression
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

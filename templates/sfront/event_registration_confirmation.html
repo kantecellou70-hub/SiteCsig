@@ -1,0 +1,280 @@
+{% extends 'sfront/base_public.html' %}
+{% load static %}
+
+{% block title %}Confirmation d'inscription - {{ event.title }} - CSIG{% endblock %}
+
+{% block extra_css %}
+<style>
+    .confirmation-container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .success-icon {
+        width: 120px;
+        height: 120px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        font-size: 4rem;
+        color: var(--white);
+        box-shadow: var(--shadow-glow);
+    }
+
+    .confirmation-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-family: 'Orbitron', monospace;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .confirmation-message {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .registration-details {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius);
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .detail-value {
+        color: var(--white);
+        font-weight: 500;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-home {
+        background: var(--gradient-primary);
+        color: var(--white);
+        padding: 1rem 2rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-home:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-glow);
+        color: var(--white);
+    }
+
+    .btn-event {
+        background: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+        padding: 1rem 2rem;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-event:hover {
+        background: var(--primary);
+        color: var(--white);
+        transform: translateY(-2px);
+    }
+
+    .info-box {
+        background: rgba(0, 212, 255, 0.1);
+        border: 1px solid rgba(0, 212, 255, 0.3);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin: 2rem 0;
+        color: var(--primary);
+    }
+
+    .info-box h4 {
+        margin-bottom: 1rem;
+        color: var(--primary);
+    }
+
+    .info-box p {
+        margin-bottom: 0.5rem;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .confirmation-container {
+            padding: 1rem;
+        }
+
+        .confirmation-title {
+            font-size: 2rem;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            font-size: 3rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-home, .btn-event {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <!-- Messages Django -->
+    {% if messages %}
+        <div class="messages-container" style="margin-bottom: 2rem;">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" 
+                     style="background: {% if message.tags == 'success' %}rgba(16, 185, 129, 0.2){% elif message.tags == 'error' %}rgba(239, 68, 68, 0.2){% elif message.tags == 'warning' %}rgba(245, 158, 11, 0.2){% else %}rgba(59, 130, 246, 0.2){% endif %};
+                            border: 1px solid {% if message.tags == 'success' %}rgba(16, 185, 129, 0.5){% elif message.tags == 'error' %}rgba(239, 68, 68, 0.5){% elif message.tags == 'warning' %}rgba(245, 158, 11, 0.5){% else %}rgba(59, 130, 246, 0.5){% endif %};
+                            color: {% if message.tags == 'success' %}#10b981{% elif message.tags == 'error' %}#ef4444{% elif message.tags == 'warning' %}#f59e0b{% else %}#3b82f6{% endif %};
+                            border-radius: var(--radius);
+                            padding: 1rem;
+                            margin-bottom: 1rem;">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" 
+                            style="float: right; background: none; border: none; color: inherit; font-size: 1.2rem; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <!-- Icône de succès -->
+    <div class="success-icon">
+        <i class="fas fa-check"></i>
+    </div>
+
+    <!-- Titre de confirmation -->
+    <h1 class="confirmation-title">Inscription confirmée !</h1>
+    
+    <!-- Message de confirmation -->
+    <p class="confirmation-message">
+        Félicitations ! Votre inscription à l'événement <strong>{{ event.title }}</strong> a été enregistrée avec succès.
+    </p>
+
+    <!-- Détails de l'inscription -->
+    <div class="registration-details">
+        <h3 style="color: var(--primary); margin-bottom: 1.5rem; font-family: 'Rajdhani', sans-serif;">
+            <i class="fas fa-info-circle"></i>
+            Détails de votre inscription
+        </h3>
+        
+        <div class="detail-item">
+            <span class="detail-label">Numéro d'inscription:</span>
+            <span class="detail-value">{{ registration.registration_id }}</span>
+        </div>
+        
+        <div class="detail-item">
+            <span class="detail-label">Nom complet:</span>
+            <span class="detail-value">{{ registration.first_name }} {{ registration.last_name }}</span>
+        </div>
+        
+        <div class="detail-item">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">{{ registration.email }}</span>
+        </div>
+        
+        {% if registration.phone %}
+        <div class="detail-item">
+            <span class="detail-label">Téléphone:</span>
+            <span class="detail-value">{{ registration.phone }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="detail-item">
+            <span class="detail-label">Date d'inscription:</span>
+            <span class="detail-value">{{ registration.created_at|date:"d/m/Y à H:i" }}</span>
+        </div>
+        
+        <div class="detail-item">
+            <span class="detail-label">Statut:</span>
+            <span class="detail-value">
+                {% if registration.status == 'pending' %}
+                    <span style="color: #f59e0b;">En attente de validation</span>
+                {% elif registration.status == 'confirmed' %}
+                    <span style="color: #10b981;">Confirmée</span>
+                {% elif registration.status == 'cancelled' %}
+                    <span style="color: #ef4444;">Annulée</span>
+                {% else %}
+                    {{ registration.get_status_display }}
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Informations importantes -->
+    <div class="info-box">
+        <h4><i class="fas fa-exclamation-triangle"></i> Informations importantes</h4>
+        <p><strong>Conservez précieusement votre numéro d'inscription :</strong> {{ registration.registration_id }}</p>
+        <p>Un email de confirmation vous a été envoyé à l'adresse : {{ registration.email }}</p>
+        <p>Vous recevrez bientôt plus d'informations sur l'événement et les modalités de participation.</p>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="action-buttons">
+        <a href="{% url 'sfront:home' %}" class="btn-home">
+            <i class="fas fa-home"></i>
+            Retour à l'accueil
+        </a>
+        
+        <a href="#" class="btn-event">
+            <i class="fas fa-calendar-alt"></i>
+            Voir l'événement
+        </a>
+    </div>
+</div>
+{% endblock %}

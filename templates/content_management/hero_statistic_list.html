@@ -1,0 +1,379 @@
+{% extends 'content_management/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Statistiques Hero - Page À propos{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-stats-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+    
+    .stats-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .stats-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .stats-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .add-stats-btn {
+        background: rgba(255,255,255,0.2);
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .add-stats-btn:hover {
+        background: rgba(255,255,255,0.3);
+        border-color: rgba(255,255,255,0.5);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .stats-table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stats-table th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .stats-table td {
+        padding: 1rem;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+        text-align: center;
+    }
+    
+    .stats-table tr:hover {
+        background-color: #f8f9fa;
+        transform: scale(1.01);
+        transition: all 0.2s ease;
+    }
+    
+    .stats-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    .stats-label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .stats-order {
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.25rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .stats-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-edit, .btn-delete {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .btn-edit {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        background: #138496;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-delete:hover {
+        background: #c82333;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .mobile-stats-grid {
+        display: none;
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-left: 5px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stats-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-card-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    .stats-card-order {
+        background: #667eea;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .stats-card-label {
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .stats-card-status {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 991.98px) {
+        .d-lg-block {
+            display: none !important;
+        }
+        
+        .mobile-stats-grid {
+            display: block;
+        }
+        
+        .hero-stats-container {
+            padding: 1.5rem;
+        }
+        
+        .stats-header h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-stats-container">
+    <div class="stats-header">
+        <h1><i class="fas fa-chart-line me-3"></i>Statistiques Hero</h1>
+        <p>Gérez les chiffres clés affichés dans la section hero de la page À propos</p>
+        <a href="{% url 'content_management:hero_statistic_create' %}" class="add-stats-btn">
+            <i class="fas fa-plus me-2"></i>Ajouter une statistique
+        </a>
+    </div>
+</div>
+
+{% if hero_statistics %}
+    <!-- Version Desktop -->
+    <div class="d-none d-lg-block">
+        <div class="stats-table">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag me-2"></i>Ordre</th>
+                        <th><i class="fas fa-chart-bar me-2"></i>Chiffre</th>
+                        <th><i class="fas fa-tag me-2"></i>Libellé</th>
+                        <th><i class="fas fa-toggle-on me-2"></i>Statut</th>
+                        <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in hero_statistics %}
+                    <tr>
+                        <td>
+                            <span class="stats-order">{{ stat.order }}</span>
+                        </td>
+                        <td>
+                            <div class="stats-number">{{ stat.number }}</div>
+                        </td>
+                        <td>
+                            <div class="stats-label">{{ stat.label }}</div>
+                        </td>
+                        <td>
+                            {% if stat.is_active %}
+                                <span class="stats-status status-active">
+                                    <i class="fas fa-check-circle me-1"></i>Actif
+                                </span>
+                            {% else %}
+                                <span class="stats-status status-inactive">
+                                    <i class="fas fa-times-circle me-1"></i>Inactif
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'content_management:hero_statistic_edit' stat.pk %}" class="btn-edit">
+                                    <i class="fas fa-edit me-1"></i>Modifier
+                                </a>
+                                <button class="btn-delete" onclick="deleteStatistic({{ stat.pk }}, '{{ stat.number }}')">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Version Mobile -->
+    <div class="d-lg-none mobile-stats-grid">
+        {% for stat in hero_statistics %}
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <div class="stats-card-number">{{ stat.number }}</div>
+                <div class="stats-card-order">{{ stat.order }}</div>
+            </div>
+            <div class="stats-card-label">{{ stat.label }}</div>
+            <div class="stats-card-status {% if stat.is_active %}status-active{% else %}status-inactive{% endif %}">
+                {% if stat.is_active %}
+                    <i class="fas fa-check-circle me-1"></i>Actif
+                {% else %}
+                    <i class="fas fa-times-circle me-1"></i>Inactif
+                {% endif %}
+            </div>
+            <div class="stats-card-actions">
+                <a href="{% url 'content_management:hero_statistic_edit' stat.pk %}" class="btn-edit">
+                    <i class="fas fa-edit me-1"></i>Modifier
+                </a>
+                <button class="btn-delete" onclick="deleteStatistic({{ stat.pk }}, '{{ stat.number }}')">
+                    <i class="fas fa-trash me-1"></i>Supprimer
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-chart-line"></i>
+        <h3>Aucune statistique configurée</h3>
+        <p>Commencez par ajouter des statistiques pour afficher des chiffres clés sur votre page À propos.</p>
+        <a href="{% url 'content_management:hero_statistic_create' %}" class="add-stats-btn">
+            <i class="fas fa-plus me-2"></i>Ajouter la première statistique
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteStatistic(pk, name) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer la statistique "${name}" ?`)) {
+        // Ici vous pouvez ajouter la logique de suppression AJAX si nécessaire
+        window.location.href = `/content-management/hero-statistics/${pk}/delete/`;
+    }
+}
+</script>
+{% endblock %}
