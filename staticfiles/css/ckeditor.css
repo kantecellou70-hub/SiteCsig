@@ -1,0 +1,187 @@
+/* Styles pour CKEditor5 */
+.ckeditor-container {
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-300);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.ckeditor-container .ck-editor__top {
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+}
+
+.ckeditor-container .ck-toolbar {
+    border: none !important;
+    background: transparent !important;
+}
+
+.ckeditor-container .ck-toolbar__items {
+    gap: 0.25rem;
+}
+
+.ckeditor-container .ck-button {
+    border-radius: var(--border-radius-sm) !important;
+    border: 1px solid var(--gray-300) !important;
+    background: white !important;
+    color: var(--gray-700) !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.ckeditor-container .ck-button:hover {
+    background: var(--gray-100) !important;
+    border-color: var(--gray-400) !important;
+    color: var(--gray-900) !important;
+}
+
+.ckeditor-container .ck-button.ck-on {
+    background: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.ckeditor-container .ck-button.ck-on:hover {
+    background: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.ckeditor-container .ck-editor__main {
+    background: white;
+}
+
+.ckeditor-container .ck-content {
+    min-height: 300px;
+    padding: 1rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+    color: var(--gray-800) !important;
+}
+
+.ckeditor-container .ck-content h1,
+.ckeditor-container .ck-content h2,
+.ckeditor-container .ck-content h3,
+.ckeditor-container .ck-content h4 {
+    color: var(--gray-900) !important;
+    font-weight: 600 !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.ckeditor-container .ck-content h1 {
+    font-size: 1.75rem !important;
+}
+
+.ckeditor-container .ck-content h2 {
+    font-size: 1.5rem !important;
+}
+
+.ckeditor-container .ck-content h3 {
+    font-size: 1.25rem !important;
+}
+
+.ckeditor-container .ck-content h4 {
+    font-size: 1.125rem !important;
+}
+
+.ckeditor-container .ck-content p {
+    margin-bottom: 1rem !important;
+}
+
+.ckeditor-container .ck-content ul,
+.ckeditor-container .ck-content ol {
+    margin-bottom: 1rem !important;
+    padding-left: 1.5rem !important;
+}
+
+.ckeditor-container .ck-content li {
+    margin-bottom: 0.5rem !important;
+}
+
+.ckeditor-container .ck-content blockquote {
+    border-left: 4px solid var(--primary-color) !important;
+    padding-left: 1rem !important;
+    margin: 1.5rem 0 !important;
+    font-style: italic !important;
+    color: var(--gray-600) !important;
+}
+
+.ckeditor-container .ck-content a {
+    color: var(--primary-color) !important;
+    text-decoration: underline !important;
+}
+
+.ckeditor-container .ck-content a:hover {
+    color: var(--primary-dark) !important;
+}
+
+.ckeditor-container .ck-content table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 1rem 0 !important;
+}
+
+.ckeditor-container .ck-content table th,
+.ckeditor-container .ck-content table td {
+    border: 1px solid var(--gray-300) !important;
+    padding: 0.75rem !important;
+    text-align: left !important;
+}
+
+.ckeditor-container .ck-content table th {
+    background: var(--gray-50) !important;
+    font-weight: 600 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ckeditor-container .ck-toolbar__items {
+        flex-wrap: wrap !important;
+    }
+    
+    .ckeditor-container .ck-button {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .ckeditor-container .ck-content {
+        min-height: 250px;
+        padding: 0.75rem !important;
+    }
+}
+
+/* Focus states */
+.ckeditor-container .ck-editor__editable:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 71, 134, 0.25) !important;
+}
+
+/* Placeholder */
+.ckeditor-container .ck-editor__editable[data-placeholder]:empty::before {
+    color: var(--gray-500) !important;
+    font-style: italic !important;
+}
+
+/* Dropdown menus */
+.ckeditor-container .ck-dropdown__panel {
+    border: 1px solid var(--gray-300) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--box-shadow-lg) !important;
+}
+
+.ckeditor-container .ck-dropdown__panel .ck-button {
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.ckeditor-container .ck-dropdown__panel .ck-button:hover {
+    background: var(--gray-100) !important;
+}
+
+.ckeditor-container .ck-dropdown__panel .ck-button.ck-on {
+    background: var(--primary-color) !important;
+    color: white !important;
+}

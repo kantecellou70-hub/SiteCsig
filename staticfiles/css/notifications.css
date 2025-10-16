@@ -1,0 +1,246 @@
+/* ============================================================================
+   SYSTÈME DE NOTIFICATIONS CSIG
+   ============================================================================ */
+
+/* Conteneur des notifications */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border-left: 4px solid var(--csig-primary);
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Contenu de la notification */
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+}
+
+.notification-content i {
+    font-size: 1.25rem;
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+}
+
+.notification-content span {
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--gray-800);
+}
+
+/* Bouton de fermeture */
+.notification-close {
+    background: none;
+    border: none;
+    color: var(--gray-500);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.notification-close:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+/* Types de notifications */
+.notification-success {
+    border-left-color: var(--success);
+}
+
+.notification-success i {
+    color: var(--success);
+}
+
+.notification-error {
+    border-left-color: var(--danger);
+}
+
+.notification-error i {
+    color: var(--danger);
+}
+
+.notification-warning {
+    border-left-color: var(--warning);
+}
+
+.notification-warning i {
+    color: var(--warning);
+}
+
+.notification-info {
+    border-left-color: var(--info);
+}
+
+.notification-info i {
+    color: var(--info);
+}
+
+/* Animations d'entrée et de sortie */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.notification.show {
+    animation: slideInRight 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification.hide {
+    animation: slideOutRight 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Empilement des notifications multiples */
+.notification + .notification {
+    margin-top: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 575.98px) {
+    .notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        transform: translateY(-100%);
+    }
+    
+    .notification.show {
+        transform: translateY(0);
+    }
+    
+    @keyframes slideInTop {
+        from {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutTop {
+        from {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+    }
+    
+    .notification.show {
+        animation: slideInTop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    .notification.hide {
+        animation: slideOutTop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+}
+
+/* Mode sombre (si supporté) */
+@media (prefers-color-scheme: dark) {
+    .notification {
+        background: var(--gray-900);
+        border-left-color: var(--csig-accent);
+    }
+    
+    .notification-content span {
+        color: var(--gray-200);
+    }
+    
+    .notification-close {
+        color: var(--gray-400);
+    }
+    
+    .notification-close:hover {
+        background: var(--gray-800);
+        color: var(--gray-300);
+    }
+}
+
+/* Réduction des animations (accessibilité) */
+@media (prefers-reduced-motion: reduce) {
+    .notification {
+        transition: none;
+    }
+    
+    .notification.show,
+    .notification.hide {
+        animation: none;
+    }
+}
+
+/* Support des lecteurs d'écran */
+.notification[aria-live="polite"] {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* États de focus pour l'accessibilité */
+.notification-close:focus {
+    outline: 2px solid var(--csig-primary);
+    outline-offset: 2px;
+}
+
+/* Support des thèmes personnalisés */
+.notification.theme-custom {
+    --notification-bg: var(--white);
+    --notification-text: var(--gray-800);
+    --notification-border: var(--csig-primary);
+}
+
+.notification.theme-custom .notification-content span {
+    color: var(--notification-text);
+}
+
+.notification.theme-custom {
+    background: var(--notification-bg);
+    border-left-color: var(--notification-border);
+}
